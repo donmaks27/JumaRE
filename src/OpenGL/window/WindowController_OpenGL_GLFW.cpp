@@ -1,6 +1,6 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#if defined(JUMARE_INCLUDE_RENDER_API_OPENGL) && defined(INCLUDE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_OPENGL_GLFW)
 
 #include "WindowController_OpenGL_GLFW.h"
 

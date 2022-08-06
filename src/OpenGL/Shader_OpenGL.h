@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
+#if defined(JUMARE_ENABLE_OPENGL)
 
 #include "../../include/JumaRE/material/Shader.h"
 

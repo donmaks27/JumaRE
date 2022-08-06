@@ -8,7 +8,7 @@ namespace JumaRenderEngine
 {
     RenderEngine* CreateRenderEngine_OpenGL()
     {
-#if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
+#if defined(JUMARE_ENABLE_OPENGL)
         return new RenderEngine_OpenGL();
 #else
         return nullptr;
