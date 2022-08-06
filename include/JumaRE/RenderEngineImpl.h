@@ -3,3 +3,4 @@
 #pragma once
 
 #include "RenderEngineImpl_OpenGL.h"
+#include "RenderEngineImpl_Vulkan.h"

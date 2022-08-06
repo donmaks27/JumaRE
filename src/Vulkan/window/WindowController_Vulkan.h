@@ -1,0 +1,52 @@
+﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+
+#pragma once
+
+#if defined(JUMARE_ENABLE_VULKAN)
+
+#include "../../../include/JumaRE/window/WindowController.h"
+
+#include <vulkan/vulkan_core.h>
+
+namespace JumaRenderEngine
+{
+    class VulkanSwapchain;
+
+    struct WindowData_Vulkan : WindowData
+    {
+        VkSurfaceKHR vulkanSurface = nullptr;
+        VulkanSwapchain* vulkanSwapchain = nullptr;
+    };
+
+    class WindowController_Vulkan : public WindowController
+    {
+        using Super = WindowController;
+
+    public:
+        WindowController_Vulkan() = default;
+        virtual ~WindowController_Vulkan() override;
+
+        virtual jarray<const char*> getVulkanInstanceExtensions() const = 0;
+
+        bool createWindowSwapchains();
+        void clearWindowSwapchains();
+
+        virtual bool getActualWindowSize(window_id windowID, math::uvector2& outSize) const override;
+
+    protected:
+
+        void clearWindowDataVulkan(window_id windowID, WindowData_Vulkan& windowData);
+
+        bool createWindowSwapchain(window_id windowID, WindowData_Vulkan& windowData);
+
+        virtual void onWindowMinimizationChanged(WindowData* windowData) override;
+
+    private:
+
+        void clearVulkan();
+
+        void destroyWindowSwapchain(window_id windowID, WindowData_Vulkan& windowData);
+    };
+}
+
+#endif

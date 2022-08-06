@@ -4,9 +4,9 @@
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
-#include <GL/glew.h>
-
 #include "../../include/JumaRE/texture/TextureFormat.h"
+
+#include <GL/glew.h>
 
 namespace JumaRenderEngine
 {
