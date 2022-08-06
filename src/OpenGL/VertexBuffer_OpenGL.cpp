@@ -5,12 +5,13 @@
 #include "VertexBuffer_OpenGL.h"
 
 #include <GL/glew.h>
-#include <JumaRE/RenderEngine.h>
-#include <JumaRE/vertex/VertexBufferData.h>
+
+#include "../../include/JumaRE/RenderEngine.h"
+#include "../../include/JumaRE/RenderOptions.h"
+#include "../../include/JumaRE/RenderTarget.h"
+#include "../../include/JumaRE/vertex/VertexBufferData.h"
 
 #include "Material_OpenGL.h"
-#include "JumaRE/RenderOptions.h"
-#include "JumaRE/RenderTarget.h"
 #include "window/WindowController_OpenGL.h"
 
 namespace JumaRenderEngine

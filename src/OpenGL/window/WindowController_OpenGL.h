@@ -4,7 +4,7 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/window/WindowController.h>
+#include "../../../include/JumaRE/window/WindowController.h"
 
 namespace JumaRenderEngine
 {

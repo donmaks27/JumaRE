@@ -4,7 +4,7 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/RenderTarget.h>
+#include "../../include/JumaRE/RenderTarget.h"
 
 namespace JumaRenderEngine
 {

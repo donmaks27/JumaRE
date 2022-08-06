@@ -4,9 +4,9 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/RenderEngine.h>
+#include "../../include/JumaRE/RenderEngine.h"
 
-#include <JumaRE/texture/TextureSamplerType.h>
+#include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 namespace JumaRenderEngine
 {

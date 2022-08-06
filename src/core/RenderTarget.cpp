@@ -1,8 +1,8 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/RenderTarget.h"
+#include "../../include/JumaRE/RenderTarget.h"
 
-#include "JumaRE/RenderEngine.h"
+#include "../../include/JumaRE/RenderEngine.h"
 
 namespace JumaRenderEngine
 {

@@ -1,6 +1,6 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/texture/Texture.h"
+#include "../../include/JumaRE/texture/Texture.h"
 
 namespace JumaRenderEngine
 {

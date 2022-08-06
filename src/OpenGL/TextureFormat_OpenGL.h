@@ -4,8 +4,9 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/texture/TextureFormat.h>
 #include <GL/glew.h>
+
+#include "../../include/JumaRE/texture/TextureFormat.h"
 
 namespace JumaRenderEngine
 {

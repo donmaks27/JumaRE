@@ -1,14 +1,14 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/RenderEngine.h"
+#include "../../include/JumaRE/RenderEngine.h"
 
-#include "JumaRE/RenderPipeline.h"
-#include "JumaRE/RenderTarget.h"
-#include "JumaRE/material/Material.h"
-#include "JumaRE/material/Shader.h"
-#include "JumaRE/texture/Texture.h"
-#include "JumaRE/vertex/VertexBuffer.h"
-#include "JumaRE/vertex/VertexBufferData.h"
+#include "../../include/JumaRE/RenderPipeline.h"
+#include "../../include/JumaRE/RenderTarget.h"
+#include "../../include/JumaRE/material/Material.h"
+#include "../../include/JumaRE/material/Shader.h"
+#include "../../include/JumaRE/texture/Texture.h"
+#include "../../include/JumaRE/vertex/VertexBuffer.h"
+#include "../../include/JumaRE/vertex/VertexBufferData.h"
 
 namespace JumaRenderEngine
 {

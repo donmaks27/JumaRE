@@ -102,4 +102,7 @@ namespace JumaRenderEngine
 
         RenderTarget* createWindowRenderTarget(window_id windowID, TextureSamples samples);
     };
+
+    template<RenderAPI API>
+    RenderEngine* CreateRenderEngine() { return nullptr; }
 }

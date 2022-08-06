@@ -1,8 +1,8 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/vertex/VertexBuffer.h"
+#include "../../include/JumaRE/vertex/VertexBuffer.h"
 
-#include "JumaRE/vertex/VertexBufferData.h"
+#include "../../include/JumaRE/vertex/VertexBufferData.h"
 
 namespace JumaRenderEngine
 {

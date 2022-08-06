@@ -4,10 +4,11 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/vertex/VertexBuffer.h>
+#include "../../include/JumaRE/vertex/VertexBuffer.h"
 
-#include <JumaRE/window/window_id.h>
 #include <jutils/jmap.h>
+
+#include "../../include/JumaRE/window/window_id.h"
 
 namespace JumaRenderEngine
 {

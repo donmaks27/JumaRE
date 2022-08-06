@@ -4,7 +4,7 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/texture/Texture.h>
+#include "../../include/JumaRE/texture/Texture.h"
 
 namespace JumaRenderEngine
 {

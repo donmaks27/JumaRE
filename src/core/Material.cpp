@@ -1,8 +1,8 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/material/Material.h"
+#include "../../include/JumaRE/material/Material.h"
 
-#include "JumaRE/material/Shader.h"
+#include "../../include/JumaRE/material/Shader.h"
 
 namespace JumaRenderEngine
 {

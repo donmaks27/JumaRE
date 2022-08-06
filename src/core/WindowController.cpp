@@ -1,9 +1,9 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/window/WindowController.h"
+#include "../../include/JumaRE/window/WindowController.h"
 
-#include "JumaRE/RenderEngine.h"
-#include "JumaRE/RenderTarget.h"
+#include "../../include/JumaRE/RenderEngine.h"
+#include "../../include/JumaRE/RenderTarget.h"
 
 namespace JumaRenderEngine
 {

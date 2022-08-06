@@ -4,7 +4,7 @@
 
 #if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
 
-#include <JumaRE/material/Shader.h>
+#include "../../include/JumaRE/material/Shader.h"
 
 namespace JumaRenderEngine
 {

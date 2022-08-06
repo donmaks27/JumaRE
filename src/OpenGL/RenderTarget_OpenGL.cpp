@@ -6,9 +6,10 @@
 
 #include <GL/glew.h>
 
+#include "../../include/JumaRE/RenderEngine.h"
+
 #include "TextureFormat_OpenGL.h"
 #include "Texture_OpenGL.h"
-#include "JumaRE/RenderEngine.h"
 #include "window/WindowController_OpenGL.h"
 
 namespace JumaRenderEngine

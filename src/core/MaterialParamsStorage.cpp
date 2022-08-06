@@ -1,6 +1,6 @@
 ﻿// Copyright a Leonov Maksim. All Rights Reserved.
 
-#include "JumaRE/material/MaterialParamsStorage.h"
+#include "../../include/JumaRE/material/MaterialParamsStorage.h"
 
 namespace JumaRenderEngine
 {

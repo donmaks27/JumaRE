@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "RenderEngineImpl.h"
+#include "RenderEngine.h"
 
 namespace JumaRenderEngine
 {
