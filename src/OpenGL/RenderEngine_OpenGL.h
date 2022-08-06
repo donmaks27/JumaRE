@@ -1,0 +1,48 @@
+// Copyright 2022 Leonov Maksim. All Rights Reserved.
+
+#pragma once
+
+#if defined(JUMARE_INCLUDE_RENDER_API_OPENGL)
+
+#include <JumaRE/RenderEngine.h>
+
+#include <JumaRE/texture/TextureSamplerType.h>
+
+namespace JumaRenderEngine
+{
+    class RenderEngine_OpenGL final : public RenderEngine
+    {
+        using Super = RenderEngine;
+
+    public:
+        RenderEngine_OpenGL() = default;
+        virtual ~RenderEngine_OpenGL() override;
+
+        virtual RenderAPI getRenderAPI() const override { return RenderAPI::OpenGL; }
+
+        uint32 getTextureSamplerIndex(TextureSamplerType sampler);
+
+        virtual math::vector2 getScreenCoordinateModifier() const override { return { 1.0f, -1.0f }; }
+        virtual bool shouldFlipLoadedTextures() const override { return true; }
+
+    protected:
+
+        virtual void clearInternal() override;
+
+        virtual WindowController* createWindowController() override;
+        virtual VertexBuffer* createVertexBufferInternal() override;
+        virtual Texture* createTextureInternal() override;
+        virtual Shader* createShaderInternal() override;
+        virtual Material* createMaterialInternal() override;
+        virtual RenderTarget* createRenderTargetInternal() override;
+
+    private:
+
+        jmap<TextureSamplerType, uint32> m_SamplerObjectIndices;
+
+
+        void clearOpenGL();
+    };
+}
+
+#endif
