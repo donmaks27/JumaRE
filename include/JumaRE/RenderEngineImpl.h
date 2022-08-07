@@ -4,3 +4,4 @@
 
 #include "RenderEngineImpl_OpenGL.h"
 #include "RenderEngineImpl_Vulkan.h"
+#include "RenderEngineImpl_DirectX11.h"

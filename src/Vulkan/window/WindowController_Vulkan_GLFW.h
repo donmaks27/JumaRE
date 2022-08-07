@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if defined(JUMARE_ENABLE_VULKAN_GLFW)
+#if defined(JUMARE_ENABLE_VULKAN) && defined(JUMARE_ENABLE_LIB_GLFW)
 
 #include "WindowController_Vulkan.h"
 
@@ -59,7 +59,7 @@ namespace JumaRenderEngine
 
         void clearGLFW();
 
-        void clearWindowGLFW(window_id windowID, WindowData_Vulkan_GLFW& windowData);
+        void clearWindowDataGLFW(window_id windowID, WindowData_Vulkan_GLFW& windowData);
     };
 }
 

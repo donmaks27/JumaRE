@@ -10,10 +10,10 @@ namespace JumaRenderEngine
 {
     WindowController_OpenGL* CreateWindowController_OpenGL()
     {
-#if defined(JUMARE_ENABLE_OPENGL_GLFW)
+#if defined(JUMARE_ENABLE_LIB_GLFW)
         return new WindowController_OpenGL_GLFW();
 #else
-        return nullptr;
+        static_assert(false, "There is no implementation of WindowController_OpenGL class");
 #endif
     }
 }

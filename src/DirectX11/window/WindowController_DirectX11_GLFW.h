@@ -2,30 +2,30 @@
 
 #pragma once
 
-#if defined(JUMARE_ENABLE_OPENGL) && defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_DX11) && defined(JUMARE_ENABLE_LIB_GLFW)
 
-#include "WindowController_OpenGL.h"
+#include "WindowController_DirectX11.h"
 
 struct GLFWwindow;
 
 namespace JumaRenderEngine
 {
-    class WindowController_OpenGL_GLFW;
+    class WindowController_DirectX11_GLFW;
 
-    struct WindowData_OpenGL_GLFW : WindowData_OpenGL
+    struct WindowData_DirectX11_GLFW : WindowData_DirectX11
     {
         GLFWwindow* windowGLFW = nullptr;
 
-        WindowController_OpenGL_GLFW* windowController = nullptr;
+        WindowController_DirectX11_GLFW* windowController = nullptr;
     };
 
-    class WindowController_OpenGL_GLFW final : public WindowController_OpenGL
+    class WindowController_DirectX11_GLFW final : public WindowController_DirectX11
     {
-        using Super = WindowController_OpenGL;
+        using Super = WindowController_DirectX11;
 
     public:
-        WindowController_OpenGL_GLFW() = default;
-        virtual ~WindowController_OpenGL_GLFW() override;
+        WindowController_DirectX11_GLFW() = default;
+        virtual ~WindowController_DirectX11_GLFW() override;
 
         virtual void destroyWindow(window_id windowID) override;
 
@@ -34,7 +34,6 @@ namespace JumaRenderEngine
 
         virtual bool shouldCloseWindow(window_id windowID) const override;
 
-        virtual void onFinishWindowRender(window_id windowID) override;
         virtual void updateWindows() override;
 
         virtual bool setWindowTitle(window_id windowID, const jstring& title) override;
@@ -44,24 +43,21 @@ namespace JumaRenderEngine
         virtual bool initWindowController() override;
 
         virtual WindowData* createWindowInternal(window_id windowID, const WindowProperties& properties) override;
-        
-        virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
 
-        virtual bool setActiveWindowInternal(window_id windowID) override;
+        virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
 
     private:
 
-        GLFWwindow* m_DefaultWindow = nullptr;
-        jmap<window_id, WindowData_OpenGL_GLFW> m_Windows;
+        jmap<window_id, WindowData_DirectX11_GLFW> m_Windows;
 
-
+        
         static void GLFW_ErrorCallback(int errorCode, const char* errorMessage);
         static void GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, int width, int height);
         static void GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, int minimized);
 
         void clearGLFW();
 
-        void clearWindowDataGLFW(window_id windowID, WindowData_OpenGL_GLFW& windowData);
+        void clearWindowDataGLFW(window_id windowID, WindowData_DirectX11_GLFW& windowData);
     };
 }
 
