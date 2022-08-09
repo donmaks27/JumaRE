@@ -20,27 +20,22 @@ namespace JumaRenderEngine
         virtual ~VulkanImage() override;
 
         bool init(VkImageUsageFlags usage, std::initializer_list<VulkanQueueType> accessedQueues, const math::uvector2& size, 
-            VkSampleCountFlagBits sampleCount, VkFormat format, uint32 mipLevels);
+            VkSampleCountFlagBits sampleCount, VkFormat format, uint8 mipLevels);
         bool init(VkImageUsageFlags usage, std::initializer_list<VulkanQueueType> accessedQueues, const math::uvector2& size, 
             VkSampleCountFlagBits sampleCount, VkFormat format);
-        bool init(VkImage existingImage, const math::uvector2& size, VkFormat format, uint32 mipLevels);
+        bool init(VkImage existingImage, const math::uvector2& size, VkFormat format, uint8 mipLevels);
 
         bool createImageView(VkImageAspectFlags aspectFlags);
 
         VkImage get() const { return m_Image; }
         VkImageView getImageView() const { return m_ImageView; }
+        uint8 getMipLevelsCount() const { return m_MipLevels; }
 
-        void changeImageLayout(VkCommandBuffer commandBuffer,
-            VkImageLayout oldLayout, VkAccessFlags srcAccess, VkPipelineStageFlags srcStage,
-            VkImageLayout newLayout, VkAccessFlags dstAccess, VkPipelineStageFlags dstStage);
-        void copyImage(VkCommandBuffer commandBuffer, 
-            const VulkanImage* srcImage, uint32 srcMipLevel, uint32 dstMipLevel,
-            VkImageLayout newLayout, VkAccessFlags dstAccess, VkPipelineStageFlags dstStage);
-        void generateMipmaps(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags dstAccess, VkPipelineStageFlags dstStage);
+        const math::uvector2& getSize() const { return m_Size; }
+        VkImageLayout getLayout() const { return m_Layout; }
+        void setLayout(VkImageLayout layout);
 
-        bool setImageData(const uint8* data, 
-            VkImageLayout oldLayout, VkAccessFlags srcAccess, VkPipelineStageFlags srcStage,
-            VkImageLayout newLayout, VkAccessFlags dstAccess, VkPipelineStageFlags dstStage);
+        bool setImageData(const uint8* data, VkImageLayout newLayout);
 
     protected:
 
@@ -54,7 +49,9 @@ namespace JumaRenderEngine
 
         math::uvector2 m_Size = { 0, 0 };
         VkFormat m_Format = VK_FORMAT_UNDEFINED;
-        uint32 m_MipLevels = 0;
+        uint8 m_MipLevels = 0;
+
+        VkImageLayout m_Layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 
         void clearVulkan();

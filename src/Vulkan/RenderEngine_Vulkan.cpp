@@ -389,8 +389,12 @@ namespace JumaRenderEngine
         VkPhysicalDeviceFeatures deviceFeatures{};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;
+        VkPhysicalDeviceVulkan13Features deviceFeatures_1_3{};
+        deviceFeatures_1_3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        deviceFeatures_1_3.synchronization2 = VK_TRUE;
         VkDeviceCreateInfo deviceInfo{};
 	    deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        deviceInfo.pNext = &deviceFeatures_1_3;
 	    deviceInfo.queueCreateInfoCount = static_cast<uint32>(queueInfos.getSize());
 	    deviceInfo.pQueueCreateInfos = queueInfos.getData();
 	    deviceInfo.pEnabledFeatures = &deviceFeatures;

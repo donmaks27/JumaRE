@@ -81,7 +81,9 @@ namespace JumaRenderEngine
     private:
 
         static constexpr uint8 m_RequiredExtensionCount = 1;
-        static constexpr const char* m_RequiredExtensions[m_RequiredExtensionCount] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+        static constexpr const char* m_RequiredExtensions[m_RequiredExtensionCount] = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
 
         VkInstance m_VulkanInstance = nullptr;
 #ifdef JDEBUG

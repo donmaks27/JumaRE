@@ -14,13 +14,29 @@ namespace JumaRenderEngine
     {
         switch (format)
         {
-        case TextureFormat::RGBA8: return VK_FORMAT_R8G8B8A8_SRGB;
-        case TextureFormat::BGRA8: return VK_FORMAT_B8G8R8A8_SRGB;
+        case TextureFormat::RGBA8: return VK_FORMAT_R8G8B8A8_UNORM;
+        case TextureFormat::RGBA8_SRGB: return VK_FORMAT_R8G8B8A8_SRGB;
+        case TextureFormat::BGRA8: return VK_FORMAT_B8G8R8A8_UNORM;
+        case TextureFormat::BGRA8_SRGB: return VK_FORMAT_B8G8R8A8_SRGB;
         case TextureFormat::DEPTH32: return VK_FORMAT_D32_SFLOAT;
         case TextureFormat::DEPTH24_STENCIL8: return VK_FORMAT_D24_UNORM_S8_UINT;
         default: ;
         }
         return VK_FORMAT_UNDEFINED;
+    }
+    constexpr TextureFormat GetTextureFormatByVulkanFormat(const VkFormat format)
+    {
+        switch (format)
+        {
+        case VK_FORMAT_R8G8B8A8_UNORM: return TextureFormat::RGBA8;
+        case VK_FORMAT_R8G8B8A8_SRGB: return TextureFormat::RGBA8_SRGB;
+        case VK_FORMAT_B8G8R8A8_UNORM: return TextureFormat::BGRA8;
+        case VK_FORMAT_B8G8R8A8_SRGB: return TextureFormat::BGRA8_SRGB;
+        case VK_FORMAT_D32_SFLOAT: return TextureFormat::DEPTH32;
+        case VK_FORMAT_D24_UNORM_S8_UINT: return TextureFormat::DEPTH24_STENCIL8;
+        default: ;
+        }
+        return TextureFormat::NONE;
     }
 }
 

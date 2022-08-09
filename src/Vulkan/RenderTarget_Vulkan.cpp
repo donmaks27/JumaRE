@@ -218,18 +218,16 @@ namespace JumaRenderEngine
         renderOptionsVulkan->renderPass = m_RenderPass;
 
         const VulkanFramebufferData& framebuffer = m_Framebuffers[framebufferIndex];
-        VkCommandBuffer commandBuffer = renderOptionsVulkan->commandBuffer->get();
+        VulkanCommandBuffer* vulkanCommandBuffer = renderOptionsVulkan->commandBuffer;
+        VkCommandBuffer commandBuffer = vulkanCommandBuffer->get();
         if (!m_FramebuffersValidForRender)
         {
             if (!isWindowRenderTarget())
             {
                 VulkanImage* resutAttachmentImage = framebuffer.resolveAttachment != nullptr ? framebuffer.resolveAttachment : framebuffer.colorAttachment;
-                resutAttachmentImage->changeImageLayout(commandBuffer,
-                    VK_IMAGE_LAYOUT_UNDEFINED, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                framebuffer.resultImage->changeImageLayout(commandBuffer, 
-                    VK_IMAGE_LAYOUT_UNDEFINED, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                vulkanCommandBuffer->changeImageLayout(resutAttachmentImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                vulkanCommandBuffer->changeImageLayout(framebuffer.resultImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                vulkanCommandBuffer->applyBarriers();
             }
             m_FramebuffersValidForRender = true;
         }
@@ -264,28 +262,22 @@ namespace JumaRenderEngine
     }
     void RenderTarget_Vulkan::onFinishRender(RenderOptions* renderOptions)
     {
-        VkCommandBuffer commandBuffer = reinterpret_cast<RenderOptions_Vulkan*>(renderOptions)->commandBuffer->get();
-        vkCmdEndRenderPass(commandBuffer);
+        VulkanCommandBuffer* vulkanCommandBuffer = reinterpret_cast<RenderOptions_Vulkan*>(renderOptions)->commandBuffer;
+        vkCmdEndRenderPass(vulkanCommandBuffer->get());
 
         if (!isWindowRenderTarget())
         {
             const VulkanFramebufferData& framebuffer = m_Framebuffers[0];
             VulkanImage* resultAttachment = framebuffer.resolveAttachment != nullptr ? framebuffer.resolveAttachment : framebuffer.colorAttachment;
 
-            resultAttachment->changeImageLayout(commandBuffer,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT
-            );
-            framebuffer.resultImage->changeImageLayout(commandBuffer,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT
-            );
-            framebuffer.resultImage->copyImage(commandBuffer, resultAttachment, 0, 0,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-            resultAttachment->changeImageLayout(commandBuffer,
-                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-            );
+            vulkanCommandBuffer->changeImageLayout(resultAttachment, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            vulkanCommandBuffer->changeImageLayout(framebuffer.resultImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            vulkanCommandBuffer->applyBarriers();
+
+            vulkanCommandBuffer->copyImage(resultAttachment, framebuffer.resultImage);
+            vulkanCommandBuffer->changeImageLayout(resultAttachment, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            vulkanCommandBuffer->generateMipmaps(framebuffer.resultImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            vulkanCommandBuffer->applyBarriers();
         }
 
         Super::onFinishRender(renderOptions);

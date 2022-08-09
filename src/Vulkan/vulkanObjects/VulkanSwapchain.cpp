@@ -71,12 +71,17 @@ namespace JumaRenderEngine
 		    math::clamp(windowData->properties.size.x, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
 		    math::clamp(windowData->properties.size.y, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height)
 	    };
+
         VkSurfaceFormatKHR surfaceFormat = surfaceFormats[0];
-        for (const auto& format : surfaceFormats)
+        for (const auto& availableFormat : surfaceFormats)
         {
-            if ((format.format == VK_FORMAT_B8G8R8A8_SRGB) && (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR))
+            if (availableFormat.colorSpace != VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
-                surfaceFormat = format;
+                continue;
+            }
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB)
+            {
+                surfaceFormat = availableFormat;
                 break;
             }
         }

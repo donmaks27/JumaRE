@@ -11,6 +11,7 @@
 #include <jutils/jdelegate_multicast.h>
 #include <jutils/math/vector2.h>
 
+#include "../../../include/JumaRE/texture/TextureFormat.h"
 #include "../../../include/JumaRE/window/window_id.h"
 
 namespace JumaRenderEngine

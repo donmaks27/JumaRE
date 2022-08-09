@@ -11,9 +11,9 @@
 
 namespace JumaRenderEngine
 {
-    inline int32 GetMipLevelCountByTextureSize(const math::uvector2& size)
+    inline uint8 GetMipLevelCountByTextureSize(const math::uvector2& size)
     {
-        return static_cast<uint32>(std::floor(std::log2(math::min(size.x, size.y)))) + 1;
+        return math::roundDown<uint8>(static_cast<float>(std::log2(math::min(size.x, size.y)))) + 1;
     }
 
     class TextureBase : public RenderEngineContextObjectBase

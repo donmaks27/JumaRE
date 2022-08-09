@@ -31,9 +31,7 @@ namespace JumaRenderEngine
             return false;
         }
 
-        const bool setImageDataSuccess = image->setImageData(data, 
-            VK_IMAGE_LAYOUT_UNDEFINED, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+        const bool setImageDataSuccess = image->setImageData(data, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         if (!setImageDataSuccess)
         {
             JUTILS_LOG(error, JSTR("Failed to load data to vulkan image"));
