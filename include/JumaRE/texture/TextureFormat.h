@@ -11,8 +11,6 @@ namespace JumaRenderEngine
         NONE,
         RGBA8,
         RGBA8_SRGB,
-        BGRA8,
-        BGRA8_SRGB,
         DEPTH32,
         DEPTH24_STENCIL8
     };
@@ -23,8 +21,6 @@ namespace JumaRenderEngine
         {
         case TextureFormat::RGBA8:
         case TextureFormat::RGBA8_SRGB:
-        case TextureFormat::BGRA8:
-        case TextureFormat::BGRA8_SRGB:
         case TextureFormat::DEPTH32:
         case TextureFormat::DEPTH24_STENCIL8:
             return 4;

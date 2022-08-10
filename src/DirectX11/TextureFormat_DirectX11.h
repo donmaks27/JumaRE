@@ -15,7 +15,7 @@ namespace JumaRenderEngine
         switch (format)
         {
         case TextureFormat::RGBA8: return DXGI_FORMAT_R8G8B8A8_UNORM;
-        case TextureFormat::BGRA8: return DXGI_FORMAT_B8G8R8A8_UNORM;
+        case TextureFormat::RGBA8_SRGB: return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         case TextureFormat::DEPTH32: return DXGI_FORMAT_D32_FLOAT;
         case TextureFormat::DEPTH24_STENCIL8: return DXGI_FORMAT_D24_UNORM_S8_UINT;
         default: ;

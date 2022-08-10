@@ -15,7 +15,7 @@ namespace JumaRenderEngine
         switch (format)
         {
         case TextureFormat::RGBA8: return GL_RGBA;
-        case TextureFormat::BGRA8: return GL_BGRA;
+        case TextureFormat::RGBA8_SRGB: return GL_SRGB_ALPHA;
         case TextureFormat::DEPTH32: return GL_DEPTH_COMPONENT32F;
         case TextureFormat::DEPTH24_STENCIL8: return GL_DEPTH24_STENCIL8;
         default: ;

@@ -148,12 +148,16 @@ namespace JumaRenderEngine
     {
         Super::onWindowResized(windowData);
 
+        if (windowData->minimized)
+        {
+            return;
+        }
+
         RenderTarget_DirectX11* renderTarget = dynamic_cast<RenderTarget_DirectX11*>(windowData->windowRenderTarget);
         if (renderTarget != nullptr)
         {
             renderTarget->clearRenderTarget();
         }
-
         IDXGISwapChain1* swapchain = reinterpret_cast<WindowData_DirectX11*>(windowData)->swapchain;
         if (swapchain != nullptr)
         {
