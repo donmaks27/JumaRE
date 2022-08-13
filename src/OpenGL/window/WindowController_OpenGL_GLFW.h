@@ -41,10 +41,10 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
 
-        virtual void onWindowResizedGLFW(WindowData* windowData, const math::uvector2& size) override { updateWindowSize(windowData->windowID, size); }
-        virtual void onWindowMinimizationChangedGLFW(WindowData* windowData, const bool minimized) override { updateWindowMinimization(windowData->windowID, minimized); }
+        virtual void GLFW_onWindowResized(WindowData* windowData, const math::uvector2& size) override { updateWindowSize(windowData->windowID, size); }
+        virtual void GLFW_onWindowMinimizationChanged(WindowData* windowData, const bool minimized) override { updateWindowMinimization(windowData->windowID, minimized); }
 
-        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override { setWindowTitleGLFW(windowData, title); }
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override { GLFW_setWindowTitle(reinterpret_cast<const WindowData_OpenGL_GLFW*>(windowData), title); }
 
     private:
 

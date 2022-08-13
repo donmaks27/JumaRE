@@ -37,7 +37,7 @@ namespace JumaRenderEngine
 
         void clearWindowDataVulkan(window_id windowID, WindowData_Vulkan& windowData);
 
-        bool createWindowSwapchain(window_id windowID, WindowData_Vulkan& windowData);
+        bool createWindowSwapchain(window_id windowID, WindowData_Vulkan* windowData);
 
         virtual void onWindowMinimizationChanged(WindowData* windowData) override;
 

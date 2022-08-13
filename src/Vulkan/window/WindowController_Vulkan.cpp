@@ -32,7 +32,7 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            if (!createWindowSwapchain(windowID, *getWindowData<WindowData_Vulkan>(windowID)))
+            if (!createWindowSwapchain(windowID, getWindowData<WindowData_Vulkan>(windowID)))
             {
                 JUTILS_LOG(error, JSTR("Failed to create vulkan swapchain"));
                 return false;
@@ -48,9 +48,9 @@ namespace JumaRenderEngine
         }
     }
 
-    bool WindowController_Vulkan::createWindowSwapchain(const window_id windowID, WindowData_Vulkan& windowData)
+    bool WindowController_Vulkan::createWindowSwapchain(const window_id windowID, WindowData_Vulkan* windowData)
     {
-        if (windowData.vulkanSwapchain == nullptr)
+        if (windowData->vulkanSwapchain == nullptr)
         {
             VkDevice device = getRenderEngine<RenderEngine_Vulkan>()->getDevice();
             if (device == nullptr)
@@ -66,7 +66,7 @@ namespace JumaRenderEngine
                 delete swapchain;
                 return false;
             }
-            windowData.vulkanSwapchain = swapchain;
+            windowData->vulkanSwapchain = swapchain;
         }
         return true;
     }

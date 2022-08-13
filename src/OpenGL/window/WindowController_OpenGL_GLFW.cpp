@@ -19,13 +19,12 @@ namespace JumaRenderEngine
         {
             return false;
         }
-        if (!initGLFW())
+        if (!GLFW_init(RenderAPI::OpenGL))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize GLFW"));
             return false;
         }
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -46,7 +45,7 @@ namespace JumaRenderEngine
             glfwDestroyWindow(m_DefaultWindow);
         }
 
-        terminateGLFW();
+        GLFW_terminate();
     }
 
     WindowData* WindowController_OpenGL_GLFW::createWindowInternal(const window_id windowID, const WindowInitProperties& properties)
@@ -71,11 +70,11 @@ namespace JumaRenderEngine
         }
 
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-
         WindowData_OpenGL_GLFW* windowData = &m_Windows.add(windowID);
-        if (!createWindowGLFW(windowData, properties.size, properties.title, m_DefaultWindow))
+        if (!GLFW_createWindow(windowData, properties.size, properties.title, m_DefaultWindow))
         {
             JUTILS_LOG(error, JSTR("Failed to create window {}"), windowID);
+            m_Windows.remove(windowID);
             return nullptr;
         }
 
@@ -112,7 +111,7 @@ namespace JumaRenderEngine
     void WindowController_OpenGL_GLFW::clearWindowDataGLFW(const window_id windowID, WindowData_OpenGL_GLFW& windowData)
     {
         clearWindowData(windowID, windowData);
-        destroyWindowGLFW(&windowData);
+        GLFW_destroyWindow(&windowData);
     }
 
     bool WindowController_OpenGL_GLFW::shouldCloseWindow(const window_id windowID) const
@@ -123,7 +122,7 @@ namespace JumaRenderEngine
             JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
             return false;
         }
-        return shouldCloseWindowGLFW(windowData);
+        return GLFW_shouldCloseWindow(windowData);
     }
 
     void WindowController_OpenGL_GLFW::onFinishWindowRender(const window_id windowID)
@@ -138,7 +137,7 @@ namespace JumaRenderEngine
     }
     void WindowController_OpenGL_GLFW::updateWindows()
     {
-        pushWindowEventsGLFW();
+        GLFW_pushWindowEvents();
         Super::updateWindows();
     }
 }

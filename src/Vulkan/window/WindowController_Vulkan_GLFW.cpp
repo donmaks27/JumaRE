@@ -39,24 +39,12 @@ namespace JumaRenderEngine
         {
             return false;
         }
-
-        if (glfwInit() == GLFW_FALSE)
+        if (!GLFW_init(RenderAPI::Vulkan))
         {
-#ifndef JUTILS_LOG_DISABLED
-            const char* errorStr = nullptr;
-            glfwGetError(&errorStr);
-            JUTILS_LOG(error, JSTR("Failed to initialize GLFW lib: {}"), errorStr);
-#endif
+            JUTILS_LOG(error, JSTR("Failed to initialize GLFW"));
             return false;
         }
-
-        glfwSetErrorCallback(WindowController_Vulkan_GLFW::GLFW_ErrorCallback);
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         return true;
-    }
-    void WindowController_Vulkan_GLFW::GLFW_ErrorCallback(const int errorCode, const char* errorMessage)
-    {
-        JUTILS_LOG(error, JSTR("GLFW error. Code: {}. {}"), errorCode, errorMessage);
     }
 
     void WindowController_Vulkan_GLFW::clearGLFW()
@@ -70,7 +58,7 @@ namespace JumaRenderEngine
             m_Windows.clear();
         }
 
-        glfwTerminate();
+        GLFW_terminate();
     }
 
     WindowData* WindowController_Vulkan_GLFW::createWindowInternal(const window_id windowID, const WindowInitProperties& properties)
@@ -86,57 +74,30 @@ namespace JumaRenderEngine
             return nullptr;
         }
 
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-        GLFWwindow* window = glfwCreateWindow(
-            static_cast<int>(properties.size.x), static_cast<int>(properties.size.y), *properties.title, nullptr, nullptr
-        );
-        if (window == nullptr)
+        WindowData_Vulkan_GLFW* windowData = &m_Windows.add(windowID);
+        if (!GLFW_createWindow(windowData, properties.size, properties.title))
         {
             JUTILS_LOG(error, JSTR("Failed to create window {}"), windowID);
-            return nullptr;
-        }
-
-        VkSurfaceKHR surface = nullptr;
-        const VkResult result = glfwCreateWindowSurface(getRenderEngine<RenderEngine_Vulkan>()->getVulkanInstance(), window, nullptr, &surface);
-        if (result != VK_SUCCESS)
-        {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create surface for window {}"), windowID);
-            glfwDestroyWindow(window);
-            return nullptr;
-        }
-
-        WindowData_Vulkan_GLFW& windowData = m_Windows[windowID];
-        windowData.vulkanSurface = surface;
-        windowData.windowGLFW = window;
-        windowData.windowController = this;
-        glfwSetWindowUserPointer(window, &windowData);
-        glfwSetFramebufferSizeCallback(window, WindowController_Vulkan_GLFW::GLFW_FramebufferResizeCallback);
-        glfwSetWindowIconifyCallback(window, WindowController_Vulkan_GLFW::GLFW_WindowMinimizationCallback);
-
-        if (!createWindowSwapchain(windowID, windowData))
-        {
-            clearWindowDataGLFW(windowID, windowData);
             m_Windows.remove(windowID);
             return nullptr;
         }
-        return &windowData;
-    }
-    void WindowController_Vulkan_GLFW::GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, const int width, const int height)
-    {
-        const WindowData_Vulkan_GLFW* windowData = static_cast<WindowData_Vulkan_GLFW*>(glfwGetWindowUserPointer(windowGLFW));
-        if (windowData != nullptr)
+
+        const VkResult result = glfwCreateWindowSurface(getRenderEngine<RenderEngine_Vulkan>()->getVulkanInstance(), windowData->windowGLFW, nullptr, &windowData->vulkanSurface);
+        if (result != VK_SUCCESS)
         {
-            windowData->windowController->updateWindowSize(windowData->windowID, { math::max<uint32>(width, 0), math::max<uint32>(height, 0) });
+            JUTILS_ERROR_LOG(result, JSTR("Failed to create surface for window {}"), windowID);
+            GLFW_destroyWindow(windowData);
+            m_Windows.remove(windowID);
+            return nullptr;
         }
-    }
-    void WindowController_Vulkan_GLFW::GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, const int minimized)
-    {
-        const WindowData_Vulkan_GLFW* windowData = static_cast<WindowData_Vulkan_GLFW*>(glfwGetWindowUserPointer(windowGLFW));
-        if (windowData != nullptr)
+
+        if (!createWindowSwapchain(windowID, windowData))
         {
-            windowData->windowController->updateWindowMinimization(windowData->windowID, minimized == GLFW_TRUE);
+            clearWindowDataGLFW(windowID, *windowData);
+            m_Windows.remove(windowID);
+            return nullptr;
         }
+        return windowData;
     }
 
     void WindowController_Vulkan_GLFW::destroyWindow(const window_id windowID)
@@ -151,11 +112,7 @@ namespace JumaRenderEngine
     void WindowController_Vulkan_GLFW::clearWindowDataGLFW(const window_id windowID, WindowData_Vulkan_GLFW& windowData)
     {
         clearWindowDataVulkan(windowID, windowData);
-
-        glfwSetWindowUserPointer(windowData.windowGLFW, nullptr);
-        glfwDestroyWindow(windowData.windowGLFW);
-        windowData.windowGLFW = nullptr;
-        windowData.windowController = nullptr;
+        GLFW_destroyWindow(&windowData);
     }
 
     bool WindowController_Vulkan_GLFW::shouldCloseWindow(const window_id windowID) const
@@ -166,20 +123,13 @@ namespace JumaRenderEngine
             JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
             return false;
         }
-        return glfwWindowShouldClose(windowData->windowGLFW) != GLFW_FALSE;
+        return GLFW_shouldCloseWindow(windowData);
     }
 
     void WindowController_Vulkan_GLFW::updateWindows()
     {
-        glfwPollEvents();
-
+        GLFW_pushWindowEvents();
         Super::updateWindows();
-    }
-
-    void WindowController_Vulkan_GLFW::setWindowTitleInternal(WindowData* windowData, const jstring& title)
-    {
-        const WindowData_Vulkan_GLFW* windowDataGLFW = reinterpret_cast<const WindowData_Vulkan_GLFW*>(windowData);
-        glfwSetWindowTitle(windowDataGLFW->windowGLFW, *title);
     }
 }
 

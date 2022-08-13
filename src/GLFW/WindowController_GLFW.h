@@ -6,6 +6,8 @@
 
 #include "../../include/JumaRE/window/WindowController.h"
 
+#include "../../include/JumaRE/RenderAPI.h"
+
 struct GLFWmonitor;
 struct GLFWwindow;
 
@@ -24,25 +26,25 @@ namespace JumaRenderEngine
 
     protected:
 
-        bool initGLFW();
-        void terminateGLFW();
+        bool GLFW_init(RenderAPI renderAPI);
+        void GLFW_terminate();
 
-        bool createWindowGLFW(WindowData_GLFW* windowDataGLFW, WindowData* windowData, const math::uvector2& size, const jstring& title, 
+        bool GLFW_createWindow(WindowData_GLFW* windowDataGLFW, WindowData* windowData, const math::uvector2& size, const jstring& title, 
             GLFWwindow* sharedWindow);
         template<typename T>
-        bool createWindowGLFW(T* windowData, const math::uvector2& size, const jstring& title, GLFWwindow* sharedWindow = nullptr)
+        bool GLFW_createWindow(T* windowData, const math::uvector2& size, const jstring& title, GLFWwindow* sharedWindow = nullptr)
         {
-            return this->createWindowGLFW(windowData, windowData, size, title, sharedWindow);
+            return this->GLFW_createWindow(windowData, windowData, size, title, sharedWindow);
         }
-        void destroyWindowGLFW(WindowData_GLFW* windowData);
+        void GLFW_destroyWindow(WindowData_GLFW* windowData);
 
-        bool shouldCloseWindowGLFW(const WindowData_GLFW* windowData) const;
-        void pushWindowEventsGLFW();
+        bool GLFW_shouldCloseWindow(const WindowData_GLFW* windowData) const;
+        void GLFW_pushWindowEvents();
 
-        virtual void onWindowResizedGLFW(WindowData* windowData, const math::uvector2& size) = 0;
-        virtual void onWindowMinimizationChangedGLFW(WindowData* windowData, bool minimized) = 0;
+        virtual void GLFW_onWindowResized(WindowData* windowData, const math::uvector2& size) = 0;
+        virtual void GLFW_onWindowMinimizationChanged(WindowData* windowData, bool minimized) = 0;
 
-        void setWindowTitleGLFW(const WindowData* windowData, const jstring& title);
+        void GLFW_setWindowTitle(const WindowData_GLFW* windowData, const jstring& title);
 
     private:
 

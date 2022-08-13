@@ -10,7 +10,7 @@ namespace JumaRenderEngine
 {
     WindowController_GLFW* GlobalWindowController = nullptr;
 
-    bool WindowController_GLFW::initGLFW()
+    bool WindowController_GLFW::GLFW_init(const RenderAPI renderAPI)
     {
         if (glfwInit() == GLFW_FALSE)
         {
@@ -25,9 +25,21 @@ namespace JumaRenderEngine
         GlobalWindowController = this;
         glfwSetErrorCallback(WindowController_GLFW::GLFW_ErrorCallback);
         glfwSetMonitorCallback(WindowController_GLFW::GLFW_MonitorCallback);
+        switch (renderAPI)
+        {
+        case RenderAPI::OpenGL: 
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+            break;
+        case RenderAPI::Vulkan:
+        case RenderAPI::DirectX11:
+        case RenderAPI::DirectX12:
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            break;
+        default: ;
+        }
         return true;
     }
-    void WindowController_GLFW::terminateGLFW()
+    void WindowController_GLFW::GLFW_terminate()
     {
         GlobalWindowController = nullptr;
         glfwTerminate();
@@ -43,7 +55,7 @@ namespace JumaRenderEngine
         // TODO: Track monitors; Set window mode to normal
     }
 
-    bool WindowController_GLFW::createWindowGLFW(WindowData_GLFW* windowDataGLFW, WindowData* windowData, const math::uvector2& size, const jstring& title, GLFWwindow* sharedWindow)
+    bool WindowController_GLFW::GLFW_createWindow(WindowData_GLFW* windowDataGLFW, WindowData* windowData, const math::uvector2& size, const jstring& title, GLFWwindow* sharedWindow)
     {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
@@ -62,39 +74,38 @@ namespace JumaRenderEngine
         glfwSetWindowIconifyCallback(window, WindowController_GLFW::GLFW_WindowMinimizationCallback);
         return true;
     }
-    void WindowController_GLFW::destroyWindowGLFW(WindowData_GLFW* windowData)
+    void WindowController_GLFW::GLFW_destroyWindow(WindowData_GLFW* windowData)
     {
         glfwDestroyWindow(windowData->windowGLFW);
         windowData->windowGLFW = nullptr;
     }
 
-    bool WindowController_GLFW::shouldCloseWindowGLFW(const WindowData_GLFW* windowData) const
+    bool WindowController_GLFW::GLFW_shouldCloseWindow(const WindowData_GLFW* windowData) const
     {
         return glfwWindowShouldClose(windowData->windowGLFW) == GLFW_TRUE;
     }
-    void WindowController_GLFW::pushWindowEventsGLFW()
+    void WindowController_GLFW::GLFW_pushWindowEvents()
     {
         glfwPollEvents();
     }
 
     void WindowController_GLFW::GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, const int width, const int height)
     {
-        GlobalWindowController->onWindowResizedGLFW(
+        GlobalWindowController->GLFW_onWindowResized(
             static_cast<WindowData*>(glfwGetWindowUserPointer(windowGLFW)), { static_cast<uint32>(width), static_cast<uint32>(height) }
         );
     }
 
     void WindowController_GLFW::GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, const int minimized)
     {
-        GlobalWindowController->onWindowMinimizationChangedGLFW(
+        GlobalWindowController->GLFW_onWindowMinimizationChanged(
             static_cast<WindowData*>(glfwGetWindowUserPointer(windowGLFW)), minimized == GLFW_TRUE
         );
     }
 
-    void WindowController_GLFW::setWindowTitleGLFW(const WindowData* windowData, const jstring& title)
+    void WindowController_GLFW::GLFW_setWindowTitle(const WindowData_GLFW* windowData, const jstring& title)
     {
-        const WindowData_GLFW* windowDataGLFW = reinterpret_cast<const WindowData_GLFW*>(windowData);
-        glfwSetWindowTitle(windowDataGLFW->windowGLFW, *title);
+        glfwSetWindowTitle(windowData->windowGLFW, *title);
     }
 }
 
