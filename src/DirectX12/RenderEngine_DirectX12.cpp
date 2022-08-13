@@ -77,7 +77,7 @@ namespace JumaRenderEngine
 #endif
     }
 
-    bool RenderEngine_DirectX12::initInternal(const jmap<window_id, WindowProperties>& windows)
+    bool RenderEngine_DirectX12::initInternal(const jmap<window_id, WindowInitProperties>& windows)
     {
 #if defined(JDEBUG)
         {

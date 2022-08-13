@@ -17,7 +17,7 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool RenderEngine::init(const jmap<window_id, WindowProperties>& windows)
+    bool RenderEngine::init(const jmap<window_id, WindowInitProperties>& windows)
     {
         if (isValid())
         {
@@ -54,7 +54,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    bool RenderEngine::initInternal(const jmap<window_id, WindowProperties>& windows)
+    bool RenderEngine::initInternal(const jmap<window_id, WindowInitProperties>& windows)
     {
         for (const auto& window : windows)
         {

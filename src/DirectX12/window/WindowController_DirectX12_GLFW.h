@@ -40,7 +40,7 @@ namespace JumaRenderEngine
 
         virtual bool initWindowController() override;
 
-        virtual WindowData* createWindowInternal(window_id windowID, const WindowProperties& properties) override;
+        virtual WindowData* createWindowInternal(window_id windowID, const WindowInitProperties& properties) override;
 
         virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
 

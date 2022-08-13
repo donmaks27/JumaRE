@@ -72,7 +72,7 @@ namespace JumaRenderEngine
         return createObject<RenderPipeline_Vulkan>();
     }
 
-    bool RenderEngine_Vulkan::initInternal(const jmap<window_id, WindowProperties>& windows)
+    bool RenderEngine_Vulkan::initInternal(const jmap<window_id, WindowInitProperties>& windows)
     {
         if (!createVulkanInstance())
         {

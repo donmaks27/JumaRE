@@ -73,7 +73,7 @@ namespace JumaRenderEngine
         glfwTerminate();
     }
 
-    WindowData* WindowController_Vulkan_GLFW::createWindowInternal(const window_id windowID, const WindowProperties& properties)
+    WindowData* WindowController_Vulkan_GLFW::createWindowInternal(const window_id windowID, const WindowInitProperties& properties)
     {
         if (windowID == window_id_INVALID)
         {

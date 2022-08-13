@@ -11,6 +11,7 @@
 #include <jutils/math/vector2.h>
 
 #include "window_id.h"
+#include "WindowMode.h"
 #include "../texture/TextureSamples.h"
 
 namespace JumaRenderEngine
@@ -18,12 +19,13 @@ namespace JumaRenderEngine
     class RenderTarget;
     class WindowController;
 
-    struct WindowProperties
+    struct WindowInitProperties
     {
-        jstring title;
-        math::uvector2 size;
+        jstring title = JSTR("JumaRE");
+        math::uvector2 size = { 0, 0 };
         TextureSamples samples = TextureSamples::X1;
     };
+
     struct WindowData
     {
         window_id windowID = window_id_INVALID;
@@ -32,6 +34,7 @@ namespace JumaRenderEngine
         math::uvector2 actualSize = { 0, 0 };
         TextureSamples samples = TextureSamples::X1;
         jstring title;
+        WindowMode mode = WindowMode::Normal;
 
         bool minimized = false;
     };
@@ -49,7 +52,7 @@ namespace JumaRenderEngine
         OnWindowControllerWindowEvent OnWindowPropertiesChanged;
 
 
-        bool createWindow(window_id windowID, const WindowProperties& properties);
+        bool createWindow(window_id windowID, const WindowInitProperties& properties);
         virtual void destroyWindow(window_id windowID) = 0;
 
         bool createRenderTargets();
@@ -74,12 +77,13 @@ namespace JumaRenderEngine
         bool isWindowMinimized(window_id windowID) const;
 
         bool setWindowTitle(window_id windowID, const jstring& title);
+        bool setWindowMode(window_id windowID, WindowMode mode);
 
     protected:
 
         virtual bool initWindowController() { return true; }
 
-        virtual WindowData* createWindowInternal(window_id windowID, const WindowProperties& properties) = 0;
+        virtual WindowData* createWindowInternal(window_id windowID, const WindowInitProperties& properties) = 0;
 
         void clearWindowData(window_id windowID, WindowData& windowData);
 
@@ -88,13 +92,15 @@ namespace JumaRenderEngine
         T* getWindowData(const window_id windowID) { return reinterpret_cast<T*>(getWindowData(windowID)); }
 
         void updateWindowSize(window_id windowID, const math::uvector2& size);
-        virtual void onWindowResized(WindowData* windowData) {}
-
         void updateWindowMinimization(window_id windowID, bool minimized);
-        virtual void onWindowMinimizationChanged(WindowData* windowData);
-        
-        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) = 0;
 
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) = 0;
+        virtual bool setWindowModeInternal(WindowData* windowData, WindowMode mode) { return false; }
+
+        virtual void onWindowResized(WindowData* windowData) {}
+        virtual void onWindowMinimizationChanged(WindowData* windowData);
+        virtual void onWindowModeChanged(WindowData* windowData, WindowMode mode);
+        
     private:
 
         jmap<window_id, math::uvector2> m_ChangedWindowSizes;

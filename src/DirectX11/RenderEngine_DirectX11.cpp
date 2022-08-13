@@ -21,7 +21,7 @@ namespace JumaRenderEngine
         clearDirectX();
     }
 
-    bool RenderEngine_DirectX11::initInternal(const jmap<window_id, WindowProperties>& windows)
+    bool RenderEngine_DirectX11::initInternal(const jmap<window_id, WindowInitProperties>& windows)
     {
         if (!Super::initInternal(windows))
         {

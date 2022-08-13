@@ -5,21 +5,15 @@
 #if defined(JUMARE_ENABLE_OPENGL) && defined(JUMARE_ENABLE_LIB_GLFW)
 
 #include "WindowController_OpenGL.h"
-
-struct GLFWwindow;
+#include "../../GLFW/WindowController_GLFW.h"
 
 namespace JumaRenderEngine
 {
-    class WindowController_OpenGL_GLFW;
-
-    struct WindowData_OpenGL_GLFW : WindowData_OpenGL
+    struct WindowData_OpenGL_GLFW : WindowData_OpenGL, WindowData_GLFW
     {
-        GLFWwindow* windowGLFW = nullptr;
-
-        WindowController_OpenGL_GLFW* windowController = nullptr;
     };
 
-    class WindowController_OpenGL_GLFW final : public WindowController_OpenGL
+    class WindowController_OpenGL_GLFW final : public WindowController_OpenGL, protected WindowController_GLFW
     {
         using Super = WindowController_OpenGL;
 
@@ -41,23 +35,22 @@ namespace JumaRenderEngine
 
         virtual bool initWindowController() override;
 
-        virtual WindowData* createWindowInternal(window_id windowID, const WindowProperties& properties) override;
+        virtual WindowData* createWindowInternal(window_id windowID, const WindowInitProperties& properties) override;
         
         virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
 
-        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override;
+        virtual void onWindowResizedGLFW(WindowData* windowData, const math::uvector2& size) override { updateWindowSize(windowData->windowID, size); }
+        virtual void onWindowMinimizationChangedGLFW(WindowData* windowData, const bool minimized) override { updateWindowMinimization(windowData->windowID, minimized); }
+
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override { setWindowTitleGLFW(windowData, title); }
 
     private:
 
         GLFWwindow* m_DefaultWindow = nullptr;
         jmap<window_id, WindowData_OpenGL_GLFW> m_Windows;
 
-
-        static void GLFW_ErrorCallback(int errorCode, const char* errorMessage);
-        static void GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, int width, int height);
-        static void GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, int minimized);
 
         void clearGLFW();
 

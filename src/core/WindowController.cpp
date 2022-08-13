@@ -7,7 +7,7 @@
 
 namespace JumaRenderEngine
 {
-    bool WindowController::createWindow(const window_id windowID, const WindowProperties& properties)
+    bool WindowController::createWindow(const window_id windowID, const WindowInitProperties& properties)
     {
         WindowData* windowData = createWindowInternal(windowID, properties);
         if (windowData == nullptr)
@@ -161,5 +161,24 @@ namespace JumaRenderEngine
         windowData->title = title;
         setWindowTitleInternal(windowData, title);
         return true;
+    }
+
+    bool WindowController::setWindowMode(const window_id windowID, const WindowMode mode)
+    {
+        WindowData* windowData = getWindowData(windowID);
+        if (windowData == nullptr)
+        {
+            JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
+            return false;
+        }
+        if (windowData->mode == mode)
+        {
+            return true;
+        }
+        return setWindowModeInternal(windowData, mode);
+    }
+    void WindowController::onWindowModeChanged(WindowData* windowData, const WindowMode mode)
+    {
+        windowData->mode = mode;
     }
 }
