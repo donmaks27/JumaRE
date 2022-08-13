@@ -27,8 +27,11 @@ namespace JumaRenderEngine
     struct WindowData
     {
         window_id windowID = window_id_INVALID;
-        WindowProperties properties;
         RenderTarget* windowRenderTarget = nullptr;
+
+        math::uvector2 actualSize = { 0, 0 };
+        TextureSamples samples = TextureSamples::X1;
+        jstring title;
 
         bool minimized = false;
     };
@@ -70,7 +73,7 @@ namespace JumaRenderEngine
         bool isAllWindowsMinimized() const { return m_WindowsCount == m_MinimizedWindowsCount; }
         bool isWindowMinimized(window_id windowID) const;
 
-        virtual bool setWindowTitle(window_id windowID, const jstring& title) = 0;
+        bool setWindowTitle(window_id windowID, const jstring& title);
 
     protected:
 
@@ -89,6 +92,8 @@ namespace JumaRenderEngine
 
         void updateWindowMinimization(window_id windowID, bool minimized);
         virtual void onWindowMinimizationChanged(WindowData* windowData);
+        
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) = 0;
 
     private:
 

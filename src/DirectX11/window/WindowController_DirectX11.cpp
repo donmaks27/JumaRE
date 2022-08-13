@@ -114,8 +114,8 @@ namespace JumaRenderEngine
 
         constexpr uint8 buffersCount = 2;
         DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
-        swapchainDescription.Width = windowData.properties.size.x;
-        swapchainDescription.Height = windowData.properties.size.y;
+        swapchainDescription.Width = windowData.actualSize.x;
+        swapchainDescription.Height = windowData.actualSize.y;
         swapchainDescription.Format = GetDirectX11FormatByTextureFormat(TextureFormat::RGBA8);
         swapchainDescription.Stereo = FALSE;
         swapchainDescription.SampleDesc.Count = 1;
@@ -163,7 +163,7 @@ namespace JumaRenderEngine
         {
             DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
             swapchain->GetDesc1(&swapchainDescription);
-            swapchain->ResizeBuffers(0, windowData->properties.size.x, windowData->properties.size.y, DXGI_FORMAT_UNKNOWN, swapchainDescription.Flags);
+            swapchain->ResizeBuffers(0, windowData->actualSize.x, windowData->actualSize.y, DXGI_FORMAT_UNKNOWN, swapchainDescription.Flags);
         }
     }
 

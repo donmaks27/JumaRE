@@ -61,7 +61,7 @@ namespace JumaRenderEngine
         ID3D12Device2* device = renderEngine->getDevice();
         const TextureSamples samples = getSampleCount();
         const uint8 samplesCount = GetTextureSamplesNumber(samples);
-        const math::uvector2 size = windowData->properties.size;
+        const math::uvector2 size = windowData->actualSize;
 
         const uint8 buffersCount = swapchain->getBuffersCount();
         jarray<DirectX12Texture*> buffers(buffersCount, nullptr);
@@ -315,7 +315,7 @@ namespace JumaRenderEngine
                 return false;
             }
 
-            size = windowData->properties.size;
+            size = windowData->actualSize;
             if (getSampleCount() == TextureSamples::X1)
             {
                 rtvIndex = windowData->swapchain->getCurrentBufferIndex();

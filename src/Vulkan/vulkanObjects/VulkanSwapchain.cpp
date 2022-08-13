@@ -68,8 +68,8 @@ namespace JumaRenderEngine
             surfaceCapabilities.maxImageCount > 0 ? surfaceCapabilities.maxImageCount : defaultImageCount
         );
         const VkExtent2D swapchainSize = {
-		    math::clamp(windowData->properties.size.x, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
-		    math::clamp(windowData->properties.size.y, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height)
+		    math::clamp(windowData->actualSize.x, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
+		    math::clamp(windowData->actualSize.y, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height)
 	    };
 
         VkSurfaceFormatKHR surfaceFormat = surfaceFormats[0];
@@ -184,7 +184,7 @@ namespace JumaRenderEngine
     {
         if (windowData->windowID == getWindowID())
         {
-            if (windowData->properties.size != m_SwapchainImagesSize)
+            if (windowData->actualSize != m_SwapchainImagesSize)
             {
                 invalidate();
             }

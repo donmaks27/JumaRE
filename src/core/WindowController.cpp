@@ -16,7 +16,9 @@ namespace JumaRenderEngine
         }
 
         windowData->windowID = windowID;
-        windowData->properties = properties;
+        windowData->title = properties.title;
+        windowData->actualSize = properties.size;
+        windowData->samples = properties.samples;
         if (!createRenderTarget(windowID, *windowData))
         {
             destroyWindow(windowID);
@@ -50,7 +52,7 @@ namespace JumaRenderEngine
         {
             return true;
         }
-        RenderTarget* renderTarget = renderEngine->createWindowRenderTarget(windowID, windowData.properties.samples);
+        RenderTarget* renderTarget = renderEngine->createWindowRenderTarget(windowID, windowData.samples);
         if (renderTarget == nullptr)
         {
             return false;
@@ -94,7 +96,7 @@ namespace JumaRenderEngine
         {
             return false;
         }
-        outSize = windowData->properties.size;
+        outSize = windowData->actualSize;
         return true;
     }
 
@@ -111,7 +113,8 @@ namespace JumaRenderEngine
                 WindowData* windowData = getWindowData(changedWindowSize.key);
                 if (windowData != nullptr)
                 {
-                    windowData->properties.size = changedWindowSize.value;
+                    JUTILS_LOG(info, JSTR("Window {} size changed - {{ {}; {} }}"), windowData->windowID, changedWindowSize.value.x, changedWindowSize.value.y);
+                    windowData->actualSize = changedWindowSize.value;
                     onWindowResized(windowData);
                     OnWindowPropertiesChanged.call(this, windowData);
                 }
@@ -144,5 +147,19 @@ namespace JumaRenderEngine
     {
         const WindowData* windowData = findWindowData(windowID);
         return (windowData != nullptr) && windowData->minimized;
+    }
+
+    bool WindowController::setWindowTitle(const window_id windowID, const jstring& title)
+    {
+        WindowData* windowData = getWindowData(windowID);
+        if (windowData == nullptr)
+        {
+            JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
+            return false;
+        }
+
+        windowData->title = title;
+        setWindowTitleInternal(windowData, title);
+        return true;
     }
 }

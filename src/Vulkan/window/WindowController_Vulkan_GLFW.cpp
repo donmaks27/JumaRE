@@ -176,17 +176,10 @@ namespace JumaRenderEngine
         Super::updateWindows();
     }
 
-    bool WindowController_Vulkan_GLFW::setWindowTitle(const window_id windowID, const jstring& title)
+    void WindowController_Vulkan_GLFW::setWindowTitleInternal(WindowData* windowData, const jstring& title)
     {
-        const WindowData_Vulkan_GLFW* windowData = m_Windows.find(windowID);
-        if (windowData == nullptr)
-        {
-            JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
-            return false;
-        }
-
-        glfwSetWindowTitle(windowData->windowGLFW, *title);
-        return true;
+        const WindowData_Vulkan_GLFW* windowDataGLFW = reinterpret_cast<const WindowData_Vulkan_GLFW*>(windowData);
+        glfwSetWindowTitle(windowDataGLFW->windowGLFW, *title);
     }
 }
 

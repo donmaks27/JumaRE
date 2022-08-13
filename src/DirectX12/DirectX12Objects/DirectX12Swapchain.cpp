@@ -51,8 +51,8 @@ namespace JumaRenderEngine
 
         constexpr uint8 buffersCount = 3;
         DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
-        swapchainDescription.Width = windowData->properties.size.x;
-        swapchainDescription.Height = windowData->properties.size.y;
+        swapchainDescription.Width = windowData->actualSize.x;
+        swapchainDescription.Height = windowData->actualSize.y;
         swapchainDescription.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         swapchainDescription.Stereo = FALSE;
         swapchainDescription.SampleDesc.Count = 1;
@@ -83,7 +83,7 @@ namespace JumaRenderEngine
 
         m_WindowID = windowID;
         m_Swapchain = swapchain4;
-        m_SwapchainBuffersSize = windowData->properties.size;
+        m_SwapchainBuffersSize = windowData->actualSize;
         if (!getSwapchainBuffers(buffersCount))
         {
             JUTILS_LOG(error, JSTR("Failed to get swapchain buffers"));
@@ -165,7 +165,7 @@ namespace JumaRenderEngine
     {
         if (windowData->windowID == getWindowID())
         {
-            if (windowData->properties.size != m_SwapchainBuffersSize)
+            if (windowData->actualSize != m_SwapchainBuffersSize)
             {
                 invalidate();
             }
@@ -189,14 +189,14 @@ namespace JumaRenderEngine
             clearSwapchainBuffers();
             DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
             m_Swapchain->GetDesc1(&swapchainDescription);
-            const HRESULT result = m_Swapchain->ResizeBuffers(0, windowData->properties.size.x, windowData->properties.size.y, DXGI_FORMAT_UNKNOWN, swapchainDescription.Flags);
+            const HRESULT result = m_Swapchain->ResizeBuffers(0, windowData->actualSize.x, windowData->actualSize.y, DXGI_FORMAT_UNKNOWN, swapchainDescription.Flags);
             if (FAILED(result))
             {
                 JUTILS_ERROR_LOG(result, JSTR("Failed to resize swapchain"));
                 clearDirectX();
                 return false;
             }
-            m_SwapchainBuffersSize = windowData->properties.size;
+            m_SwapchainBuffersSize = windowData->actualSize;
             if (!getSwapchainBuffers(static_cast<uint8>(swapchainDescription.BufferCount)))
             {
                 JUTILS_LOG(error, JSTR("Failed to update swapchain buffers"));

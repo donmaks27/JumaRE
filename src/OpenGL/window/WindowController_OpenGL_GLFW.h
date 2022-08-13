@@ -37,8 +37,6 @@ namespace JumaRenderEngine
         virtual void onFinishWindowRender(window_id windowID) override;
         virtual void updateWindows() override;
 
-        virtual bool setWindowTitle(window_id windowID, const jstring& title) override;
-
     protected:
 
         virtual bool initWindowController() override;
@@ -48,6 +46,8 @@ namespace JumaRenderEngine
         virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
+
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override;
 
     private:
 

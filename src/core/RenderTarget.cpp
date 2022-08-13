@@ -89,10 +89,10 @@ namespace JumaRenderEngine
     {
         if (windowData->windowID == getWindowID())
         {
-            if ((windowData->properties.size != m_Size) || (windowData->properties.samples != m_TextureSamples))
+            if ((windowData->actualSize != m_Size) || (windowData->samples != m_TextureSamples))
             {
-                m_Size = windowData->properties.size;
-                m_TextureSamples = windowData->properties.samples;
+                m_Size = windowData->actualSize;
+                m_TextureSamples = windowData->samples;
                 invalidate();
             }
         }

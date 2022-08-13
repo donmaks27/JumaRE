@@ -152,17 +152,10 @@ namespace JumaRenderEngine
         Super::updateWindows();
     }
 
-    bool WindowController_DirectX12_GLFW::setWindowTitle(window_id windowID, const jstring& title)
+    void WindowController_DirectX12_GLFW::setWindowTitleInternal(WindowData* windowData, const jstring& title)
     {
-        const WindowData_DirectX12_GLFW* windowData = m_Windows.find(windowID);
-        if (windowData == nullptr)
-        {
-            JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
-            return false;
-        }
-
-        glfwSetWindowTitle(windowData->windowGLFW, *title);
-        return true;
+        const WindowData_DirectX12_GLFW* windowDataGLFW = reinterpret_cast<const WindowData_DirectX12_GLFW*>(windowData);
+        glfwSetWindowTitle(windowDataGLFW->windowGLFW, *title);
     }
 }
 
