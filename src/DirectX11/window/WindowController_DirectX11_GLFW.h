@@ -5,21 +5,17 @@
 #if defined(JUMARE_ENABLE_DX11) && defined(JUMARE_ENABLE_LIB_GLFW)
 
 #include "WindowController_DirectX11.h"
+#include "../../GLFW/WindowController_GLFW.h"
 
 struct GLFWwindow;
 
 namespace JumaRenderEngine
 {
-    class WindowController_DirectX11_GLFW;
-
-    struct WindowData_DirectX11_GLFW : WindowData_DirectX11
+    struct WindowData_DirectX11_GLFW : WindowData_DirectX11, WindowData_GLFW
     {
-        GLFWwindow* windowGLFW = nullptr;
-
-        WindowController_DirectX11_GLFW* windowController = nullptr;
     };
 
-    class WindowController_DirectX11_GLFW final : public WindowController_DirectX11
+    class WindowController_DirectX11_GLFW final : public WindowController_DirectX11, protected WindowController_GLFW
     {
         using Super = WindowController_DirectX11;
 
@@ -43,18 +39,17 @@ namespace JumaRenderEngine
         virtual WindowData* createWindowInternal(window_id windowID, const WindowInitProperties& properties) override;
 
         virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
+        
+        virtual void GLFW_onWindowResized(WindowData* windowData, const math::uvector2& size) override { updateWindowSize(windowData->windowID, size); }
+        virtual void GLFW_onWindowMinimizationChanged(WindowData* windowData, const bool minimized) override { updateWindowMinimization(windowData->windowID, minimized); }
 
-        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override;
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override { GLFW_setWindowTitle(reinterpret_cast<const WindowData_DirectX11_GLFW*>(windowData), title); }
 
     private:
 
         jmap<window_id, WindowData_DirectX11_GLFW> m_Windows;
 
         
-        static void GLFW_ErrorCallback(int errorCode, const char* errorMessage);
-        static void GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, int width, int height);
-        static void GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, int minimized);
-
         void clearGLFW();
 
         void clearWindowDataGLFW(window_id windowID, WindowData_DirectX11_GLFW& windowData);

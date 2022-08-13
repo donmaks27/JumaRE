@@ -73,7 +73,7 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            if (!createWindowSwapchain(windowID, *getWindowData<WindowData_DirectX12>(windowID)))
+            if (!createWindowSwapchain(windowID, getWindowData<WindowData_DirectX12>(windowID)))
             {
                 JUTILS_LOG(error, JSTR("Failed to create DirectX12 swapchain"));
                 return false;
@@ -89,9 +89,9 @@ namespace JumaRenderEngine
         }
     }
 
-    bool WindowController_DirectX12::createWindowSwapchain(const window_id windowID, WindowData_DirectX12& windowData)
+    bool WindowController_DirectX12::createWindowSwapchain(const window_id windowID, WindowData_DirectX12* windowData)
     {
-        if (windowData.swapchain != nullptr)
+        if (windowData->swapchain != nullptr)
         {
             return true;
         }
@@ -109,7 +109,7 @@ namespace JumaRenderEngine
             delete swapchain;
             return false;
         }
-        windowData.swapchain = swapchain;
+        windowData->swapchain = swapchain;
         return true;
     }
     void WindowController_DirectX12::destroyWindowSwapchain(const window_id windowID, WindowData_DirectX12& windowData)

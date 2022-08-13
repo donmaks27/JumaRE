@@ -37,7 +37,7 @@ namespace JumaRenderEngine
 
         void clearWindowDataDirectX11(window_id windowID, WindowData_DirectX11& windowData);
 
-        bool createWindowSwapchain(window_id windowID, WindowData_DirectX11& windowData);
+        bool createWindowSwapchain(window_id windowID, WindowData_DirectX11* windowData);
 
         virtual void onWindowResized(WindowData* windowData) override;
 

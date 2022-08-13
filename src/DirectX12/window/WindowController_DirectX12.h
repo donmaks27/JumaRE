@@ -38,7 +38,7 @@ namespace JumaRenderEngine
 
         void clearWindowDataDirectX(window_id windowID, WindowData_DirectX12& windowData);
 
-        bool createWindowSwapchain(window_id windowID, WindowData_DirectX12& windowData);
+        bool createWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
 
     private:
 

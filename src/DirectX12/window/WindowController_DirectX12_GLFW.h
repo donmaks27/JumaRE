@@ -5,21 +5,15 @@
 #if defined(JUMARE_ENABLE_DX12) && defined(JUMARE_ENABLE_LIB_GLFW)
 
 #include "WindowController_DirectX12.h"
-
-struct GLFWwindow;
+#include "../../GLFW/WindowController_GLFW.h"
 
 namespace JumaRenderEngine
 {
-    class WindowController_DirectX12_GLFW;
-
-    struct WindowData_DirectX12_GLFW : WindowData_DirectX12
+    struct WindowData_DirectX12_GLFW : WindowData_DirectX12, WindowData_GLFW
     {
-        GLFWwindow* windowGLFW = nullptr;
-
-        WindowController_DirectX12_GLFW* windowController = nullptr;
     };
 
-    class WindowController_DirectX12_GLFW final : public WindowController_DirectX12
+    class WindowController_DirectX12_GLFW final : public WindowController_DirectX12, protected WindowController_GLFW
     {
         using Super = WindowController_DirectX12;
 
@@ -43,17 +37,16 @@ namespace JumaRenderEngine
         virtual WindowData* createWindowInternal(window_id windowID, const WindowInitProperties& properties) override;
 
         virtual WindowData* getWindowData(const window_id windowID) override { return m_Windows.find(windowID); }
+        
+        virtual void GLFW_onWindowResized(WindowData* windowData, const math::uvector2& size) override { updateWindowSize(windowData->windowID, size); }
+        virtual void GLFW_onWindowMinimizationChanged(WindowData* windowData, const bool minimized) override { updateWindowMinimization(windowData->windowID, minimized); }
 
-        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override;
+        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override { GLFW_setWindowTitle(reinterpret_cast<const WindowData_DirectX12_GLFW*>(windowData), title); }
 
     private:
 
         jmap<window_id, WindowData_DirectX12_GLFW> m_Windows;
 
-
-        static void GLFW_ErrorCallback(int errorCode, const char* errorMessage);
-        static void GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, int width, int height);
-        static void GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, int minimized);
 
         void clearGLFW();
 

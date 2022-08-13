@@ -74,7 +74,7 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            if (!createWindowSwapchain(windowID, *getWindowData<WindowData_DirectX11>(windowID)))
+            if (!createWindowSwapchain(windowID, getWindowData<WindowData_DirectX11>(windowID)))
             {
                 JUTILS_LOG(error, JSTR("Failed to create DirectX11 swapchain"));
                 return false;
@@ -90,7 +90,7 @@ namespace JumaRenderEngine
         }
     }
 
-    bool WindowController_DirectX11::createWindowSwapchain(const window_id windowID, WindowData_DirectX11& windowData)
+    bool WindowController_DirectX11::createWindowSwapchain(const window_id windowID, WindowData_DirectX11* windowData)
     {
         ID3D11Device* device = getRenderEngine<RenderEngine_DirectX11>()->getDevice();
         if (device == nullptr)
@@ -114,8 +114,8 @@ namespace JumaRenderEngine
 
         constexpr uint8 buffersCount = 2;
         DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
-        swapchainDescription.Width = windowData.actualSize.x;
-        swapchainDescription.Height = windowData.actualSize.y;
+        swapchainDescription.Width = windowData->actualSize.x;
+        swapchainDescription.Height = windowData->actualSize.y;
         swapchainDescription.Format = GetDirectX11FormatByTextureFormat(TextureFormat::RGBA8);
         swapchainDescription.Stereo = FALSE;
         swapchainDescription.SampleDesc.Count = 1;
@@ -126,7 +126,7 @@ namespace JumaRenderEngine
         swapchainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapchainDescription.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         swapchainDescription.Flags = m_TearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
-        result = factory->CreateSwapChainForHwnd(device, windowData.windowHandler, &swapchainDescription, nullptr, nullptr, &windowData.swapchain);
+        result = factory->CreateSwapChainForHwnd(device, windowData->windowHandler, &swapchainDescription, nullptr, nullptr, &windowData->swapchain);
         factory->Release();
         if (FAILED(result))
         {
