@@ -26,11 +26,20 @@ namespace JumaRenderEngine
         TextureSamples samples = TextureSamples::X1;
     };
 
+    struct MonitorData
+    {
+        monitor_id monitorID = monitor_id_INVALID;
+
+        jstring name = "";
+        math::uvector2 size = { 0, 0 };
+    };
+
     struct WindowData
     {
         window_id windowID = window_id_INVALID;
         RenderTarget* windowRenderTarget = nullptr;
 
+        math::uvector2 desiredSize = { 0, 0 };
         math::uvector2 actualSize = { 0, 0 };
         TextureSamples samples = TextureSamples::X1;
         jstring title;
@@ -51,6 +60,10 @@ namespace JumaRenderEngine
 
         OnWindowControllerWindowEvent OnWindowPropertiesChanged;
 
+
+        virtual monitor_id getPrimaryMonitorID() const = 0;
+        virtual const MonitorData* findMonitorData(monitor_id monitorID) const = 0;
+        virtual jarray<window_id> getMonitorIDs() const = 0;
 
         bool createWindow(window_id windowID, const WindowInitProperties& properties);
         virtual void destroyWindow(window_id windowID) = 0;
@@ -77,7 +90,7 @@ namespace JumaRenderEngine
         bool isWindowMinimized(window_id windowID) const;
 
         bool setWindowTitle(window_id windowID, const jstring& title);
-        bool setWindowMode(window_id windowID, WindowMode mode);
+        bool setWindowMode(window_id windowID, WindowMode mode, monitor_id monitorID = monitor_id_INVALID);
 
     protected:
 
@@ -95,7 +108,7 @@ namespace JumaRenderEngine
         void updateWindowMinimization(window_id windowID, bool minimized);
 
         virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) = 0;
-        virtual bool setWindowModeInternal(WindowData* windowData, WindowMode mode) { return false; }
+        virtual bool setWindowModeInternal(WindowData* windowData, WindowMode mode, monitor_id monitorID) = 0;
 
         virtual void onWindowResized(WindowData* windowData) {}
         virtual void onWindowMinimizationChanged(WindowData* windowData);

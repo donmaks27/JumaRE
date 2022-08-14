@@ -17,6 +17,7 @@ namespace JumaRenderEngine
 
         windowData->windowID = windowID;
         windowData->title = properties.title;
+        windowData->desiredSize = properties.size;
         windowData->actualSize = properties.size;
         windowData->samples = properties.samples;
         if (!createRenderTarget(windowID, *windowData))
@@ -115,6 +116,10 @@ namespace JumaRenderEngine
                 {
                     JUTILS_LOG(info, JSTR("Window {} size changed - {{ {}; {} }}"), windowData->windowID, changedWindowSize.value.x, changedWindowSize.value.y);
                     windowData->actualSize = changedWindowSize.value;
+                    if (windowData->mode != WindowMode::WindowedFullscreen)
+                    {
+                        windowData->desiredSize = windowData->actualSize;
+                    }
                     onWindowResized(windowData);
                     OnWindowPropertiesChanged.call(this, windowData);
                 }
@@ -163,7 +168,7 @@ namespace JumaRenderEngine
         return true;
     }
 
-    bool WindowController::setWindowMode(const window_id windowID, const WindowMode mode)
+    bool WindowController::setWindowMode(const window_id windowID, const WindowMode mode, const monitor_id monitorID)
     {
         WindowData* windowData = getWindowData(windowID);
         if (windowData == nullptr)
@@ -171,14 +176,21 @@ namespace JumaRenderEngine
             JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
             return false;
         }
+        if (windowData->minimized)
+        {
+            return false;
+        }
         if (windowData->mode == mode)
         {
             return true;
         }
-        return setWindowModeInternal(windowData, mode);
+        return setWindowModeInternal(windowData, mode, monitorID != monitor_id_INVALID ? monitorID : getPrimaryMonitorID());
     }
     void WindowController::onWindowModeChanged(WindowData* windowData, const WindowMode mode)
     {
+        JUTILS_LOG(info, JSTR("Changed mode of window {}: {}"), windowData->windowID, 
+            mode == WindowMode::Normal ? JSTR("nomal") : mode == WindowMode::Fullscreen ? JSTR("fullscreen") : JSTR("window fullscreen")
+        );
         windowData->mode = mode;
     }
 }

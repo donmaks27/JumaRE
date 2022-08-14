@@ -20,6 +20,10 @@ namespace JumaRenderEngine
     public:
         WindowController_DirectX12_GLFW() = default;
         virtual ~WindowController_DirectX12_GLFW() override;
+        
+        virtual monitor_id getPrimaryMonitorID() const override { return GLFW_getPrimaryMonitorID(); }
+        virtual const MonitorData* findMonitorData(const monitor_id monitorID) const override { return GLFW_findMonitorData(monitorID); }
+        virtual jarray<window_id> getMonitorIDs() const override { return GLFW_getMonitorIDs(); }
 
         virtual void destroyWindow(window_id windowID) override;
 
@@ -40,8 +44,13 @@ namespace JumaRenderEngine
         
         virtual void GLFW_onWindowResized(WindowData* windowData, const math::uvector2& size) override { updateWindowSize(windowData->windowID, size); }
         virtual void GLFW_onWindowMinimizationChanged(WindowData* windowData, const bool minimized) override { updateWindowMinimization(windowData->windowID, minimized); }
+        virtual void GLFW_onWindowModeChanged(WindowData* windowData, const WindowMode mode) override { onWindowModeChanged(windowData, mode); }
 
         virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) override { GLFW_setWindowTitle(reinterpret_cast<const WindowData_DirectX12_GLFW*>(windowData), title); }
+        virtual bool setWindowModeInternal(WindowData* windowData, const WindowMode mode, const monitor_id monitorID) override
+        {
+            return GLFW_setWindowMode(reinterpret_cast<WindowData_DirectX12_GLFW*>(windowData), mode, monitorID);
+        }
 
     private:
 
