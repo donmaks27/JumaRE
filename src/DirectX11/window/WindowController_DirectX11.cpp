@@ -43,7 +43,7 @@ namespace JumaRenderEngine
 
     WindowController_DirectX11::~WindowController_DirectX11()
     {
-        clearDirectX11();
+        clearData_DirectX11();
     }
 
     bool WindowController_DirectX11::initWindowController()
@@ -56,38 +56,18 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void WindowController_DirectX11::clearDirectX11()
+    void WindowController_DirectX11::clearData_DirectX11()
     {
         m_TearingSupported = false;
     }
 
-    void WindowController_DirectX11::clearWindowDataDirectX11(const window_id windowID, WindowData_DirectX11& windowData)
+    void WindowController_DirectX11::destroyWindowInternal(const window_id windowID, WindowData* windowData)
     {
-        clearWindowData(windowID, windowData);
+        Super::destroyWindowInternal(windowID, windowData);
 
-        destroyWindowSwapchain(windowID, windowData);
-
-        windowData.windowHandler = nullptr;
-    }
-
-    bool WindowController_DirectX11::createWindowSwapchains()
-    {
-        for (const auto& windowID : getWindowIDs())
-        {
-            if (!createWindowSwapchain(windowID, getWindowData<WindowData_DirectX11>(windowID)))
-            {
-                JUTILS_LOG(error, JSTR("Failed to create DirectX11 swapchain"));
-                return false;
-            }
-        }
-        return true;
-    }
-    void WindowController_DirectX11::clearWindowSwapchains()
-    {
-        for (const auto& windowID : getWindowIDs())
-        {
-            destroyWindowSwapchain(windowID, *getWindowData<WindowData_DirectX11>(windowID));
-        }
+        WindowData_DirectX11* windowDataDirectX11 = reinterpret_cast<WindowData_DirectX11*>(windowData);
+        destroyWindowSwapchain(windowID, windowDataDirectX11);
+        windowDataDirectX11->windowHandler = nullptr;
     }
 
     bool WindowController_DirectX11::createWindowSwapchain(const window_id windowID, WindowData_DirectX11* windowData)
@@ -114,8 +94,8 @@ namespace JumaRenderEngine
 
         constexpr uint8 buffersCount = 2;
         DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
-        swapchainDescription.Width = windowData->actualSize.x;
-        swapchainDescription.Height = windowData->actualSize.y;
+        swapchainDescription.Width = windowData->size.x;
+        swapchainDescription.Height = windowData->size.y;
         swapchainDescription.Format = GetDirectX11FormatByTextureFormat(TextureFormat::RGBA8);
         swapchainDescription.Stereo = FALSE;
         swapchainDescription.SampleDesc.Count = 1;
@@ -135,18 +115,38 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    void WindowController_DirectX11::destroyWindowSwapchain(const window_id windowID, WindowData_DirectX11& windowData)
+    void WindowController_DirectX11::destroyWindowSwapchain(const window_id windowID, WindowData_DirectX11* windowData)
     {
-        if (windowData.swapchain != nullptr)
+        if (windowData->swapchain != nullptr)
         {
-            windowData.swapchain->Release();
-            windowData.swapchain = nullptr;
+            windowData->swapchain->Release();
+            windowData->swapchain = nullptr;
         }
     }
 
-    void WindowController_DirectX11::onWindowResized(WindowData* windowData)
+    bool WindowController_DirectX11::createWindowSwapchains()
     {
-        Super::onWindowResized(windowData);
+        for (const auto& windowID : getWindowIDs())
+        {
+            if (!createWindowSwapchain(windowID, getWindowData<WindowData_DirectX11>(windowID)))
+            {
+                JUTILS_LOG(error, JSTR("Failed to create DirectX11 swapchain"));
+                return false;
+            }
+        }
+        return true;
+    }
+    void WindowController_DirectX11::destroyWindowSwapchains()
+    {
+        for (const auto& windowID : getWindowIDs())
+        {
+            destroyWindowSwapchain(windowID, getWindowData<WindowData_DirectX11>(windowID));
+        }
+    }
+
+    void WindowController_DirectX11::onWindowResized(const window_id windowID, WindowData* windowData)
+    {
+        WindowController::onWindowResized(windowID, windowData);
 
         if (windowData->minimized)
         {
@@ -163,7 +163,7 @@ namespace JumaRenderEngine
         {
             DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
             swapchain->GetDesc1(&swapchainDescription);
-            swapchain->ResizeBuffers(0, windowData->actualSize.x, windowData->actualSize.y, DXGI_FORMAT_UNKNOWN, swapchainDescription.Flags);
+            swapchain->ResizeBuffers(0, windowData->size.x, windowData->size.y, DXGI_FORMAT_UNKNOWN, swapchainDescription.Flags);
         }
     }
 

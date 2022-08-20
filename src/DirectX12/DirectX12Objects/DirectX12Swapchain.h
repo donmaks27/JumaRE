@@ -15,10 +15,10 @@ struct IDXGISwapChain4;
 
 namespace JumaRenderEngine
 {
-    class WindowController;
-    struct WindowData;
     class DirectX12Swapchain;
+    class WindowController;
     class WindowController_DirectX12;
+    struct WindowData;
 
     class DirectX12Swapchain : public RenderEngineContextObjectBase
     {

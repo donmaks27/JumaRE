@@ -6,6 +6,8 @@
 
 #include "../../../include/JumaRE/window/WindowController.h"
 
+#include "../../../include/JumaRE/RenderAPI.h"
+
 namespace JumaRenderEngine
 {
     struct WindowData_OpenGL : WindowData
@@ -20,10 +22,16 @@ namespace JumaRenderEngine
         WindowController_OpenGL() = default;
         virtual ~WindowController_OpenGL() override;
 
+        using WindowDataType = WindowData_OpenGL;
+
+
         window_id getActiveWindowID() const { return m_ActiveWindowID; }
         void setActiveWindowID(window_id windowID);
 
     protected:
+
+        static constexpr RenderAPI API = RenderAPI::OpenGL;
+
 
         bool initOpenGL();
 
@@ -34,7 +42,7 @@ namespace JumaRenderEngine
         window_id m_ActiveWindowID = window_id_INVALID;
 
 
-        void clearOpenGL();
+        void clearData_OpenGL();
     };
 }
 

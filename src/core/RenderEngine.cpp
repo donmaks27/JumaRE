@@ -17,16 +17,11 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool RenderEngine::init(const jmap<window_id, WindowInitProperties>& windows)
+    bool RenderEngine::init(const WindowCreateInfo& mainWindowInfo)
     {
         if (isValid())
         {
             JUTILS_LOG(warning, JSTR("Render engine already initialized"));
-            return false;
-        }
-        if (windows.isEmpty())
-        {
-            JUTILS_LOG(error, JSTR("Empty list of windows, there must be at least one!"));
             return false;
         }
 
@@ -38,7 +33,7 @@ namespace JumaRenderEngine
             return false;
         }
         m_WindowController = windowController;
-        if (!initInternal(windows))
+        if (!initInternal(mainWindowInfo))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize render engine"));
             clearInternal();
@@ -54,24 +49,16 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    bool RenderEngine::initInternal(const jmap<window_id, WindowInitProperties>& windows)
+    bool RenderEngine::initInternal(const WindowCreateInfo& mainWindowInfo)
     {
-        for (const auto& window : windows)
-        {
-            if (!m_WindowController->createWindow(window.key, window.value))
-            {
-                JUTILS_LOG(error, JSTR("Failed to create window {}"), window.key);
-                return false;
-            }
-        }
-        return true;
+        return m_WindowController->createMainWindow(mainWindowInfo);
     }
 
     bool RenderEngine::createRenderAssets()
     {
         if (!m_WindowController->createRenderTargets())
         {
-            JUTILS_LOG(error, JSTR("Failed to create DirectX11 render targets for windows"));
+            JUTILS_LOG(error, JSTR("Failed to create render targets for windows"));
             return false;
         }
 

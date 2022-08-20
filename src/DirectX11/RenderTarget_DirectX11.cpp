@@ -319,6 +319,7 @@ namespace JumaRenderEngine
         }
         if (m_ColorAttachmentView == nullptr)
         {
+            // TODO: After fullscreen mode
             JUTILS_LOG(error, JSTR("Invalid render target"));
             return false;
         }

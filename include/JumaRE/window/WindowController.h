@@ -8,10 +8,11 @@
 #include <jutils/jarray.h>
 #include <jutils/jdelegate_multicast.h>
 #include <jutils/jmap.h>
+#include <jutils/juid.h>
 #include <jutils/math/vector2.h>
 
-#include "window_id.h"
 #include "WindowMode.h"
+#include "window_id.h"
 #include "../texture/TextureSamples.h"
 
 namespace JumaRenderEngine
@@ -19,33 +20,24 @@ namespace JumaRenderEngine
     class RenderTarget;
     class WindowController;
 
-    struct WindowInitProperties
+    struct WindowData
+    {
+        window_id windowID = window_id_INVALID;
+
+        RenderTarget* windowRenderTarget = nullptr;
+
+        math::uvector2 desiredSize = { 0, 0 };
+        math::uvector2 size = { 0, 0 };
+        TextureSamples samples = TextureSamples::X1;
+
+        bool minimized = false;
+    };
+    
+    struct WindowCreateInfo
     {
         jstring title = JSTR("JumaRE");
         math::uvector2 size = { 0, 0 };
         TextureSamples samples = TextureSamples::X1;
-    };
-
-    struct MonitorData
-    {
-        monitor_id monitorID = monitor_id_INVALID;
-
-        jstring name = "";
-        math::uvector2 size = { 0, 0 };
-    };
-
-    struct WindowData
-    {
-        window_id windowID = window_id_INVALID;
-        RenderTarget* windowRenderTarget = nullptr;
-
-        math::uvector2 desiredSize = { 0, 0 };
-        math::uvector2 actualSize = { 0, 0 };
-        TextureSamples samples = TextureSamples::X1;
-        jstring title;
-        WindowMode mode = WindowMode::Normal;
-
-        bool minimized = false;
     };
 
     CREATE_JUTILS_MULTICAST_DELEGATE_TwoParams(OnWindowControllerWindowEvent, WindowController*, windowController, const WindowData*, windowData);
@@ -56,29 +48,29 @@ namespace JumaRenderEngine
 
     public:
         WindowController() = default;
-        virtual ~WindowController() override = default;
+        virtual ~WindowController() override;
+
+        using WindowDataType = WindowData;
 
         OnWindowControllerWindowEvent OnWindowPropertiesChanged;
 
 
-        virtual monitor_id getPrimaryMonitorID() const = 0;
-        virtual const MonitorData* findMonitorData(monitor_id monitorID) const = 0;
-        virtual jarray<window_id> getMonitorIDs() const = 0;
+        window_id createWindow(const WindowCreateInfo& createInfo);
+        void destroyWindow(window_id windowID);
 
-        bool createWindow(window_id windowID, const WindowInitProperties& properties);
-        virtual void destroyWindow(window_id windowID) = 0;
-
-        bool createRenderTargets();
-        void destroyRenderTargets();
-
+        const jarray<window_id>& getWindowIDs() const { return m_CreatedWindowIDs; }
+        window_id getMainWindowID() const { return m_MainWindowID; }
         virtual const WindowData* findWindowData(window_id windowID) const = 0;
         template<typename T, TEMPLATE_ENABLE(is_base<WindowData, T>)>
         const T* findWindowData(const window_id windowID) const { return reinterpret_cast<const T*>(findWindowData(windowID)); }
-        virtual jarray<window_id> getWindowIDs() const = 0;
-        
-        virtual bool getActualWindowSize(window_id windowID, math::uvector2& outSize) const;
 
         virtual bool shouldCloseWindow(window_id windowID) const = 0;
+
+        bool isWindowMinimized(window_id windowID) const;
+        bool isAllWindowsMinimized() const { return static_cast<uint8>(m_CreatedWindowIDs.getSize()) == m_MinimizedWindowsCount; }
+
+        bool setMainWindowMode(WindowMode windowMode);
+        WindowMode getMainWindowMode() const { return m_MainWindowMode; }
 
         virtual bool onStartRender() { return !isAllWindowsMinimized(); }
         virtual bool onStartWindowRender(const window_id windowID) { return !isWindowMinimized(windowID); }
@@ -86,43 +78,46 @@ namespace JumaRenderEngine
         virtual void onFinishRender() {}
         virtual void updateWindows();
 
-        bool isAllWindowsMinimized() const { return m_WindowsCount == m_MinimizedWindowsCount; }
-        bool isWindowMinimized(window_id windowID) const;
-
-        bool setWindowTitle(window_id windowID, const jstring& title);
-        bool setWindowMode(window_id windowID, WindowMode mode, monitor_id monitorID = monitor_id_INVALID);
-
     protected:
 
         virtual bool initWindowController() { return true; }
 
-        virtual WindowData* createWindowInternal(window_id windowID, const WindowInitProperties& properties) = 0;
-
-        void clearWindowData(window_id windowID, WindowData& windowData);
+        virtual WindowData* createWindowInternal(window_id windowID, const WindowCreateInfo& createInfo) = 0;
+        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData);
 
         virtual WindowData* getWindowData(window_id windowID) = 0;
         template<typename T, TEMPLATE_ENABLE(is_base<WindowData, T>)>
         T* getWindowData(const window_id windowID) { return reinterpret_cast<T*>(getWindowData(windowID)); }
 
         void updateWindowSize(window_id windowID, const math::uvector2& size);
+        virtual void onWindowResized(window_id windowID, WindowData* windowData) {}
+
         void updateWindowMinimization(window_id windowID, bool minimized);
+        virtual void onWindowMinimizationChanged(window_id windowID, WindowData* windowData);
 
-        virtual void setWindowTitleInternal(WindowData* windowData, const jstring& title) = 0;
-        virtual bool setWindowModeInternal(WindowData* windowData, WindowMode mode, monitor_id monitorID) = 0;
+        virtual bool setMainWindowModeInternal(WindowMode windowMode) = 0;
+        void updateMainWindowMode(WindowMode windowMode);
 
-        virtual void onWindowResized(WindowData* windowData) {}
-        virtual void onWindowMinimizationChanged(WindowData* windowData);
-        virtual void onWindowModeChanged(WindowData* windowData, WindowMode mode);
-        
     private:
+
+        juid<window_id> m_WindowIDs;
+        jarray<window_id> m_CreatedWindowIDs;
+
+        window_id m_MainWindowID = window_id_INVALID;
+        WindowMode m_MainWindowMode = WindowMode::Normal;
 
         jmap<window_id, math::uvector2> m_ChangedWindowSizes;
 
-        uint8 m_WindowsCount = 0;
         uint8 m_MinimizedWindowsCount = 0;
 
 
-        bool createRenderTarget(window_id windowID, WindowData& windowData);
-        void destroyRenderTarget(window_id windowID, WindowData& windowData);
+        void clearData();
+
+        bool createMainWindow(const WindowCreateInfo& windowInfo);
+
+        bool createRenderTarget(window_id windowID, WindowData* windowData);
+        void destroyRenderTarget(window_id windowID, WindowData* windowData);
+        bool createRenderTargets();
+        void destroyRenderTargets();
     };
 }

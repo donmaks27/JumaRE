@@ -15,8 +15,6 @@ struct ID3D11RasterizerState;
 namespace JumaRenderEngine
 {
     class WindowController_DirectX11;
-    class WindowController;
-    struct WindowData;
 
     class RenderTarget_DirectX11 final : public RenderTarget
     {

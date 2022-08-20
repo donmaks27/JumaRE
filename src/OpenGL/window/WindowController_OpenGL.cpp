@@ -10,7 +10,12 @@ namespace JumaRenderEngine
 {
     WindowController_OpenGL::~WindowController_OpenGL()
     {
-        clearOpenGL();
+        clearData_OpenGL();
+    }
+
+    void WindowController_OpenGL::clearData_OpenGL()
+    {
+        m_ActiveWindowID = window_id_INVALID;
     }
 
     bool WindowController_OpenGL::initOpenGL()
@@ -24,11 +29,6 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void WindowController_OpenGL::clearOpenGL()
-    {
-        
-    }
-    
     void WindowController_OpenGL::setActiveWindowID(const window_id windowID)
     {
         if (windowID != m_ActiveWindowID)

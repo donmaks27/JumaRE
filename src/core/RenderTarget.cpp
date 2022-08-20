@@ -14,17 +14,16 @@ namespace JumaRenderEngine
     bool RenderTarget::init(const window_id windowID, const TextureSamples samples)
     {
         WindowController* windowController = getRenderEngine()->getWindowController();
-
-        math::uvector2 windowSize;
-        if (!windowController->getActualWindowSize(windowID, windowSize))
+        const WindowData* windowData = windowController->findWindowData(windowID);
+        if (windowData == nullptr)
         {
-            JUTILS_LOG(error, JSTR("Failed to get size of window {}"), windowID);
+            JUTILS_LOG(error, JSTR("Failed to find window {}"), windowID);
             return false;
         }
 
         m_WindowID = windowID;
         m_TextureSamples = samples;
-        m_Size = windowSize;
+        m_Size = windowData->size;
         if (!initInternal())
         {
             JUTILS_LOG(error, JSTR("Failed to initialize window render target"));
@@ -89,9 +88,9 @@ namespace JumaRenderEngine
     {
         if (windowData->windowID == getWindowID())
         {
-            if ((windowData->actualSize != m_Size) || (windowData->samples != m_TextureSamples))
+            if ((windowData->size != m_Size) || (windowData->samples != m_TextureSamples))
             {
-                m_Size = windowData->actualSize;
+                m_Size = windowData->size;
                 m_TextureSamples = windowData->samples;
                 invalidate();
             }

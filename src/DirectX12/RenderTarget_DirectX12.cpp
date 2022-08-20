@@ -61,7 +61,7 @@ namespace JumaRenderEngine
         ID3D12Device2* device = renderEngine->getDevice();
         const TextureSamples samples = getSampleCount();
         const uint8 samplesCount = GetTextureSamplesNumber(samples);
-        const math::uvector2 size = windowData->actualSize;
+        const math::uvector2 size = windowData->size;
 
         const uint8 buffersCount = swapchain->getBuffersCount();
         jarray<DirectX12Texture*> buffers(buffersCount, nullptr);
@@ -152,9 +152,9 @@ namespace JumaRenderEngine
         const DXGI_FORMAT format = GetDirectX12FormatByTextureFormat(getFormat());
         const TextureSamples samples = getSampleCount();
         const uint8 samplesCount = GetTextureSamplesNumber(samples);
-        const bool sholdResolve = samplesCount > 1;
+        const bool shouldResolve = samplesCount > 1;
         const math::uvector2 size = getSize();
-        const uint8 colorMipLevelsCount = sholdResolve ? 1 : 0;
+        const uint8 colorMipLevelsCount = shouldResolve ? 1 : 0;
         //const uint8 colorMipLevelsCount = 1;
         const uint8 resolveMipLevelsCount = 0;
         //const uint8 resolveMipLevelsCount = 1;
@@ -184,7 +184,7 @@ namespace JumaRenderEngine
         }
 
         DirectX12Texture* resolveTexture = nullptr;
-        if (sholdResolve)
+        if (shouldResolve)
         {
             resolveTexture = renderEngine->createObject<DirectX12Texture>();
             resolveTexture->initColor(size, 1, format, resolveMipLevelsCount, D3D12_RESOURCE_STATE_RESOLVE_DEST);
@@ -315,7 +315,7 @@ namespace JumaRenderEngine
                 return false;
             }
 
-            size = windowData->actualSize;
+            size = windowData->size;
             if (getSampleCount() == TextureSamples::X1)
             {
                 rtvIndex = windowData->swapchain->getCurrentBufferIndex();

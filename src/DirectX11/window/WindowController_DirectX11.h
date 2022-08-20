@@ -8,10 +8,14 @@
 
 #include <Windows.h>
 
+#include "../../../include/JumaRE/RenderAPI.h"
+
 struct IDXGISwapChain1;
 
 namespace JumaRenderEngine
 {
+    class RenderEngine_DirectX11;
+
     struct WindowData_DirectX11 : WindowData
     {
         HWND windowHandler = nullptr;
@@ -22,33 +26,40 @@ namespace JumaRenderEngine
     {
         using Super = WindowController;
 
+        friend RenderEngine_DirectX11;
+
     public:
         WindowController_DirectX11() = default;
         virtual ~WindowController_DirectX11() override;
 
-        bool createWindowSwapchains();
-        void clearWindowSwapchains();
+        using WindowDataType = WindowData_DirectX11;
+
 
         virtual void onFinishWindowRender(window_id windowID) override;
 
     protected:
 
+        static constexpr RenderAPI API = RenderAPI::DirectX11;
+
+
         virtual bool initWindowController() override;
 
-        void clearWindowDataDirectX11(window_id windowID, WindowData_DirectX11& windowData);
+        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX11* windowData);
 
-        virtual void onWindowResized(WindowData* windowData) override;
+        virtual void onWindowResized(window_id windowID, WindowData* windowData) override;
 
     private:
 
         bool m_TearingSupported = false;
 
 
-        void clearDirectX11();
+        void clearData_DirectX11();
 
-        void destroyWindowSwapchain(window_id windowID, WindowData_DirectX11& windowData);
+        void destroyWindowSwapchain(window_id windowID, WindowData_DirectX11* windowData);
+        bool createWindowSwapchains();
+        void destroyWindowSwapchains();
     };
 }
 

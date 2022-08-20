@@ -77,7 +77,7 @@ namespace JumaRenderEngine
 #endif
     }
 
-    bool RenderEngine_DirectX12::initInternal(const jmap<window_id, WindowInitProperties>& windows)
+    bool RenderEngine_DirectX12::initInternal(const WindowCreateInfo& mainWindowInfo)
     {
 #if defined(JDEBUG)
         {
@@ -93,7 +93,7 @@ namespace JumaRenderEngine
         }
 #endif
 
-        if (!Super::initInternal(windows))
+        if (!Super::initInternal(mainWindowInfo))
         {
             return false;
         }
@@ -311,7 +311,7 @@ namespace JumaRenderEngine
             WindowController_DirectX12* windowController = getWindowController<WindowController_DirectX12>();
             if (windowController != nullptr)
             {
-                windowController->clearWindowSwapchains();
+                windowController->destroyWindowSwapchains();
             }
         }
 

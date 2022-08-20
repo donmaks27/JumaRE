@@ -21,9 +21,9 @@ namespace JumaRenderEngine
         clearDirectX();
     }
 
-    bool RenderEngine_DirectX11::initInternal(const jmap<window_id, WindowInitProperties>& windows)
+    bool RenderEngine_DirectX11::initInternal(const WindowCreateInfo& mainWindowInfo)
     {
-        if (!Super::initInternal(windows))
+        if (!Super::initInternal(mainWindowInfo))
         {
             return false;
         }
@@ -77,7 +77,7 @@ namespace JumaRenderEngine
             WindowController_DirectX11* windowController = getWindowController<WindowController_DirectX11>();
             if (windowController != nullptr)
             {
-                windowController->clearWindowSwapchains();
+                windowController->destroyWindowSwapchains();
             }
         }
 

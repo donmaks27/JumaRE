@@ -72,14 +72,14 @@ namespace JumaRenderEngine
         return createObject<RenderPipeline_Vulkan>();
     }
 
-    bool RenderEngine_Vulkan::initInternal(const jmap<window_id, WindowInitProperties>& windows)
+    bool RenderEngine_Vulkan::initInternal(const WindowCreateInfo& mainWindowInfo)
     {
         if (!createVulkanInstance())
         {
             JUTILS_LOG(error, JSTR("Failed to create Vulkan instance"));
             return false;
         }
-        if (!Super::initInternal(windows))
+        if (!Super::initInternal(mainWindowInfo))
         {
             return false;
         }
@@ -467,7 +467,7 @@ namespace JumaRenderEngine
             WindowController_Vulkan* windowController = getWindowController<WindowController_Vulkan>();
             if (windowController != nullptr)
             {
-                windowController->clearWindowSwapchains();
+                windowController->destroyWindowSwapchains();
             }
         }
 

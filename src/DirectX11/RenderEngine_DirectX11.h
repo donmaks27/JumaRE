@@ -54,7 +54,7 @@ namespace JumaRenderEngine
 
     protected:
 
-        virtual bool initInternal(const jmap<window_id, WindowInitProperties>& windows) override;
+        virtual bool initInternal(const WindowCreateInfo& mainWindowInfo) override;
         virtual void clearInternal() override;
 
         virtual WindowController* createWindowController() override;

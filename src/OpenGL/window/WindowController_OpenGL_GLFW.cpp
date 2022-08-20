@@ -4,76 +4,49 @@
 
 #include "WindowController_OpenGL_GLFW.h"
 
-#include <GLFW/glfw3.h>
-
 namespace JumaRenderEngine
 {
     WindowController_OpenGL_GLFW::~WindowController_OpenGL_GLFW()
     {
-        clearGLFW();
+        clearData_OpenGL_GLFW();
     }
 
-    bool WindowController_OpenGL_GLFW::initWindowController()
+    void WindowController_OpenGL_GLFW::clearData_OpenGL_GLFW()
     {
-        if (!Super::initWindowController())
+        if (!m_Windows.isEmpty())
         {
-            return false;
+            for (auto& window : m_Windows)
+            {
+                destroyWindowInternal(window.key, &window.value);
+            }
+            m_Windows.clear();
         }
-        if (!GLFW_init(RenderAPI::OpenGL))
-        {
-            JUTILS_LOG(error, JSTR("Failed to initialize GLFW"));
-            return false;
-        }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_SAMPLES, 0);
-        return true;
-    }
-
-    void WindowController_OpenGL_GLFW::clearGLFW()
-    {
-        for (auto& window : m_Windows)
-        {
-            clearWindowDataGLFW(window.key, window.value);
-        }
-        m_Windows.clear();
 
         if (m_DefaultWindow != nullptr)
         {
             glfwDestroyWindow(m_DefaultWindow);
+            m_DefaultWindow = nullptr;
         }
-
-        GLFW_terminate();
     }
 
-    WindowData* WindowController_OpenGL_GLFW::createWindowInternal(const window_id windowID, const WindowInitProperties& properties)
+    WindowData* WindowController_OpenGL_GLFW::createWindowInternal(const window_id windowID, const WindowCreateInfo& createInfo)
     {
-        if (windowID == window_id_INVALID)
-        {
-            JUTILS_LOG(error, JSTR("Invalid window ID"));
-            return nullptr;
-        }
-        if (m_Windows.contains(windowID))
-        {
-            JUTILS_LOG(error, JSTR("Window {} already created"), windowID);
-            return nullptr;
-        }
-
         if (m_DefaultWindow == nullptr)
         {
             glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
             m_DefaultWindow = glfwCreateWindow(1, 1, "", nullptr, nullptr);
             glfwMakeContextCurrent(m_DefaultWindow);
-            initOpenGL();
+            if (!initOpenGL())
+            {
+                JUTILS_LOG(error, JSTR("Failed to initialize OpenGL"));
+                return nullptr;
+            }
         }
 
+        WindowDataType* windowData = &m_Windows.add(windowID);
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-        WindowData_OpenGL_GLFW* windowData = &m_Windows.add(windowID);
-        if (!GLFW_createWindow(windowData, properties.size, properties.title, m_DefaultWindow))
+        if (!createWindowGLFW(windowID, windowData, createInfo.size, createInfo.title, m_DefaultWindow))
         {
-            JUTILS_LOG(error, JSTR("Failed to create window {}"), windowID);
             m_Windows.remove(windowID);
             return nullptr;
         }
@@ -84,10 +57,16 @@ namespace JumaRenderEngine
         setActiveWindowID(prevActiveWindowID);
         return windowData;
     }
+    void WindowController_OpenGL_GLFW::destroyWindowInternal(const window_id windowID, WindowData* windowData)
+    {
+        Super::destroyWindowInternal(windowID, windowData);
+
+        m_Windows.remove(windowID);
+    }
 
     bool WindowController_OpenGL_GLFW::setActiveWindowInternal(const window_id windowID)
     {
-        const WindowData_OpenGL_GLFW* windowData = m_Windows.find(windowID);
+        const auto* windowData = m_Windows.find(windowID);
         if (windowData != nullptr)
         {
             glfwMakeContextCurrent(windowData->windowGLFW);
@@ -99,32 +78,6 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void WindowController_OpenGL_GLFW::destroyWindow(const window_id windowID)
-    {
-        WindowData_OpenGL_GLFW* windowData = m_Windows.find(windowID);
-        if (windowData != nullptr)
-        {
-            clearWindowDataGLFW(windowID, *windowData);
-            m_Windows.remove(windowID);
-        }
-    }
-    void WindowController_OpenGL_GLFW::clearWindowDataGLFW(const window_id windowID, WindowData_OpenGL_GLFW& windowData)
-    {
-        clearWindowData(windowID, windowData);
-        GLFW_destroyWindow(&windowData);
-    }
-
-    bool WindowController_OpenGL_GLFW::shouldCloseWindow(const window_id windowID) const
-    {
-        const WindowData_OpenGL_GLFW* windowData = m_Windows.find(windowID);
-        if (windowData == nullptr)
-        {
-            JUTILS_LOG(warning, JSTR("Can't find window {}"), windowID);
-            return false;
-        }
-        return GLFW_shouldCloseWindow(windowData);
-    }
-
     void WindowController_OpenGL_GLFW::onFinishWindowRender(const window_id windowID)
     {
         Super::onFinishWindowRender(windowID);
@@ -134,11 +87,6 @@ namespace JumaRenderEngine
         {
             glfwSwapBuffers(windowData->windowGLFW);
         }
-    }
-    void WindowController_OpenGL_GLFW::updateWindows()
-    {
-        GLFW_pushWindowEvents();
-        Super::updateWindows();
     }
 }
 

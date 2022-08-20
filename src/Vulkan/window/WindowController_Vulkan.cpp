@@ -11,21 +11,53 @@ namespace JumaRenderEngine
 {
     WindowController_Vulkan::~WindowController_Vulkan()
     {
-        clearVulkan();
+        clearData_Vulkan();
     }
 
-    void WindowController_Vulkan::clearWindowDataVulkan(const window_id windowID, WindowData_Vulkan& windowData)
+    void WindowController_Vulkan::clearData_Vulkan()
     {
-        clearWindowData(windowID, windowData);
-
-        destroyWindowSwapchain(windowID, windowData);
-
-        vkDestroySurfaceKHR(getRenderEngine<RenderEngine_Vulkan>()->getVulkanInstance(), windowData.vulkanSurface, nullptr);
-        windowData.vulkanSurface = nullptr;
     }
 
-    void WindowController_Vulkan::clearVulkan()
+    void WindowController_Vulkan::destroyWindowInternal(const window_id windowID, WindowData* windowData)
     {
+        Super::destroyWindowInternal(windowID, windowData);
+
+        WindowData_Vulkan* windowDataVulkan = reinterpret_cast<WindowData_Vulkan*>(windowData);
+        destroyWindowSwapchain(windowID, windowDataVulkan);
+
+        vkDestroySurfaceKHR(getRenderEngine<RenderEngine_Vulkan>()->getVulkanInstance(), windowDataVulkan->vulkanSurface, nullptr);
+        windowDataVulkan->vulkanSurface = nullptr;
+    }
+
+    bool WindowController_Vulkan::createWindowSwapchain(const window_id windowID, WindowData_Vulkan* windowData)
+    {
+        if (windowData->vulkanSwapchain == nullptr)
+        {
+            RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
+            if (renderEngine->getDevice() == nullptr)
+            {
+                // Vulkan device is not created yet
+                return true;
+            }
+
+            VulkanSwapchain* swapchain = renderEngine->createObject<VulkanSwapchain>();
+            if (!swapchain->init(windowID))
+            {
+                JUTILS_LOG(error, JSTR("Failed to create vulkan swapchain for window {}"), windowID);
+                delete swapchain;
+                return false;
+            }
+            windowData->vulkanSwapchain = swapchain;
+        }
+        return true;
+    }
+    void WindowController_Vulkan::destroyWindowSwapchain(const window_id windowID, WindowData_Vulkan* windowData)
+    {
+        if (windowData->vulkanSwapchain != nullptr)
+        {
+            delete windowData->vulkanSwapchain;
+            windowData->vulkanSwapchain = nullptr;
+        }
     }
 
     bool WindowController_Vulkan::createWindowSwapchains()
@@ -40,60 +72,17 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    void WindowController_Vulkan::clearWindowSwapchains()
+    void WindowController_Vulkan::destroyWindowSwapchains()
     {
         for (const auto& windowID : getWindowIDs())
         {
-            destroyWindowSwapchain(windowID, *getWindowData<WindowData_Vulkan>(windowID));
+            destroyWindowSwapchain(windowID, getWindowData<WindowData_Vulkan>(windowID));
         }
     }
 
-    bool WindowController_Vulkan::createWindowSwapchain(const window_id windowID, WindowData_Vulkan* windowData)
+    void WindowController_Vulkan::onWindowMinimizationChanged(const window_id windowID, WindowData* windowData)
     {
-        if (windowData->vulkanSwapchain == nullptr)
-        {
-            VkDevice device = getRenderEngine<RenderEngine_Vulkan>()->getDevice();
-            if (device == nullptr)
-            {
-                // Vulkan device is not created yet
-                return true;
-            }
-
-            VulkanSwapchain* swapchain = getRenderEngine()->createObject<VulkanSwapchain>();
-            if (!swapchain->init(windowID))
-            {
-                JUTILS_LOG(error, JSTR("Failed to create vulkan swapchain for window {}"), windowID);
-                delete swapchain;
-                return false;
-            }
-            windowData->vulkanSwapchain = swapchain;
-        }
-        return true;
-    }
-    void WindowController_Vulkan::destroyWindowSwapchain(const window_id windowID, WindowData_Vulkan& windowData)
-    {
-        if (windowData.vulkanSwapchain != nullptr)
-        {
-            delete windowData.vulkanSwapchain;
-            windowData.vulkanSwapchain = nullptr;
-        }
-    }
-
-    bool WindowController_Vulkan::getActualWindowSize(const window_id windowID, math::uvector2& outSize) const
-    {
-        const WindowData_Vulkan* windowData = findWindowData<WindowData_Vulkan>(windowID);
-        const VulkanSwapchain* swapchain = windowData != nullptr ? windowData->vulkanSwapchain : nullptr;
-        if (swapchain == nullptr)
-        {
-            return false;
-        }
-        outSize = swapchain->getImagesSize();
-        return true;
-    }
-
-    void WindowController_Vulkan::onWindowMinimizationChanged(WindowData* windowData)
-    {
-        Super::onWindowMinimizationChanged(windowData);
+        Super::onWindowMinimizationChanged(windowID, windowData);
 
         if (windowData->minimized)
         {

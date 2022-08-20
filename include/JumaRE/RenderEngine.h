@@ -32,7 +32,7 @@ namespace JumaRenderEngine
 
         virtual RenderAPI getRenderAPI() const = 0;
 
-        bool init(const jmap<window_id, WindowInitProperties>& windows);
+        bool init(const WindowCreateInfo& mainWindowInfo);
         bool isValid() const { return m_Initialized; }
         void clear();
 
@@ -69,7 +69,7 @@ namespace JumaRenderEngine
 
     protected:
 
-        virtual bool initInternal(const jmap<window_id, WindowInitProperties>& windows);
+        virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);
         virtual void clearInternal() { clearData(); }
 
         void clearRenderAssets();

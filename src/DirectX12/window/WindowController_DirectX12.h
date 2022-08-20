@@ -8,9 +8,12 @@
 
 #include <Windows.h>
 
+#include "../../../include/JumaRE/RenderAPI.h"
+
 namespace JumaRenderEngine
 {
     class DirectX12Swapchain;
+    class RenderEngine_DirectX12;
 
     struct WindowData_DirectX12 : WindowData
     {
@@ -23,20 +26,25 @@ namespace JumaRenderEngine
     {
         using Super = WindowController;
 
+        friend RenderEngine_DirectX12;
+
     public:
         WindowController_DirectX12() = default;
         virtual ~WindowController_DirectX12() override;
 
-        bool isTearingSupported() const { return m_TearingSupported; }
+        using WindowDataType = WindowData_DirectX12;
+        
 
-        bool createWindowSwapchains();
-        void clearWindowSwapchains();
+        bool isTearingSupported() const { return m_TearingSupported; }
 
     protected:
 
+        static constexpr RenderAPI API = RenderAPI::DirectX12;
+
+
         virtual bool initWindowController() override;
 
-        void clearWindowDataDirectX(window_id windowID, WindowData_DirectX12& windowData);
+        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
 
@@ -45,9 +53,11 @@ namespace JumaRenderEngine
         bool m_TearingSupported = false;
 
 
-        void clearDirectX();
+        void clearData_DirectX12();
 
-        void destroyWindowSwapchain(window_id windowID, WindowData_DirectX12& windowData);
+        void destroyWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
+        bool createWindowSwapchains();
+        void destroyWindowSwapchains();
     };
 }
 

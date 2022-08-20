@@ -1,6 +1,6 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#if defined(JUMARE_ENABLE_OPENGL)
+#if defined(JUMARE_ENABLE_VULKAN)
 
 #include "WindowControllerImpl_Vulkan.h"
 
