@@ -4,12 +4,12 @@
 
 #include "DirectX12MipGenerator.h"
 
-#include <d3dcompiler.h>
-
 #include "DirectX12MipGeneratorTarget.h"
 #include "DirectX12PipelineStateStreamObjects.h"
 #include "DirectX12Texture.h"
 #include "../RenderEngine_DirectX12.h"
+
+#include "MipGeneratorComputeShader.h"
 
 namespace JumaRenderEngine
 {
@@ -52,13 +52,7 @@ namespace JumaRenderEngine
 
     bool DirectX12MipGenerator::init()
     {
-        ID3DBlob* shaderBlob = nullptr;
-        HRESULT result = D3DReadFileToBlob(L"shaderGenerateMips.comp.hlsl.obj", &shaderBlob);
-        if (FAILED(result))
-        {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to read shader file"));
-            return false;
-        }
+        HRESULT result = 0;
 
         RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
         ID3D12Device2* device = renderEngine->getDevice();
@@ -125,7 +119,6 @@ namespace JumaRenderEngine
             if (FAILED(result))
             {
                 JUTILS_ERROR_LOG(result, JSTR("Failed to serialize root signature (1.1)"));
-                shaderBlob->Release();
                 return false;
             }
         }
@@ -170,7 +163,6 @@ namespace JumaRenderEngine
             if (FAILED(result))
             {
                 JUTILS_ERROR_LOG(result, JSTR("Failed to serialize root signature (1.0)"));
-                shaderBlob->Release();
                 return false;
             }
         }
@@ -181,7 +173,6 @@ namespace JumaRenderEngine
         if (FAILED(result))
         {
             JUTILS_ERROR_LOG(result, JSTR("Failed to create root signature"));
-            shaderBlob->Release();
             return false;
         }
 
@@ -191,14 +182,13 @@ namespace JumaRenderEngine
             DirectX12_PipelineStateStream_CS CS;
         } pipelineStateStream;
         pipelineStateStream.rootSignature.data = rootSignature;
-        pipelineStateStream.CS.data.BytecodeLength = shaderBlob->GetBufferSize();
-        pipelineStateStream.CS.data.pShaderBytecode = shaderBlob->GetBufferPointer();
+        pipelineStateStream.CS.data.BytecodeLength = sizeof(MipGeneratorComputeShader) / sizeof(BYTE);
+        pipelineStateStream.CS.data.pShaderBytecode = MipGeneratorComputeShader;
         D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDescription{};
         pipelineStateStreamDescription.SizeInBytes = sizeof(pipelineStateStream);
         pipelineStateStreamDescription.pPipelineStateSubobjectStream = &pipelineStateStream;
         ID3D12PipelineState* pipelineState = nullptr;
         result = device->CreatePipelineState(&pipelineStateStreamDescription, IID_PPV_ARGS(&pipelineState));
-        shaderBlob->Release();
         if (FAILED(result))
         {
             JUTILS_ERROR_LOG(result, JSTR("Failed to create pipeline state object"));
