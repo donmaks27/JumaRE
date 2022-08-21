@@ -258,23 +258,28 @@ namespace JumaRenderEngine
 
         const RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
         ID3D12Device2* device = renderEngine->getDevice();
+        const Texture_DirectX12* defaultTextureValue = dynamic_cast<const Texture_DirectX12*>(renderEngine->getDefaultTexture());
 
         const Shader_DirectX12* shader = getShader<Shader_DirectX12>();
         const jmap<jstringID, uint32>& descriptorHeapOffsets = shader->getTextureDescriptorHeapOffsets();
         const MaterialParamsStorage& params = getMaterialParams();
-        for (const auto& uniform : shader->getUniforms())
+        const jmap<jstringID, ShaderUniform>& uniforms = getShader()->getUniforms();
+
+        for (const auto& paramName : notUpdatedParams)
         {
-            if (!notUpdatedParams.contains(uniform.key))
+            const ShaderUniform* uniformPtr = uniforms.find(paramName);
+            if (uniformPtr == nullptr)
             {
                 continue;
             }
+            const ShaderUniform& uniform = *uniformPtr;
 
-            if (uniform.value.type == ShaderUniformType::Texture)
+            if (uniform.type == ShaderUniformType::Texture)
             {
                 ShaderUniformInfo<ShaderUniformType::Texture>::value_type value;
-                if (params.getValue<ShaderUniformType::Texture>(uniform.key, value))
+                if (params.getValue<ShaderUniformType::Texture>(paramName, value))
                 {
-                    const uint32* descriptorHeapIndex = descriptorHeapOffsets.find(uniform.key);
+                    const uint32* descriptorHeapIndex = descriptorHeapOffsets.find(paramName);
                     if (descriptorHeapIndex == nullptr)
                     {
                         continue;
@@ -293,17 +298,13 @@ namespace JumaRenderEngine
                         {
                             srv = renderTargetValue->getSRV();
                         }
+                        else if (defaultTextureValue != nullptr)
+                        {
+                            srv = defaultTextureValue->getSRV();
+                        }
                         else
                         {
-                            const Texture_DirectX12* defaultTextureValue = dynamic_cast<const Texture_DirectX12*>(renderEngine->getDefaultTexture());
-                            if (defaultTextureValue != nullptr)
-                            {
-                                srv = defaultTextureValue->getSRV();
-                            }
-                            else
-                            {
-                                throw std::exception("Invalid default texture");
-                            }
+                            throw std::exception("Invalid default texture");
                         }
                     }
                     if (srv == nullptr)
@@ -327,46 +328,46 @@ namespace JumaRenderEngine
             }
             else
             {
-                DirectX12Buffer* buffer = m_UniformBuffers[uniform.value.shaderLocation];
-                switch (uniform.value.type)
+                DirectX12Buffer* buffer = m_UniformBuffers[uniform.shaderLocation];
+                switch (uniform.type)
                 {
                 case ShaderUniformType::Float:
                     {
                         ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                        if (params.getValue<ShaderUniformType::Float>(uniform.key, value))
+                        if (params.getValue<ShaderUniformType::Float>(paramName, value))
                         {
                             buffer->initMappedData();
-                            buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                            buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                         }
                     }
                     break;
                 case ShaderUniformType::Vec2:
                     {
                         ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                        if (params.getValue<ShaderUniformType::Vec2>(uniform.key, value))
+                        if (params.getValue<ShaderUniformType::Vec2>(paramName, value))
                         {
                             buffer->initMappedData();
-                            buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                            buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                         }
                     }
                     break;
                 case ShaderUniformType::Vec4:
                     {
                         ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                        if (params.getValue<ShaderUniformType::Vec4>(uniform.key, value))
+                        if (params.getValue<ShaderUniformType::Vec4>(paramName, value))
                         {
                             buffer->initMappedData();
-                            buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                            buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                         }
                     }
                     break;
                 case ShaderUniformType::Mat4:
                     {
                         ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                        if (params.getValue<ShaderUniformType::Mat4>(uniform.key, value))
+                        if (params.getValue<ShaderUniformType::Mat4>(paramName, value))
                         {
                             buffer->initMappedData();
-                            buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                            buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                         }
                     }
                     break;
@@ -375,6 +376,7 @@ namespace JumaRenderEngine
                 }
             }
         }
+        clearParamsForUpdate();
 
         DirectX12CommandQueue* commandQueue = renderEngine->getCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
         DirectX12CommandList* commandList = commandQueue->getCommandList();
@@ -383,6 +385,7 @@ namespace JumaRenderEngine
             buffer.value->flushMappedData(commandList, false);
         }
         commandList->execute();
+        commandList->waitForFinish();
         commandQueue->returnCommandList(commandList);
 
         clearParamsForUpdate();

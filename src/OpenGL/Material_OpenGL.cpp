@@ -49,7 +49,7 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::bindMaterial()
     {
-        RenderEngine* renderEngine = getRenderEngine();
+        const Texture_OpenGL* defaultTexture = dynamic_cast<const Texture_OpenGL*>(getRenderEngine()->getDefaultTexture());
 
         const Shader_OpenGL* shader = getShader<Shader_OpenGL>();
         if ((shader == nullptr) || !shader->activateShader())
@@ -57,98 +57,93 @@ namespace JumaRenderEngine
             return false;
         }
 
+        const jset<jstringID>& notUpdatedParams = getNotUpdatedParams();
         const MaterialParamsStorage& materialParams = getMaterialParams();
         for (const auto& uniform : shader->getUniforms())
         {
-            switch (uniform.value.type)
+            if (uniform.value.type == ShaderUniformType::Texture)
             {
-            case ShaderUniformType::Float:
-                {
-                    ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Float>(uniform.key, value))
-                    {
-                        glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                        glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value);
-                        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-                    }
-                }
-                break;
-            case ShaderUniformType::Vec2:
-                {
-                    ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec2>(uniform.key, value))
-                    {
-                        glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                        glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0]);
-                        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-                    }
-                }
-                break;
-            case ShaderUniformType::Vec4:
-                {
-                    ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec4>(uniform.key, value))
-                    {
-                        glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                        glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0]);
-                        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-                    }
-                }
-                break;
-            case ShaderUniformType::Mat4:
-                {
-                    ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Mat4>(uniform.key, value))
-                    {
-                        glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                        glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0][0]);
-                        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-                    }
-                }
-                break;
+                ShaderUniformInfo<ShaderUniformType::Texture>::value_type value = nullptr;
+                materialParams.getValue<ShaderUniformType::Texture>(uniform.key, value);
 
-            case ShaderUniformType::Texture:
+                const Texture_OpenGL* texture = dynamic_cast<Texture_OpenGL*>(value);
+                if (texture != nullptr)
                 {
-                    ShaderUniformInfo<ShaderUniformType::Texture>::value_type value = nullptr;
-                    materialParams.getValue<ShaderUniformType::Texture>(uniform.key, value);
-
-                    const Texture_OpenGL* texture = dynamic_cast<Texture_OpenGL*>(value);
-                    if (texture != nullptr)
+                    texture->bindToShader(uniform.value.shaderLocation);
+                }
+                else
+                {
+                    const RenderTarget_OpenGL* renderTarget = dynamic_cast<RenderTarget_OpenGL*>(value);
+                    if (renderTarget != nullptr)
                     {
-                        texture->bindToShader(uniform.value.shaderLocation);
+                        renderTarget->bindToShader(uniform.value.shaderLocation);
+                    }
+                    else if (defaultTexture != nullptr)
+                    {
+                        defaultTexture->bindToShader(uniform.value.shaderLocation);
                     }
                     else
                     {
-                        const RenderTarget_OpenGL* renderTarget = dynamic_cast<RenderTarget_OpenGL*>(value);
-                        if (renderTarget != nullptr)
-                        {
-                            renderTarget->bindToShader(uniform.value.shaderLocation);
-                        }
-                        else
-                        {
-                            const Texture_OpenGL* defaultTexture = dynamic_cast<const Texture_OpenGL*>(renderEngine->getDefaultTexture());
-                            if (defaultTexture != nullptr)
-                            {
-                                defaultTexture->bindToShader(uniform.value.shaderLocation);
-                            }
-                            else
-                            {
-                                throw std::exception("Invalid default texture");
-                            }
-                        }
+                        throw std::exception("Invalid default texture");
                     }
                 }
-                break;
-
-            default: ;
             }
+            else if (notUpdatedParams.contains(uniform.key))
+            {
+                switch (uniform.value.type)
+                {
+                case ShaderUniformType::Float:
+                    {
+                        ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
+                        if (materialParams.getValue<ShaderUniformType::Float>(uniform.key, value))
+                        {
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value);
+                        }
+                    }
+                    break;
+                case ShaderUniformType::Vec2:
+                    {
+                        ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
+                        if (materialParams.getValue<ShaderUniformType::Vec2>(uniform.key, value))
+                        {
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0]);
+                        }
+                    }
+                    break;
+                case ShaderUniformType::Vec4:
+                    {
+                        ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
+                        if (materialParams.getValue<ShaderUniformType::Vec4>(uniform.key, value))
+                        {
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0]);
+                        }
+                    }
+                    break;
+                case ShaderUniformType::Mat4:
+                    {
+                        ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
+                        if (materialParams.getValue<ShaderUniformType::Mat4>(uniform.key, value))
+                        {
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0][0]);
+                        }
+                    }
+                    break;
+
+                default: ;
+                }
+            }  
         }
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        clearParamsForUpdate();
         
         for (const auto& uniformBuffer : m_UniformBufferIndices)
         {
             glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, uniformBuffer.value);
         }
-
         return true;
     }
 

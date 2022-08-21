@@ -156,6 +156,7 @@ namespace JumaRenderEngine
         {
             return true;
         }
+
         const jset<jstringID>& notUpdatedParams = getNotUpdatedParams();
         if (notUpdatedParams.isEmpty())
         {
@@ -163,6 +164,7 @@ namespace JumaRenderEngine
         }
 
         RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
+        const Texture_Vulkan* defaultTexture = dynamic_cast<const Texture_Vulkan*>(renderEngine->getDefaultTexture());
         const jmap<jstringID, ShaderUniform>& uniforms = getShader()->getUniforms();
         const MaterialParamsStorage& params = getMaterialParams();
 
@@ -170,68 +172,69 @@ namespace JumaRenderEngine
         jarray<VkWriteDescriptorSet> descriptorWrites;
         imageInfos.reserve(uniforms.getSize());
         descriptorWrites.reserve(uniforms.getSize());
-        for (const auto& uniform : uniforms)
+        for (const auto& paramName : notUpdatedParams)
         {
-            if (!notUpdatedParams.contains(uniform.key))
+            const ShaderUniform* uniformPtr = uniforms.find(paramName);
+            if (uniformPtr == nullptr)
             {
                 continue;
             }
-
-            switch (uniform.value.type)
+            const ShaderUniform& uniform = *uniformPtr;
+            switch (uniform.type)
             {
             case ShaderUniformType::Float:
                 {
                     ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                    if (!params.getValue<ShaderUniformType::Float>(uniform.key, value))
+                    if (!params.getValue<ShaderUniformType::Float>(paramName, value))
                     {
                         continue;
                     }
-                    VulkanBuffer* buffer = m_UniformBuffers[uniform.value.shaderLocation];
+                    VulkanBuffer* buffer = m_UniformBuffers[uniform.shaderLocation];
                     buffer->initMappedData();
-                    buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                    buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                 }
                 break;
             case ShaderUniformType::Vec2:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                    if (!params.getValue<ShaderUniformType::Vec2>(uniform.key, value))
+                    if (!params.getValue<ShaderUniformType::Vec2>(paramName, value))
                     {
                         continue;
                     }
-                    VulkanBuffer* buffer = m_UniformBuffers[uniform.value.shaderLocation];
+                    VulkanBuffer* buffer = m_UniformBuffers[uniform.shaderLocation];
                     buffer->initMappedData();
-                    buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                    buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                 }
                 break;
             case ShaderUniformType::Vec4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                    if (!params.getValue<ShaderUniformType::Vec4>(uniform.key, value))
+                    if (!params.getValue<ShaderUniformType::Vec4>(paramName, value))
                     {
                         continue;
                     }
-                    VulkanBuffer* buffer = m_UniformBuffers[uniform.value.shaderLocation];
+                    VulkanBuffer* buffer = m_UniformBuffers[uniform.shaderLocation];
                     buffer->initMappedData();
-                    buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                    buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                 }
                 break;
             case ShaderUniformType::Mat4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                    if (!params.getValue<ShaderUniformType::Mat4>(uniform.key, value))
+                    if (!params.getValue<ShaderUniformType::Mat4>(paramName, value))
                     {
                         continue;
                     }
-                    VulkanBuffer* buffer = m_UniformBuffers[uniform.value.shaderLocation];
+                    VulkanBuffer* buffer = m_UniformBuffers[uniform.shaderLocation];
                     buffer->initMappedData();
-                    buffer->setMappedData(&value, sizeof(value), uniform.value.shaderBlockOffset);
+                    buffer->setMappedData(&value, sizeof(value), uniform.shaderBlockOffset);
                 }
                 break;
 
             case ShaderUniformType::Texture:
                 {
                     ShaderUniformInfo<ShaderUniformType::Texture>::value_type value;
-                    if (!params.getValue<ShaderUniformType::Texture>(uniform.key, value))
+                    if (!params.getValue<ShaderUniformType::Texture>(paramName, value))
                     {
                         continue;
                     }
@@ -249,24 +252,20 @@ namespace JumaRenderEngine
                             {
                                 vulkanImage = renderTarget->getResultImage();
                             }
+                            else if (defaultTexture != nullptr)
+                            {
+                                vulkanImage = defaultTexture->getVulkanImage();
+                            }
                             else
                             {
-                                const Texture_Vulkan* defaultTexture = dynamic_cast<const Texture_Vulkan*>(renderEngine->getDefaultTexture());
-                                if (defaultTexture != nullptr)
-                                {
-                                    vulkanImage = defaultTexture->getVulkanImage();
-                                }
-                                else
-                                {
-                                    throw std::exception("Invalid default texture");
-                                }
+                                throw std::exception("Invalid default texture");
                             }
                         }
-                        if (vulkanImage == nullptr)
-                        {
-                            JUTILS_LOG(error, JSTR("Failed to get vulkan image"));
-                            continue;
-                        }
+                    }
+                    if (vulkanImage == nullptr)
+                    {
+                        JUTILS_LOG(error, JSTR("Failed to get vulkan image"));
+                        continue;
                     }
 
                     VkDescriptorImageInfo& imageInfo = imageInfos.addDefault();
@@ -276,7 +275,7 @@ namespace JumaRenderEngine
                     VkWriteDescriptorSet& descriptorWrite = descriptorWrites.addDefault();
                     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrite.dstSet = m_DescriptorSet;
-                    descriptorWrite.dstBinding = uniform.value.shaderLocation;
+                    descriptorWrite.dstBinding = uniform.shaderLocation;
                     descriptorWrite.dstArrayElement = 0;
                     descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     descriptorWrite.descriptorCount = 1;
@@ -298,11 +297,16 @@ namespace JumaRenderEngine
 
         if (!m_UniformBuffers.isEmpty())
         {
+            // TODO: Put it into one command buffer
+            bool needToWait = false;
             for (const auto& buffer : m_UniformBuffers)
             {
-                buffer.value->flushMappedData(false);
+                needToWait |= buffer.value->flushMappedData(false);
             }
-            vkQueueWaitIdle(renderEngine->getQueue(VulkanQueueType::Transfer)->queue);
+            if (needToWait)
+            {
+                vkQueueWaitIdle(renderEngine->getQueue(VulkanQueueType::Transfer)->queue);
+            }
         }
         return true;
     }

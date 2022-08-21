@@ -89,6 +89,7 @@ namespace JumaRenderEngine
 
         RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
         ID3D11DeviceContext* deviceContext = renderEngine->getDeviceContext();
+        const Texture_DirectX11* defaultTexture = dynamic_cast<const Texture_DirectX11*>(renderEngine->getDefaultTexture());
 
         updateUniformBuffersData(deviceContext);
         for (const auto& uniformBuffer : m_UniformBuffers)
@@ -133,17 +134,13 @@ namespace JumaRenderEngine
                 {
                     textureView = valueRenderTarget->getResultImageView();
                 }
+                else if (defaultTexture != nullptr)
+                {
+                    textureView = defaultTexture->getTextureView();
+                }
                 else
                 {
-                    const Texture_DirectX11* defaultTexture = dynamic_cast<const Texture_DirectX11*>(renderEngine->getDefaultTexture());
-                    if (defaultTexture != nullptr)
-                    {
-                        textureView = defaultTexture->getTextureView();
-                    }
-                    else
-                    {
-                        throw std::exception("Invalid default texture");
-                    }
+                    throw std::exception("Invalid default texture");
                 }
             }
             if (textureView == nullptr)
@@ -204,20 +201,35 @@ namespace JumaRenderEngine
 
     void Material_DirectX11::updateUniformBuffersData(ID3D11DeviceContext* deviceContext)
     {
+        const jset<jstringID>& notUpdatedParams = getNotUpdatedParams();
+        if (notUpdatedParams.isEmpty())
+        {
+            return;
+        }
+
         jmap<uint32, D3D11_MAPPED_SUBRESOURCE> uniformBuffersData;
         const MaterialParamsStorage& materialParams = getMaterialParams();
-        for (const auto& uniform : getShader()->getUniforms())
+        const jmap<jstringID, ShaderUniform>& uniforms = getShader()->getUniforms();
+
+        for (const auto& paramName : notUpdatedParams)
         {
-            D3D11_MAPPED_SUBRESOURCE* mappedData = uniformBuffersData.find(uniform.value.shaderLocation);
+            const ShaderUniform* uniformPtr = uniforms.find(paramName);
+            if (uniformPtr == nullptr)
+            {
+                continue;
+            }
+            const ShaderUniform& uniform = *uniformPtr;
+
+            D3D11_MAPPED_SUBRESOURCE* mappedData = uniformBuffersData.find(uniform.shaderLocation);
             if (mappedData == nullptr)
             {
-                const UniformBufferDescription* uniformBuffer = m_UniformBuffers.find(uniform.value.shaderLocation);
+                const UniformBufferDescription* uniformBuffer = m_UniformBuffers.find(uniform.shaderLocation);
                 if (uniformBuffer == nullptr)
                 {
                     continue;
                 }
 
-                mappedData = &uniformBuffersData[uniform.value.shaderLocation];
+                mappedData = &uniformBuffersData[uniform.shaderLocation];
                 const HRESULT result = deviceContext->Map(uniformBuffer->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, mappedData);
                 if (FAILED(result))
                 {
@@ -226,47 +238,48 @@ namespace JumaRenderEngine
                 }
             }
 
-            switch (uniform.value.type)
+            switch (uniform.type)
             {
             case ShaderUniformType::Float:
                 {
                     ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Float>(uniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Float>(paramName, value))
                     {
-                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.value.shaderBlockOffset, &value, sizeof(value));
+                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value, sizeof(value));
                     }
                 }
                 break;
             case ShaderUniformType::Vec2:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec2>(uniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Vec2>(paramName, value))
                     {
-                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.value.shaderBlockOffset, &value[0], sizeof(value));
+                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0], sizeof(value));
                     }
                 }
                 break;
             case ShaderUniformType::Vec4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec4>(uniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Vec4>(paramName, value))
                     {
-                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.value.shaderBlockOffset, &value[0], sizeof(value));
+                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0], sizeof(value));
                     }
                 }
                 break;
             case ShaderUniformType::Mat4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Mat4>(uniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Mat4>(paramName, value))
                     {
-                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.value.shaderBlockOffset, &value[0][0], sizeof(value));
+                        std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0][0], sizeof(value));
                     }
                 }
                 break;
             default: ;
             }
         }
+        clearParamsForUpdate();
 
         for (const auto& mappedData : uniformBuffersData)
         {
