@@ -237,21 +237,34 @@ namespace JumaRenderEngine
                     }
                     VulkanImage* vulkanImage = nullptr;
                     {
-                        Texture_Vulkan* texture = dynamic_cast<Texture_Vulkan*>(value);
+                        const Texture_Vulkan* texture = dynamic_cast<Texture_Vulkan*>(value);
                         if (texture != nullptr)
                         {
                             vulkanImage = texture->getVulkanImage();
                         }
                         else
                         {
-                            RenderTarget_Vulkan* renderTarget = dynamic_cast<RenderTarget_Vulkan*>(value);
+                            const RenderTarget_Vulkan* renderTarget = dynamic_cast<RenderTarget_Vulkan*>(value);
                             if (renderTarget != nullptr)
                             {
                                 vulkanImage = renderTarget->getResultImage();
                             }
+                            else
+                            {
+                                const Texture_Vulkan* defaultTexture = dynamic_cast<const Texture_Vulkan*>(renderEngine->getDefaultTexture());
+                                if (defaultTexture != nullptr)
+                                {
+                                    vulkanImage = defaultTexture->getVulkanImage();
+                                }
+                                else
+                                {
+                                    throw std::exception("Invalid default texture");
+                                }
+                            }
                         }
                         if (vulkanImage == nullptr)
                         {
+                            JUTILS_LOG(error, JSTR("Failed to get vulkan image"));
                             continue;
                         }
                     }
@@ -259,7 +272,7 @@ namespace JumaRenderEngine
                     VkDescriptorImageInfo& imageInfo = imageInfos.addDefault();
                     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     imageInfo.imageView = vulkanImage->getImageView();
-                    imageInfo.sampler = renderEngine->getTextureSampler(value->getSamplerType());
+                    imageInfo.sampler = renderEngine->getTextureSampler(value != nullptr ? value->getSamplerType() : TextureSamplerType());
                     VkWriteDescriptorSet& descriptorWrite = descriptorWrites.addDefault();
                     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrite.dstSet = m_DescriptorSet;

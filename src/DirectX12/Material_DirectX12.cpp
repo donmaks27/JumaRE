@@ -281,38 +281,48 @@ namespace JumaRenderEngine
                     }
 
                     const Texture_DirectX12* textureValue = dynamic_cast<Texture_DirectX12*>(value);
+                    ID3D12DescriptorHeap* srv = nullptr;
                     if (textureValue != nullptr)
                     {
-                        const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptor = textureValue->getSRV()->GetCPUDescriptorHandleForHeapStart();
-                        const D3D12_CPU_DESCRIPTOR_HANDLE dstDescriptor = renderEngine->getDescriptorCPU<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV>(
-                            m_TextureDescriptorHeap, *descriptorHeapIndex
-                        );
-                        device->CopyDescriptorsSimple(1, dstDescriptor, srcDescriptor, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+                        srv = textureValue->getSRV();
                     }
                     else
                     {
                         const RenderTarget_DirectX12* renderTargetValue = dynamic_cast<RenderTarget_DirectX12*>(value);
-                        ID3D12DescriptorHeap* srv = renderTargetValue != nullptr ? renderTargetValue->getSRV() : nullptr;
-                        if (srv != nullptr)
+                        if (renderTargetValue != nullptr)
                         {
-                            const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptor = srv->GetCPUDescriptorHandleForHeapStart();
-                            const D3D12_CPU_DESCRIPTOR_HANDLE dstDescriptor = renderEngine->getDescriptorCPU<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV>(
-                                m_TextureDescriptorHeap, *descriptorHeapIndex
-                            );
-                            device->CopyDescriptorsSimple(1, dstDescriptor, srcDescriptor, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+                            srv = renderTargetValue->getSRV();
                         }
                         else
                         {
-                            // TODO: Default texture
-                            continue;
+                            const Texture_DirectX12* defaultTextureValue = dynamic_cast<const Texture_DirectX12*>(renderEngine->getDefaultTexture());
+                            if (defaultTextureValue != nullptr)
+                            {
+                                srv = defaultTextureValue->getSRV();
+                            }
+                            else
+                            {
+                                throw std::exception("Invalid default texture");
+                            }
                         }
                     }
+                    if (srv == nullptr)
+                    {
+                        JUTILS_LOG(error, JSTR("Failed to get DX12 texture descriptor"));
+                        continue;
+                    }
 
-                    const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptor = renderEngine->getSamplerDescription(value->getSamplerType());
-                    const D3D12_CPU_DESCRIPTOR_HANDLE dstDescriptor = renderEngine->getDescriptorCPU<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER>(
+                    const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptor = srv->GetCPUDescriptorHandleForHeapStart();
+                    const D3D12_CPU_DESCRIPTOR_HANDLE dstDescriptor = renderEngine->getDescriptorCPU<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV>(
+                        m_TextureDescriptorHeap, *descriptorHeapIndex
+                    );
+                    device->CopyDescriptorsSimple(1, dstDescriptor, srcDescriptor, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+                    const D3D12_CPU_DESCRIPTOR_HANDLE srcSamplerDescriptor = renderEngine->getSamplerDescription(value != nullptr ? value->getSamplerType() : TextureSamplerType());
+                    const D3D12_CPU_DESCRIPTOR_HANDLE dstSamplerDescriptor = renderEngine->getDescriptorCPU<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER>(
                         m_SamplerDescriptorHeap, *descriptorHeapIndex
                     );
-                    device->CopyDescriptorsSimple(1, dstDescriptor, srcDescriptor, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+                    device->CopyDescriptorsSimple(1, dstSamplerDescriptor, srcSamplerDescriptor, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
                 }
             }
             else

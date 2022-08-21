@@ -60,6 +60,7 @@ namespace JumaRenderEngine
         virtual bool shouldFlipLoadedTextures() const { return false; }
 
         Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
+        Texture* getDefaultTexture() const { return m_DefaultTexture; }
 
         Shader* createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, 
             jmap<jstringID, ShaderUniform> uniforms = {});
@@ -92,6 +93,8 @@ namespace JumaRenderEngine
         WindowController* m_WindowController = nullptr;
         RenderPipeline* m_RenderPipeline = nullptr;
         jmap<jstringID, VertexDescription> m_RegisteredVertexTypes;
+
+        Texture* m_DefaultTexture = nullptr;
 
 
         bool createRenderAssets();

@@ -110,11 +110,11 @@ namespace JumaRenderEngine
                 continue;
             }
             ShaderUniformInfo<ShaderUniformType::Texture>::value_type value;
-            if (!materialParams.getValue<ShaderUniformType::Texture>(uniform.key, value) || (value == nullptr))
+            if (!materialParams.getValue<ShaderUniformType::Texture>(uniform.key, value))
             {
                 continue;
             }
-            ID3D11SamplerState* sampler = renderEngine->getTextureSampler(value->getSamplerType());
+            ID3D11SamplerState* sampler = renderEngine->getTextureSampler(value != nullptr ? value->getSamplerType() : TextureSamplerType());
             if (sampler == nullptr)
             {
                 continue;
@@ -133,9 +133,22 @@ namespace JumaRenderEngine
                 {
                     textureView = valueRenderTarget->getResultImageView();
                 }
+                else
+                {
+                    const Texture_DirectX11* defaultTexture = dynamic_cast<const Texture_DirectX11*>(renderEngine->getDefaultTexture());
+                    if (defaultTexture != nullptr)
+                    {
+                        textureView = defaultTexture->getTextureView();
+                    }
+                    else
+                    {
+                        throw std::exception("Invalid default texture");
+                    }
+                }
             }
             if (textureView == nullptr)
             {
+                JUTILS_LOG(error, JSTR("Failed to get DX11 texture view"));
                 continue;
             }
 

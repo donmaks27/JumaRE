@@ -67,7 +67,7 @@ namespace JumaRenderEngine
         swapchainDescription.Scaling = DXGI_SCALING_STRETCH;
         swapchainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapchainDescription.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        swapchainDescription.Flags = DirectX_IsTearingSupported();
+        swapchainDescription.Flags = DirectX_IsTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
         result = factory->CreateSwapChainForHwnd(device, windowData->windowHandler, &swapchainDescription, nullptr, nullptr, &windowData->swapchain);
         factory->Release();
         if (FAILED(result))

@@ -71,10 +71,23 @@ namespace JumaRenderEngine
         }
         m_RenderPipeline = renderPipeline;
 
+        constexpr uint8 defaultTextureData[] = { 255, 0, 255, 255 };
+        m_DefaultTexture = createTexture({ 1, 1 }, TextureFormat::RGBA8, defaultTextureData);
+        if (m_DefaultTexture == nullptr)
+        {
+            JUTILS_LOG(error, JSTR("Failed to create default texture"));
+            return false;
+        }
+
         return true;
     }
     void RenderEngine::clearRenderAssets()
     {
+        if (m_DefaultTexture != nullptr)
+        {
+            delete m_DefaultTexture;
+            m_DefaultTexture = nullptr;
+        }
         if (m_RenderPipeline != nullptr)
         {
             delete m_RenderPipeline;

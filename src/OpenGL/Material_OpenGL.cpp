@@ -9,6 +9,7 @@
 #include "RenderTarget_OpenGL.h"
 #include "Shader_OpenGL.h"
 #include "Texture_OpenGL.h"
+#include "../../include/JumaRE/RenderEngine.h"
 
 namespace JumaRenderEngine
 {
@@ -48,6 +49,8 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::bindMaterial()
     {
+        RenderEngine* renderEngine = getRenderEngine();
+
         const Shader_OpenGL* shader = getShader<Shader_OpenGL>();
         if ((shader == nullptr) || !shader->activateShader())
         {
@@ -120,6 +123,18 @@ namespace JumaRenderEngine
                         if (renderTarget != nullptr)
                         {
                             renderTarget->bindToShader(uniform.value.shaderLocation);
+                        }
+                        else
+                        {
+                            const Texture_OpenGL* defaultTexture = dynamic_cast<const Texture_OpenGL*>(renderEngine->getDefaultTexture());
+                            if (defaultTexture != nullptr)
+                            {
+                                defaultTexture->bindToShader(uniform.value.shaderLocation);
+                            }
+                            else
+                            {
+                                throw std::exception("Invalid default texture");
+                            }
                         }
                     }
                 }
