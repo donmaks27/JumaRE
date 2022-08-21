@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if defined(JUMARE_ENABLE_DX11)
+#if defined(JUMARE_ENABLE_DX)
 
 #include "../../include/JumaRE/texture/TextureFormat.h"
 
@@ -10,7 +10,7 @@
 
 namespace JumaRenderEngine
 {
-    constexpr DXGI_FORMAT GetDirectX11FormatByTextureFormat(const TextureFormat format)
+    constexpr DXGI_FORMAT GetDirectXFormatByTextureFormat(const TextureFormat format)
     {
         switch (format)
         {

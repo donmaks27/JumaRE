@@ -7,7 +7,7 @@
 #include <d3d11.h>
 
 #include "RenderEngine_DirectX11.h"
-#include "TextureFormat_DirectX11.h"
+#include "../DirectX/TextureFormat_DirectX.h"
 
 namespace JumaRenderEngine
 {
@@ -26,7 +26,7 @@ namespace JumaRenderEngine
         textureDescription.Height = size.y;
         textureDescription.MipLevels = GetMipLevelCountByTextureSize(size);
         textureDescription.ArraySize = 1;
-        textureDescription.Format = GetDirectX11FormatByTextureFormat(format);
+        textureDescription.Format = GetDirectXFormatByTextureFormat(format);
         textureDescription.SampleDesc.Count = 1;
         textureDescription.SampleDesc.Quality = 0;
         textureDescription.Usage = D3D11_USAGE_DEFAULT;

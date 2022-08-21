@@ -6,11 +6,11 @@
 
 #include "RenderEngine_DirectX12.h"
 #include "RenderOptions_DirectX12.h"
-#include "TextureFormat_DirectX12.h"
 #include "DirectX12Objects/DirectX12MipGenerator.h"
 #include "DirectX12Objects/DirectX12Swapchain.h"
 #include "DirectX12Objects/DirectX12Texture.h"
 #include "window/WindowController_DirectX12.h"
+#include "../DirectX/TextureFormat_DirectX.h"
 
 namespace JumaRenderEngine
 {
@@ -76,7 +76,7 @@ namespace JumaRenderEngine
         {
             renderTexture = renderEngine->createObject<DirectX12Texture>();
             renderTexture->initColor(
-                size, samplesCount, GetDirectX12FormatByTextureFormat(getFormat()), 1, D3D12_RESOURCE_STATE_RENDER_TARGET, 
+                size, samplesCount, GetDirectXFormatByTextureFormat(getFormat()), 1, D3D12_RESOURCE_STATE_RENDER_TARGET, 
                 D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
             );
             if (!renderTexture->isValid())
@@ -114,7 +114,7 @@ namespace JumaRenderEngine
 
         DirectX12Texture* depthTexture = renderEngine->createObject<DirectX12Texture>();
         depthTexture->initDepth(
-            size, samplesCount, GetDirectX12FormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8), D3D12_RESOURCE_STATE_DEPTH_WRITE, 
+            size, samplesCount, GetDirectXFormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8), D3D12_RESOURCE_STATE_DEPTH_WRITE, 
             D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE
         );
         if (!depthTexture->isValid())
@@ -149,7 +149,7 @@ namespace JumaRenderEngine
         RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
         ID3D12Device2* device = renderEngine->getDevice();
 
-        const DXGI_FORMAT format = GetDirectX12FormatByTextureFormat(getFormat());
+        const DXGI_FORMAT format = GetDirectXFormatByTextureFormat(getFormat());
         const TextureSamples samples = getSampleCount();
         const uint8 samplesCount = GetTextureSamplesNumber(samples);
         const bool shouldResolve = samplesCount > 1;
@@ -172,7 +172,7 @@ namespace JumaRenderEngine
 
         DirectX12Texture* depthTexture = renderEngine->createObject<DirectX12Texture>();
         depthTexture->initDepth(
-            size, samplesCount, GetDirectX12FormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8), D3D12_RESOURCE_STATE_DEPTH_WRITE, 
+            size, samplesCount, GetDirectXFormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8), D3D12_RESOURCE_STATE_DEPTH_WRITE, 
             D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE
         );
         if (!depthTexture->isValid())
@@ -413,7 +413,7 @@ namespace JumaRenderEngine
 
             commandList->ResolveSubresource(
                 resolveTexture->getResource(), 0, renderTexture->getResource(), 0, 
-                GetDirectX12FormatByTextureFormat(getFormat())
+                GetDirectXFormatByTextureFormat(getFormat())
             );
 
             commandListObject->changeTextureState(renderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);

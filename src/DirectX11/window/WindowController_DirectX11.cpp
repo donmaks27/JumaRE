@@ -4,61 +4,23 @@
 
 #include "WindowController_DirectX11.h"
 
-#include <dxgi1_5.h>
+#include <dxgi1_3.h>
 #include <d3d11.h>
 
 #include "../RenderEngine_DirectX11.h"
 #include "../RenderTarget_DirectX11.h"
-#include "../TextureFormat_DirectX11.h"
+#include "../../DirectX/DirectXFunctions.h"
+#include "../../DirectX/TextureFormat_DirectX.h"
 
 namespace JumaRenderEngine
 {
-    bool IsTearingSupported_DirectX11()
-    {
-        IDXGIFactory4* factory4 = nullptr;
-#if defined(JDEBUG)
-        constexpr UINT createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-#else
-        constexpr UINT createFactoryFlags = 0;
-#endif
-        HRESULT result = CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&factory4));
-        if (FAILED(result))
-        {
-            return false;
-        }
-
-        IDXGIFactory5* factory5 = nullptr;
-        result = factory4->QueryInterface(&factory5);
-        factory4->Release();
-        if (FAILED(result))
-        {
-            return false;
-        }
-
-        BOOL allowTearing = FALSE;
-        factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
-        factory5->Release();
-        return allowTearing == TRUE;
-    }
-
     WindowController_DirectX11::~WindowController_DirectX11()
     {
         clearData_DirectX11();
     }
 
-    bool WindowController_DirectX11::initWindowController()
-    {
-        if (!Super::initWindowController())
-        {
-            return false;
-        }
-        m_TearingSupported = IsTearingSupported_DirectX11();
-        return true;
-    }
-
     void WindowController_DirectX11::clearData_DirectX11()
     {
-        m_TearingSupported = false;
     }
 
     void WindowController_DirectX11::destroyWindowInternal(const window_id windowID, WindowData* windowData)
@@ -96,7 +58,7 @@ namespace JumaRenderEngine
         DXGI_SWAP_CHAIN_DESC1 swapchainDescription{};
         swapchainDescription.Width = windowData->size.x;
         swapchainDescription.Height = windowData->size.y;
-        swapchainDescription.Format = GetDirectX11FormatByTextureFormat(TextureFormat::RGBA8);
+        swapchainDescription.Format = GetDirectXFormatByTextureFormat(TextureFormat::RGBA8);
         swapchainDescription.Stereo = FALSE;
         swapchainDescription.SampleDesc.Count = 1;
         swapchainDescription.SampleDesc.Quality = 0;
@@ -105,7 +67,7 @@ namespace JumaRenderEngine
         swapchainDescription.Scaling = DXGI_SCALING_STRETCH;
         swapchainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapchainDescription.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        swapchainDescription.Flags = m_TearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+        swapchainDescription.Flags = DirectX_IsTearingSupported();
         result = factory->CreateSwapChainForHwnd(device, windowData->windowHandler, &swapchainDescription, nullptr, nullptr, &windowData->swapchain);
         factory->Release();
         if (FAILED(result))

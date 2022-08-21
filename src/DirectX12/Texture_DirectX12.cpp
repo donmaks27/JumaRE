@@ -5,8 +5,8 @@
 #include "Texture_DirectX12.h"
 
 #include "RenderEngine_DirectX12.h"
-#include "TextureFormat_DirectX12.h"
 #include "DirectX12Objects/DirectX12Texture.h"
+#include "../DirectX/TextureFormat_DirectX.h"
 
 namespace JumaRenderEngine
 {
@@ -20,7 +20,7 @@ namespace JumaRenderEngine
         RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
 
         DirectX12Texture* texture = renderEngine->createObject<DirectX12Texture>();
-        texture->initColor(size, 1, GetDirectX12FormatByTextureFormat(format), 1, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_NONE);
+        texture->initColor(size, 1, GetDirectXFormatByTextureFormat(format), 1, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_NONE);
         if (!texture->isValid())
         {
             JUTILS_LOG(error, JSTR("Failed to create DirectX12Texture object"));

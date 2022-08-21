@@ -8,7 +8,7 @@
 #include <d3d11.h>
 
 #include "RenderEngine_DirectX11.h"
-#include "TextureFormat_DirectX11.h"
+#include "../DirectX/TextureFormat_DirectX.h"
 #include "window/WindowController_DirectX11.h"
 
 namespace JumaRenderEngine
@@ -90,7 +90,7 @@ namespace JumaRenderEngine
                 colorImageDescription.Height = size.y;
                 colorImageDescription.MipLevels = GetMipLevelCountByTextureSize(size);
                 colorImageDescription.ArraySize = 1;
-                colorImageDescription.Format = GetDirectX11FormatByTextureFormat(getFormat());
+                colorImageDescription.Format = GetDirectXFormatByTextureFormat(getFormat());
                 colorImageDescription.SampleDesc.Count = 1;
                 colorImageDescription.SampleDesc.Quality = 0;
                 colorImageDescription.Usage = D3D11_USAGE_DEFAULT;
@@ -158,7 +158,7 @@ namespace JumaRenderEngine
             depthImageDescription.Height = size.y;
             depthImageDescription.MipLevels = 1;
             depthImageDescription.ArraySize = 1;
-            depthImageDescription.Format = GetDirectX11FormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8);
+            depthImageDescription.Format = GetDirectXFormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8);
             depthImageDescription.SampleDesc.Count = sampleCount;
             depthImageDescription.SampleDesc.Quality = 0;
             depthImageDescription.Usage = D3D11_USAGE_DEFAULT;
@@ -205,7 +205,7 @@ namespace JumaRenderEngine
                 resolveImageDescription.Height = size.y;
                 resolveImageDescription.MipLevels = GetMipLevelCountByTextureSize(size);
                 resolveImageDescription.ArraySize = 1;
-                resolveImageDescription.Format = GetDirectX11FormatByTextureFormat(getFormat());
+                resolveImageDescription.Format = GetDirectXFormatByTextureFormat(getFormat());
                 resolveImageDescription.SampleDesc.Count = 1;
                 resolveImageDescription.SampleDesc.Quality = 0;
                 resolveImageDescription.Usage = D3D11_USAGE_DEFAULT;
@@ -348,7 +348,7 @@ namespace JumaRenderEngine
             deviceContext->ResolveSubresource(
                 m_ResolveAttachmentImage, 0, 
                 m_ColorAttachmentImage, 0, 
-                GetDirectX11FormatByTextureFormat(getFormat())
+                GetDirectXFormatByTextureFormat(getFormat())
             );
         }
         if (!isWindowRenderTarget())

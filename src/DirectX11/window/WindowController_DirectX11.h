@@ -42,8 +42,6 @@ namespace JumaRenderEngine
         static constexpr RenderAPI API = RenderAPI::DirectX11;
 
 
-        virtual bool initWindowController() override;
-
         virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX11* windowData);
@@ -51,9 +49,6 @@ namespace JumaRenderEngine
         virtual void onWindowResized(window_id windowID, WindowData* windowData) override;
 
     private:
-
-        bool m_TearingSupported = false;
-
 
         void clearData_DirectX11();
 

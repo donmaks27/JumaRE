@@ -10,6 +10,7 @@
 #include "../RenderEngine_DirectX12.h"
 #include "../RenderTarget_DirectX12.h"
 #include "../window/WindowController_DirectX12.h"
+#include "../../DirectX/DirectXFunctions.h"
 
 namespace JumaRenderEngine
 {
@@ -62,7 +63,7 @@ namespace JumaRenderEngine
         swapchainDescription.Scaling = DXGI_SCALING_STRETCH;
         swapchainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapchainDescription.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        swapchainDescription.Flags = windowController->isTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+        swapchainDescription.Flags = DirectX_IsTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
         IDXGISwapChain1* swapchain1 = nullptr;
         result = factory->CreateSwapChainForHwnd(commandQueue->get(), windowData->windowHandler, &swapchainDescription, nullptr, nullptr, &swapchain1);
         factory->Release();
@@ -146,7 +147,7 @@ namespace JumaRenderEngine
     bool DirectX12Swapchain::present()
     {
         const bool vsyncEnabled = true;
-        const bool tearingSupported = getRenderEngine()->getWindowController<WindowController_DirectX12>()->isTearingSupported();
+        const bool tearingSupported = DirectX_IsTearingSupported();
 
         const UINT syncInterval = vsyncEnabled ? 1 : 0;
         const UINT presentFlags = tearingSupported && !vsyncEnabled ? DXGI_PRESENT_ALLOW_TEARING : 0;

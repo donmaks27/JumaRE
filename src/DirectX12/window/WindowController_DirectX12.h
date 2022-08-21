@@ -34,24 +34,16 @@ namespace JumaRenderEngine
 
         using WindowDataType = WindowData_DirectX12;
         
-
-        bool isTearingSupported() const { return m_TearingSupported; }
-
     protected:
 
         static constexpr RenderAPI API = RenderAPI::DirectX12;
 
-
-        virtual bool initWindowController() override;
 
         virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
 
     private:
-
-        bool m_TearingSupported = false;
-
 
         void clearData_DirectX12();
 

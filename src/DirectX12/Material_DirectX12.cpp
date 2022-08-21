@@ -9,9 +9,9 @@
 #include "RenderTarget_DirectX12.h"
 #include "Shader_DirectX12.h"
 #include "Texture_DirectX12.h"
-#include "TextureFormat_DirectX12.h"
 #include "VertexBuffer_DirectX12.h"
 #include "DirectX12Objects/DirectX12PipelineStateStreamObjects.h"
+#include "../DirectX/TextureFormat_DirectX.h"
 
 namespace JumaRenderEngine
 {
@@ -230,9 +230,9 @@ namespace JumaRenderEngine
         pipelineStateStream.VS.data.pShaderBytecode = vertexShaderBytecode->GetBufferPointer();
         pipelineStateStream.PS.data.BytecodeLength = fragmentShaderBytecode->GetBufferSize();
         pipelineStateStream.PS.data.pShaderBytecode = fragmentShaderBytecode->GetBufferPointer();
-        pipelineStateStream.DSVFormat = GetDirectX12FormatByTextureFormat(pipelineStateID.depthFormat);
+        pipelineStateStream.DSVFormat = GetDirectXFormatByTextureFormat(pipelineStateID.depthFormat);
         pipelineStateStream.RTVFormats.data.NumRenderTargets = 1;
-        pipelineStateStream.RTVFormats.data.RTFormats[0] = GetDirectX12FormatByTextureFormat(pipelineStateID.colorFormat);
+        pipelineStateStream.RTVFormats.data.RTFormats[0] = GetDirectXFormatByTextureFormat(pipelineStateID.colorFormat);
         D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDescription{};
         pipelineStateStreamDescription.SizeInBytes = sizeof(pipelineStateStream);
         pipelineStateStreamDescription.pPipelineStateSubobjectStream = &pipelineStateStream;
