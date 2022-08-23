@@ -10,8 +10,6 @@
 #include "Shader_DirectX12.h"
 #include "Texture_DirectX12.h"
 #include "VertexBuffer_DirectX12.h"
-#include "DirectX12Objects/DirectX12PipelineStateStreamObjects.h"
-#include "../DirectX/TextureFormat_DirectX.h"
 
 namespace JumaRenderEngine
 {
@@ -73,12 +71,6 @@ namespace JumaRenderEngine
 
     void Material_DirectX12::clearDirectX()
     {
-        for (const auto& pipelineState : m_PipelineStates)
-        {
-            pipelineState.value->Release();
-        }
-        m_PipelineStates.clear();
-
         if (!m_UniformBuffers.isEmpty())
         {
             RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
@@ -101,28 +93,20 @@ namespace JumaRenderEngine
         }
     }
 
-    bool Material_DirectX12::bindMaterial(const RenderOptions* renderOptions, VertexBuffer_DirectX12* vertexBuffer)
+    bool Material_DirectX12::bindMaterial(const RenderOptions_DirectX12* renderOptions, VertexBuffer_DirectX12* vertexBuffer)
     {
         if (!updateUniformData())
         {
             return false;
         }
 
-        const RenderOptions_DirectX12* renderOptionsDirectX = reinterpret_cast<const RenderOptions_DirectX12*>(renderOptions);
-        const RenderTarget* renderTarget = renderOptionsDirectX->renderTarget;
-        const TextureFormat colorFormat = renderTarget->getFormat();
-        const TextureFormat depthFormat = TextureFormat::DEPTH24_STENCIL8;
-        const TextureSamples samples = renderTarget->getSampleCount();
-        ID3D12PipelineState* pipelineState = nullptr;
-        if (!getPipelineState({ vertexBuffer->getVertexTypeName(), colorFormat, depthFormat, samples }, pipelineState) && (pipelineState != nullptr))
+        Shader_DirectX12* shader = getShader<Shader_DirectX12>();
+        if (!shader->bindShader(renderOptions, vertexBuffer, getMaterialProperties()))
         {
             return false;
         }
 
-        const Shader_DirectX12* shader = getShader<Shader_DirectX12>();
-        ID3D12GraphicsCommandList2* commandList = renderOptionsDirectX->renderCommandList->get();
-        commandList->SetGraphicsRootSignature(shader->getRootSignature());
-        commandList->SetPipelineState(pipelineState);
+        ID3D12GraphicsCommandList2* commandList = renderOptions->renderCommandList->get();
         for (const auto& bufferParam : shader->getUniformBufferParamIndices())
         {
             commandList->SetGraphicsRootConstantBufferView(bufferParam.key, m_UniformBuffers[bufferParam.value]->get()->GetGPUVirtualAddress());
@@ -137,114 +121,6 @@ namespace JumaRenderEngine
             commandList->SetGraphicsRootDescriptorTable(paramIndex, m_TextureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
             commandList->SetGraphicsRootDescriptorTable(paramIndex + 1, m_SamplerDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
         }
-        return true;
-    }
-
-    bool Material_DirectX12::getPipelineState(const PipelineStateID& pipelineStateID, ID3D12PipelineState*& outPipelineState)
-    {
-        ID3D12PipelineState* const* existingPipelineState = m_PipelineStates.find(pipelineStateID);
-        if (existingPipelineState != nullptr)
-        {
-            outPipelineState = *existingPipelineState;
-            return true;
-        }
-
-        const RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
-        const VertexDescription* vertexDescription = renderEngine->findVertexType(pipelineStateID.vertexName);
-        if (vertexDescription == nullptr)
-        {
-            JUTILS_LOG(error, JSTR("Failed to get description for vertex {}"), pipelineStateID.vertexName.toString());
-            return false;
-        }
-
-        const Shader_DirectX12* shader = getShader<Shader_DirectX12>();
-        jarray<D3D12_INPUT_ELEMENT_DESC> inputLayouts;
-        for (const auto& requiredVertexComponent : shader->getRequiredVertexComponents())
-        {
-            bool componentFound = false;
-            for (const auto& vertexComponent : vertexDescription->components)
-            {
-                if (vertexComponent.name == requiredVertexComponent)
-                {
-                    componentFound = true;
-
-                    DXGI_FORMAT componentFormat = DXGI_FORMAT_UNKNOWN;
-                    switch (vertexComponent.type)
-                    {
-                    case VertexComponentType::Float: componentFormat = DXGI_FORMAT_R32_FLOAT; break;
-                    case VertexComponentType::Vec2:  componentFormat = DXGI_FORMAT_R32G32_FLOAT; break;
-                    case VertexComponentType::Vec3:  componentFormat = DXGI_FORMAT_R32G32B32_FLOAT; break;
-                    case VertexComponentType::Vec4:  componentFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
-                    default: 
-                        JUTILS_LOG(error, JSTR("Unsupported type of vertex component {} in vertex {}"), vertexComponent.shaderLocation, pipelineStateID.vertexName.toString());
-                        return false;
-                    }
-                    inputLayouts.add({ 
-                        "TEXCOORD", vertexComponent.shaderLocation, componentFormat, 0,
-                        vertexComponent.offset, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-                    });
-                    break;
-                }
-            }
-            if (!componentFound)
-            {
-                return false;
-            }
-        }
-
-        ID3D12Device2* device = renderEngine->getDevice();
-        const jmap<ShaderStageFlags, ID3DBlob*>& shaderBytecodes = shader->getShaderBytecodes();
-        ID3DBlob* vertexShaderBytecode = shaderBytecodes.get(SHADER_STAGE_VERTEX);
-        ID3DBlob* fragmentShaderBytecode = shaderBytecodes.get(SHADER_STAGE_FRAGMENT);
-
-        struct PipelineStateStream
-        {
-            DirectX12_PipelineStateStream_ROOT_SIGNATURE rootSignature;
-            DirectX12_PipelineStateStream_INPUT_LAYOUT inputLayout;
-            DirectX12_PipelineStateStream_PRIMITIVE_TOPOLOGY primitiveTopologyType;
-            DirectX12_PipelineStateStream_RASTERIZER rasterizer;
-            DirectX12_PipelineStateStream_SAMPLE_DESC sampleDescription;
-            DirectX12_PipelineStateStream_VS VS;
-            DirectX12_PipelineStateStream_PS PS;
-            DirectX12_PipelineStateStream_DEPTH_STENCIL_FORMAT DSVFormat;
-            DirectX12_PipelineStateStream_RENDER_TARGET_FORMATS RTVFormats;
-        } pipelineStateStream;
-        pipelineStateStream.rootSignature = shader->getRootSignature();
-        pipelineStateStream.inputLayout.data.NumElements = inputLayouts.getSize();
-        pipelineStateStream.inputLayout.data.pInputElementDescs = inputLayouts.getData();
-        pipelineStateStream.primitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        pipelineStateStream.rasterizer.data.FillMode = D3D12_FILL_MODE_SOLID;
-        pipelineStateStream.rasterizer.data.CullMode = D3D12_CULL_MODE_BACK;
-        pipelineStateStream.rasterizer.data.FrontCounterClockwise = FALSE;
-        pipelineStateStream.rasterizer.data.DepthBias = 0;
-        pipelineStateStream.rasterizer.data.DepthBiasClamp = 0.0f;
-        pipelineStateStream.rasterizer.data.SlopeScaledDepthBias = 0.0f;
-        pipelineStateStream.rasterizer.data.DepthClipEnable = TRUE;
-        pipelineStateStream.rasterizer.data.MultisampleEnable = TRUE;
-        pipelineStateStream.rasterizer.data.AntialiasedLineEnable = FALSE;
-        pipelineStateStream.rasterizer.data.ForcedSampleCount = 0;
-        pipelineStateStream.rasterizer.data.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-        pipelineStateStream.sampleDescription.data.Count = GetTextureSamplesNumber(pipelineStateID.samplesCount);
-        pipelineStateStream.sampleDescription.data.Quality = 0;
-        pipelineStateStream.VS.data.BytecodeLength = vertexShaderBytecode->GetBufferSize();
-        pipelineStateStream.VS.data.pShaderBytecode = vertexShaderBytecode->GetBufferPointer();
-        pipelineStateStream.PS.data.BytecodeLength = fragmentShaderBytecode->GetBufferSize();
-        pipelineStateStream.PS.data.pShaderBytecode = fragmentShaderBytecode->GetBufferPointer();
-        pipelineStateStream.DSVFormat = GetDirectXFormatByTextureFormat(pipelineStateID.depthFormat);
-        pipelineStateStream.RTVFormats.data.NumRenderTargets = 1;
-        pipelineStateStream.RTVFormats.data.RTFormats[0] = GetDirectXFormatByTextureFormat(pipelineStateID.colorFormat);
-        D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDescription{};
-        pipelineStateStreamDescription.SizeInBytes = sizeof(pipelineStateStream);
-        pipelineStateStreamDescription.pPipelineStateSubobjectStream = &pipelineStateStream;
-        ID3D12PipelineState* pipelineState = nullptr;
-        const HRESULT result = device->CreatePipelineState(&pipelineStateStreamDescription, IID_PPV_ARGS(&pipelineState));
-        if (FAILED(result))
-        {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create DirectX12 pipeline state"));
-            return false;
-        }
-
-        outPipelineState = m_PipelineStates[pipelineStateID] = pipelineState;
         return true;
     }
 

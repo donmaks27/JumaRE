@@ -8,8 +8,6 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "vulkanObjects/VulkanRenderPassDescription.h"
-
 namespace JumaRenderEngine
 {
     class VulkanRenderPass;
@@ -34,20 +32,8 @@ namespace JumaRenderEngine
 
     private:
 
-        struct VulkanRenderPipelineID
-        {
-            jstringID vertexName = jstringID_NONE;
-            render_pass_type_id renderPassID = render_pass_type_id_INVALID;
-
-            bool operator<(const VulkanRenderPipelineID& ID) const
-            {
-                return (vertexName < ID.vertexName) || ((vertexName == ID.vertexName) && (renderPassID < ID.renderPassID));
-            }
-        };
-        
         VkDescriptorPool m_DescriptorPool = nullptr;
         VkDescriptorSet m_DescriptorSet = nullptr;
-        jmap<VulkanRenderPipelineID, VkPipeline> m_RenderPipelines;
 
         jmap<uint32, VulkanBuffer*> m_UniformBuffers;
 
@@ -57,9 +43,6 @@ namespace JumaRenderEngine
         bool updateDescriptorSetData();
 
         void clearVulkan();
-
-        bool bindRenderPipeline(VkCommandBuffer commandBuffer, const jstringID& vertexName, const VulkanRenderPass* renderPass);
-        bool getRenderPipeline(const jstringID& vertexName, const VulkanRenderPass* renderPass, VkPipeline& outPipeline);
 
         bool bindDescriptorSet(VkCommandBuffer commandBuffer);
     };

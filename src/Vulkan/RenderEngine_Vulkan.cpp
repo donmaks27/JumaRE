@@ -591,6 +591,17 @@ namespace JumaRenderEngine
         }
         return renderPass;
     }
+    const VulkanRenderPassDescription* RenderEngine_Vulkan::findRenderPassDescription(const render_pass_type_id renderPassID) const
+    {
+        for (const auto& renderPassType : m_RenderPassTypes)
+        {
+            if (renderPassType.value == renderPassID)
+            {
+                return &renderPassType.key;
+            }
+        }
+        return nullptr;
+    }
 
     void RenderEngine_Vulkan::onRegisteredVertexType(const jstringID& vertexName)
     {

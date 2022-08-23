@@ -72,13 +72,13 @@ namespace JumaRenderEngine
 
     void VertexBuffer_DirectX12::render(const RenderOptions* renderOptions, Material* material)
     {
+        const RenderOptions_DirectX12* renderOptionsDirectX = reinterpret_cast<const RenderOptions_DirectX12*>(renderOptions);
         Material_DirectX12* materialDirectX = dynamic_cast<Material_DirectX12*>(material);
-        if (!materialDirectX->bindMaterial(renderOptions, this))
+        if (!materialDirectX->bindMaterial(renderOptionsDirectX, this))
         {
             return;
         }
 
-        const RenderOptions_DirectX12* renderOptionsDirectX = reinterpret_cast<const RenderOptions_DirectX12*>(renderOptions);
         ID3D12GraphicsCommandList2* commandList = renderOptionsDirectX->renderCommandList->get();
 
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -102,7 +102,7 @@ namespace JumaRenderEngine
             commandList->DrawInstanced(m_RenderElementsCount, 1, 0, 0);
         }
 
-        materialDirectX->unbindMaterial(renderOptions, this);
+        materialDirectX->unbindMaterial(renderOptionsDirectX, this);
     }
 }
 

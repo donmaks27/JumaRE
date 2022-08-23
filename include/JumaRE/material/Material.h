@@ -8,6 +8,7 @@
 #include <jutils/jset.h>
 
 #include "MaterialParamsStorage.h"
+#include "MaterialProperties.h"
 
 namespace JumaRenderEngine
 {
@@ -22,6 +23,7 @@ namespace JumaRenderEngine
         virtual ~Material() override;
 
         Shader* getShader() const { return m_Shader; }
+        const MaterialProperties& getMaterialProperties() const { return m_Properties; }
         const MaterialParamsStorage& getMaterialParams() const { return m_MaterialParams; }
 
         template<ShaderUniformType Type>
@@ -56,6 +58,7 @@ namespace JumaRenderEngine
     private:
 
         Shader* m_Shader = nullptr;
+        MaterialProperties m_Properties;
         MaterialParamsStorage m_MaterialParams;
         jset<jstringID> m_MaterialParamsForUpdate;
 

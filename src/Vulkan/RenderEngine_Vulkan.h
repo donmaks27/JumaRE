@@ -56,8 +56,9 @@ namespace JumaRenderEngine
         VulkanImage* getVulkanImage();
         void returnVulkanBuffer(VulkanBuffer* buffer);
         void returnVulkanImage(VulkanImage* image);
-        
+
         VulkanRenderPass* getRenderPass(const VulkanRenderPassDescription& description);
+        const VulkanRenderPassDescription* findRenderPassDescription(render_pass_type_id renderPassID) const;
 
         const VertexDescription_Vulkan* findVertexType_Vulkan(const jstringID& vertexName) const { return m_RegisteredVertexTypes_Vulkan.find(vertexName); }
 
