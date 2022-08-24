@@ -29,6 +29,8 @@ namespace JumaRenderEngine
 
 
         void clearOpenGL();
+
+        void updateUniformData();
     };
 }
 

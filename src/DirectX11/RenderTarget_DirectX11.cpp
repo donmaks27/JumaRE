@@ -267,14 +267,11 @@ namespace JumaRenderEngine
         m_ColorAttachmentView = colorImageView;
         m_DepthAttachmentView = depthImageView;
         m_ResultImageView = resultImageView;
-        m_RasterizerState = rasterizerState;
         return true;
     }
 
     void RenderTarget_DirectX11::clearDirectX11()
     {
-        m_RasterizerState = nullptr;
-
         clearRenderTarget();
     }
     void RenderTarget_DirectX11::clearRenderTarget()
@@ -319,13 +316,12 @@ namespace JumaRenderEngine
         }
         if (m_ColorAttachmentView == nullptr)
         {
-            // TODO: After fullscreen mode
             JUTILS_LOG(error, JSTR("Invalid render target"));
             return false;
         }
 
         ID3D11DeviceContext* deviceContext = getRenderEngine<RenderEngine_DirectX11>()->getDeviceContext();
-
+        
         constexpr float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         deviceContext->ClearRenderTargetView(m_ColorAttachmentView, clearColor);
         deviceContext->ClearDepthStencilView(m_DepthAttachmentView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -333,7 +329,6 @@ namespace JumaRenderEngine
 
         const math::uvector2 size = getSize();
         const D3D11_VIEWPORT viewport = { 0, 0, static_cast<FLOAT>(size.x), static_cast<FLOAT>(size.y), 0.0f, 1.0f };
-        deviceContext->RSSetState(m_RasterizerState);
         deviceContext->RSSetViewports(1, &viewport);
 
         return true;

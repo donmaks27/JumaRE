@@ -169,12 +169,8 @@ namespace JumaRenderEngine
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glFrontFace(GL_CW);
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
 
         const math::uvector2 size = getSize();
         glViewport(0, 0, static_cast<GLsizei>(size.x), static_cast<GLsizei>(size.y));

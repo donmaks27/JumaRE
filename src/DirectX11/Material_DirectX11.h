@@ -8,7 +8,6 @@
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
-struct ID3D11DepthStencilState;
 
 namespace JumaRenderEngine
 {
@@ -39,11 +38,11 @@ namespace JumaRenderEngine
         };
 
         jmap<uint32, UniformBufferDescription> m_UniformBuffers;
-        ID3D11DepthStencilState* m_DepthStencilState = nullptr;
 
 
         void clearDirectX();
 
+        void bindUniforms(ID3D11DeviceContext* deviceContext);
         void updateUniformBuffersData(ID3D11DeviceContext* deviceContext);
     };
 }

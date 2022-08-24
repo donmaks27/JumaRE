@@ -85,11 +85,21 @@ namespace JumaRenderEngine
         {
             textureSampler.value->Release();
         }
-        m_TextureSamplers.clear();
+        for (const auto& blendState : m_BlendStates)
+        {
+            blendState.value->Release();
+        }
         for (const auto& rasterizerState : m_RasterizerStates)
         {
             rasterizerState.value->Release();
         }
+        for (const auto& depthStencilState : m_DepthStencilStates)
+        {
+            depthStencilState.value->Release();
+        }
+        m_TextureSamplers.clear();
+        m_BlendStates.clear();
+        m_DepthStencilStates.clear();
         m_RasterizerStates.clear();
 
         if (m_DeviceContext != nullptr)
@@ -129,7 +139,39 @@ namespace JumaRenderEngine
         return createObject<RenderTarget_DirectX11>();
     }
 
-    ID3D11RasterizerState* RenderEngine_DirectX11::getRasterizerState(const DirectX11RasterizationDescription& description)
+    ID3D11DepthStencilState* RenderEngine_DirectX11::getDepthStencilState(const DepthStencilState& description)
+    {
+        ID3D11DepthStencilState** statePtr = m_DepthStencilStates.find(description);
+        if (statePtr != nullptr)
+        {
+            return *statePtr;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthStateDescription{};
+        depthStateDescription.DepthEnable = description.depthEnabled ? TRUE : FALSE;
+        depthStateDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        depthStateDescription.DepthFunc = D3D11_COMPARISON_LESS;
+        depthStateDescription.StencilEnable = description.stencilEnabled ? TRUE : FALSE;
+        depthStateDescription.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+        depthStateDescription.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+        depthStateDescription.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDescription.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDescription.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDescription.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+        depthStateDescription.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDescription.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDescription.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDescription.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+        ID3D11DepthStencilState* depthStencilState = nullptr;
+        const HRESULT result = m_Device->CreateDepthStencilState(&depthStateDescription, &depthStencilState);
+        if (FAILED(result))
+        {
+            JUTILS_ERROR_LOG(result, JSTR("Failed to create depth stencil state"));
+            return nullptr;
+        }
+        return m_DepthStencilStates.add(description, depthStencilState);
+    }
+    ID3D11RasterizerState* RenderEngine_DirectX11::getRasterizerState(const RasterizationState& description)
     {
         ID3D11RasterizerState** statePtr = m_RasterizerStates.find(description);
         if (statePtr != nullptr)
@@ -156,6 +198,34 @@ namespace JumaRenderEngine
             return nullptr;
         }
         return m_RasterizerStates.add(description, rasterizerState);
+    }
+    ID3D11BlendState* RenderEngine_DirectX11::getBlendState(const BlendState& description)
+    {
+        ID3D11BlendState** statePtr = m_BlendStates.find(description);
+        if (statePtr != nullptr)
+        {
+            return *statePtr;
+        }
+
+        D3D11_BLEND_DESC blendDescription{};
+        blendDescription.AlphaToCoverageEnable = FALSE;
+        blendDescription.IndependentBlendEnable = FALSE;
+        blendDescription.RenderTarget[0].BlendEnable = description.blendEnabled ? TRUE : FALSE;
+        blendDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+        blendDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
+        blendDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        blendDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+        blendDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+        blendDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        blendDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        ID3D11BlendState* blendState;
+        const HRESULT result = m_Device->CreateBlendState(&blendDescription, &blendState);
+        if (FAILED(result))
+        {
+            JUTILS_ERROR_LOG(result, JSTR("Failed to create blend state"));
+            return nullptr;
+        }
+        return m_BlendStates.add(description, blendState);
     }
     ID3D11SamplerState* RenderEngine_DirectX11::getTextureSampler(const TextureSamplerType samplerType)
     {

@@ -46,8 +46,6 @@ namespace JumaRenderEngine
         ID3D11DepthStencilView* m_DepthAttachmentView = nullptr;
         ID3D11ShaderResourceView* m_ResultImageView = nullptr;
 
-        ID3D11RasterizerState* m_RasterizerState = nullptr;
-
 
         bool initWindowRenderTarget();
         bool initRenderTarget(ID3D11Texture2D* resultImage);

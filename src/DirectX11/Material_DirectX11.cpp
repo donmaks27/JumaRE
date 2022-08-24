@@ -48,31 +48,11 @@ namespace JumaRenderEngine
                 m_UniformBuffers.add(uniformBufferDescription.key, { uniformBuffer, uniformBufferDescription.value.shaderStages });
             }
         }
-
-        D3D11_DEPTH_STENCIL_DESC depthStateDescription{};
-        depthStateDescription.DepthEnable = TRUE;
-        depthStateDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-        depthStateDescription.DepthFunc = D3D11_COMPARISON_LESS;
-        depthStateDescription.StencilEnable = FALSE;
-        const HRESULT result = device->CreateDepthStencilState(&depthStateDescription, &m_DepthStencilState);
-        if (FAILED(result))
-        {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create DirectX11 depth stencil state"));
-            clearDirectX();
-            return false;
-        }
-
         return true;
     }
 
     void Material_DirectX11::clearDirectX()
     {
-        if (m_DepthStencilState != nullptr)
-        {
-            m_DepthStencilState->Release();
-            m_DepthStencilState = nullptr;
-        }
-
         for (const auto& uniformBuffer : m_UniformBuffers)
         {
             uniformBuffer.value.buffer->Release();
@@ -89,9 +69,66 @@ namespace JumaRenderEngine
 
         RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
         ID3D11DeviceContext* deviceContext = renderEngine->getDeviceContext();
-        const Texture_DirectX11* defaultTexture = dynamic_cast<const Texture_DirectX11*>(renderEngine->getDefaultTexture());
+        
+        bindUniforms(deviceContext);
 
+        const MaterialProperties& properties = getMaterialProperties();
+        ID3D11RasterizerState* rasterizerState = renderEngine->getRasterizerState({ properties.cullBackFaces, properties.wireframe });
+        if (rasterizerState != nullptr)
+        {
+            deviceContext->RSSetState(rasterizerState);
+        }
+        ID3D11DepthStencilState* depthStencilState = renderEngine->getDepthStencilState({ properties.depthEnabled, properties.stencilEnabled });
+        if (depthStencilState != nullptr)
+        {
+            deviceContext->OMSetDepthStencilState(depthStencilState, 1);
+        }
+        ID3D11BlendState* blendState = renderEngine->getBlendState({ properties.blendEnabled });
+        if (blendState != nullptr)
+        {
+            deviceContext->OMSetBlendState(blendState, nullptr, D3D11_DEFAULT_SAMPLE_MASK);
+        }
+        return true;
+    }
+    void Material_DirectX11::unbindMaterial(const RenderOptions* renderOptions, VertexBuffer_DirectX11* vertexBuffer)
+    {
+        ID3D11DeviceContext* deviceContext = getRenderEngine<RenderEngine_DirectX11>()->getDeviceContext();
+        ID3D11ShaderResourceView* emptyTextureView = nullptr;
+        for (const auto& uniform : getShader()->getUniforms())
+        {
+            if (uniform.value.type != ShaderUniformType::Texture)
+            {
+                continue;
+            }
+            if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
+            {
+                deviceContext->VSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+            }
+            if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            {
+                deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+            }
+        }
+        ID3D11Buffer* emptyBuffer = nullptr;
+        for (const auto& uniformBuffer : m_UniformBuffers)
+        {
+            if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
+            {
+                deviceContext->VSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
+            }
+            if (uniformBuffer.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            {
+                deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
+            }
+        }
+
+        getShader<Shader_DirectX11>()->unbindShader(renderOptions, vertexBuffer);
+    }
+    
+    void Material_DirectX11::bindUniforms(ID3D11DeviceContext* deviceContext)
+    {
         updateUniformBuffersData(deviceContext);
+
         for (const auto& uniformBuffer : m_UniformBuffers)
         {
             if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
@@ -103,6 +140,9 @@ namespace JumaRenderEngine
                 deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &uniformBuffer.value.buffer);
             }
         }
+        
+        RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
+        const Texture_DirectX11* defaultTexture = dynamic_cast<const Texture_DirectX11*>(renderEngine->getDefaultTexture());
         const MaterialParamsStorage& materialParams = getMaterialParams();
         for (const auto& uniform : getShader()->getUniforms())
         {
@@ -160,45 +200,7 @@ namespace JumaRenderEngine
                 deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &textureView);
             }
         }
-
-        deviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
-        return true;
     }
-    void Material_DirectX11::unbindMaterial(const RenderOptions* renderOptions, VertexBuffer_DirectX11* vertexBuffer)
-    {
-        ID3D11DeviceContext* deviceContext = getRenderEngine<RenderEngine_DirectX11>()->getDeviceContext();
-        ID3D11ShaderResourceView* emptyTextureView = nullptr;
-        for (const auto& uniform : getShader()->getUniforms())
-        {
-            if (uniform.value.type != ShaderUniformType::Texture)
-            {
-                continue;
-            }
-            if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
-            {
-                deviceContext->VSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
-            }
-            if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
-            {
-                deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
-            }
-        }
-        ID3D11Buffer* emptyBuffer = nullptr;
-        for (const auto& uniformBuffer : m_UniformBuffers)
-        {
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
-            {
-                deviceContext->VSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
-            }
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_FRAGMENT)
-            {
-                deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
-            }
-        }
-
-        getShader<Shader_DirectX11>()->unbindShader(renderOptions, vertexBuffer);
-    }
-
     void Material_DirectX11::updateUniformBuffersData(ID3D11DeviceContext* deviceContext)
     {
         const jset<jstringID>& notUpdatedParams = getNotUpdatedParams();

@@ -49,17 +49,54 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::bindMaterial()
     {
-        const Texture_OpenGL* defaultTexture = dynamic_cast<const Texture_OpenGL*>(getRenderEngine()->getDefaultTexture());
-
-        const Shader_OpenGL* shader = getShader<Shader_OpenGL>();
-        if ((shader == nullptr) || !shader->activateShader())
+        if (!getShader<Shader_OpenGL>()->activateShader())
         {
             return false;
         }
 
+        updateUniformData();
+        for (const auto& uniformBuffer : m_UniformBufferIndices)
+        {
+            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, uniformBuffer.value);
+        }
+
+        const MaterialProperties& properties = getMaterialProperties();
+        if (properties.depthEnabled)
+        {
+            glEnable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
+        if (properties.stencilEnabled)
+        {
+            glEnable(GL_STENCIL_TEST);
+        }
+        else
+        {
+            glDisable(GL_STENCIL_TEST);
+        }
+        glPolygonMode(GL_FRONT_AND_BACK, properties.wireframe ? GL_LINE : GL_FILL);
+        glCullFace(properties.cullBackFaces ? GL_BACK : GL_FRONT);
+        if (properties.blendEnabled)
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else
+        {
+            glDisable(GL_BLEND);
+        }
+
+        return true;
+    }
+    void Material_OpenGL::updateUniformData()
+    {
+        const Texture_OpenGL* defaultTexture = dynamic_cast<const Texture_OpenGL*>(getRenderEngine()->getDefaultTexture());
         const jset<jstringID>& notUpdatedParams = getNotUpdatedParams();
         const MaterialParamsStorage& materialParams = getMaterialParams();
-        for (const auto& uniform : shader->getUniforms())
+        for (const auto& uniform : getShader()->getUniforms())
         {
             if (uniform.value.type == ShaderUniformType::Texture)
             {
@@ -139,12 +176,6 @@ namespace JumaRenderEngine
         }
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
         clearParamsForUpdate();
-        
-        for (const auto& uniformBuffer : m_UniformBufferIndices)
-        {
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, uniformBuffer.value);
-        }
-        return true;
     }
 
     void Material_OpenGL::unbindMaterial()
