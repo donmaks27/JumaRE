@@ -10,6 +10,8 @@
 
 #include "DirectX12Objects/DirectX12Buffer.h"
 #include "DirectX12Objects/DirectX12CommandQueue.h"
+#include "DirectX12Objects/DirectX12Texture.h"
+#include "../utils/RenderEngineObjectsPool.h"
 #include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 namespace JumaRenderEngine
@@ -48,8 +50,10 @@ namespace JumaRenderEngine
 
         DirectX12MipGenerator* getMipGenerator() const { return m_TextureMipGenerator; }
 
-        DirectX12Buffer* getBuffer();
-        void returnBuffer(DirectX12Buffer* buffer);
+        DirectX12Buffer* getBuffer() { return m_BuffersPool.getObject(this); }
+        DirectX12Texture* getDirectXTexture() { return m_DirectXTexturesPool.getObject(this); }
+        void returnBuffer(DirectX12Buffer* buffer) { m_BuffersPool.returnObject(buffer); }
+        void returnDirectXTexture(DirectX12Texture* texture) { m_DirectXTexturesPool.returnObject(texture); }
 
     protected:
 
@@ -79,8 +83,8 @@ namespace JumaRenderEngine
 
         DirectX12MipGenerator* m_TextureMipGenerator = nullptr;
 
-        jlist<DirectX12Buffer> m_Buffers;
-        jarray<DirectX12Buffer*> m_UnusedBuffers;
+        RenderEngineObjectsPool<DirectX12Buffer> m_BuffersPool;
+        RenderEngineObjectsPool<DirectX12Texture> m_DirectXTexturesPool;
 
 
         bool createDirectXDevice();

@@ -483,10 +483,8 @@ namespace JumaRenderEngine
         m_RenderPassTypes.clear();
         m_RenderPassTypeIDs.reset();
 
-        m_UnusedVulkanImages.clear();
-        m_UnusedVulkanBuffers.clear();
-        m_VulkanImages.clear();
-        m_VulkanBuffers.clear();
+        m_VulkanImagesPool.clear();
+        m_VulkanBuffersPool.clear();
 
         for (const auto& commandPool : m_CommandPools)
         {
@@ -524,45 +522,6 @@ namespace JumaRenderEngine
             vkDestroyInstance(m_VulkanInstance, nullptr);
             m_VulkanInstance = nullptr;
         }
-    }
-
-    VulkanBuffer* RenderEngine_Vulkan::getVulkanBuffer()
-    {
-        if (!m_UnusedVulkanBuffers.isEmpty())
-        {
-            VulkanBuffer* buffer = m_UnusedVulkanBuffers.getFirst();
-            m_UnusedVulkanBuffers.removeFirst();
-            return buffer;
-        }
-        return registerObject(&m_VulkanBuffers.addDefault());
-    }
-    VulkanImage* RenderEngine_Vulkan::getVulkanImage()
-    {
-        if (!m_UnusedVulkanImages.isEmpty())
-        {
-            VulkanImage* image = m_UnusedVulkanImages.getFirst();
-            m_UnusedVulkanImages.removeFirst();
-            return image;
-        }
-        return registerObject(&m_VulkanImages.addDefault());
-    }
-    void RenderEngine_Vulkan::returnVulkanBuffer(VulkanBuffer* buffer)
-    {
-        if (buffer == nullptr)
-        {
-            return;
-        }
-        buffer->clear();
-        m_UnusedVulkanBuffers.addUnique(buffer);
-    }
-    void RenderEngine_Vulkan::returnVulkanImage(VulkanImage* image)
-    {
-        if (image == nullptr)
-        {
-            return;
-        }
-        image->clear();
-        m_UnusedVulkanImages.addUnique(image);
     }
 
     VulkanRenderPass* RenderEngine_Vulkan::getRenderPass(const VulkanRenderPassDescription& description)

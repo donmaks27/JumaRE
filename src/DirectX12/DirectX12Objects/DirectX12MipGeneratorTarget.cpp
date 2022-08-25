@@ -22,11 +22,11 @@ namespace JumaRenderEngine
         const DXGI_FORMAT targetTextureFormat = targetTexture->getFormat();
 
         RenderEngine_DirectX12* renderEngine = targetTexture->getRenderEngine<RenderEngine_DirectX12>();
-        DirectX12Texture* stagingTexture = renderEngine->createObject<DirectX12Texture>();
+        DirectX12Texture* stagingTexture = renderEngine->getDirectXTexture();
         if (!stagingTexture->initColor(targetTexture->getSize(), 1, targetTextureFormat, mipLevelsCount, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS))
         {
             JUTILS_LOG(error, JSTR("Failed to create staging texture"));
-            delete stagingTexture;
+            renderEngine->returnDirectXTexture(stagingTexture);
             return false;
         }
 
@@ -36,7 +36,7 @@ namespace JumaRenderEngine
         if (descriptorHeap == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to create descriptor heap for mip generator target"));
-            delete stagingTexture;
+            renderEngine->returnDirectXTexture(stagingTexture);
             return false;
         }
         const uint8 descriptorSize = renderEngine->getDescriptorSize<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV>();
@@ -80,7 +80,8 @@ namespace JumaRenderEngine
         }
         if (m_StagingTexture != nullptr)
         {
-            delete m_StagingTexture;
+            RenderEngine_DirectX12* renderEngine = m_StagingTexture->getRenderEngine<RenderEngine_DirectX12>();
+            renderEngine->returnDirectXTexture(m_StagingTexture);
             m_StagingTexture = nullptr;
         }
     }

@@ -12,6 +12,7 @@
 #include "vulkanObjects/VulkanBuffer.h"
 #include "vulkanObjects/VulkanImage.h"
 #include "vulkanObjects/VulkanRenderPass.h"
+#include "../utils/RenderEngineObjectsPool.h"
 #include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 namespace JumaRenderEngine
@@ -52,10 +53,10 @@ namespace JumaRenderEngine
         const VulkanQueueDescription* getQueue(const VulkanQueueType type) const { return !m_QueueIndices.isEmpty() ? &m_Queues[m_QueueIndices[type]] : nullptr; }
         VulkanCommandPool* getCommandPool(const VulkanQueueType type) const { return !m_CommandPools.isEmpty() ? m_CommandPools[type] : nullptr; }
 
-        VulkanBuffer* getVulkanBuffer();
-        VulkanImage* getVulkanImage();
-        void returnVulkanBuffer(VulkanBuffer* buffer);
-        void returnVulkanImage(VulkanImage* image);
+        VulkanBuffer* getVulkanBuffer() { return m_VulkanBuffersPool.getObject(this); }
+        VulkanImage* getVulkanImage() { return m_VulkanImagesPool.getObject(this); }
+        void returnVulkanBuffer(VulkanBuffer* buffer) { m_VulkanBuffersPool.returnObject(buffer); }
+        void returnVulkanImage(VulkanImage* image) { m_VulkanImagesPool.returnObject(image); }
 
         VulkanRenderPass* getRenderPass(const VulkanRenderPassDescription& description);
         const VulkanRenderPassDescription* findRenderPassDescription(render_pass_type_id renderPassID) const;
@@ -101,10 +102,8 @@ namespace JumaRenderEngine
         jarray<VulkanQueueDescription> m_Queues;
         jmap<VulkanQueueType, VulkanCommandPool*> m_CommandPools;
 
-        jlist<VulkanBuffer> m_VulkanBuffers;
-        jlist<VulkanImage> m_VulkanImages;
-        jarray<VulkanBuffer*> m_UnusedVulkanBuffers;
-        jarray<VulkanImage*> m_UnusedVulkanImages;
+        RenderEngineObjectsPool<VulkanBuffer> m_VulkanBuffersPool;
+        RenderEngineObjectsPool<VulkanImage> m_VulkanImagesPool;
         
         juid<render_pass_type_id> m_RenderPassTypeIDs;
         jmap<VulkanRenderPassDescription, render_pass_type_id, VulkanRenderPassDescription::compatible_predicate> m_RenderPassTypes;

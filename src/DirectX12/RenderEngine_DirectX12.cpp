@@ -315,8 +315,7 @@ namespace JumaRenderEngine
             }
         }
 
-        m_UnusedBuffers.clear();
-        m_Buffers.clear();
+        m_BuffersPool.clear();
 
         if (m_TextureMipGenerator != nullptr)
         {
@@ -363,25 +362,6 @@ namespace JumaRenderEngine
             return nullptr;
         }
         return descriptorHeap;
-    }
-
-    DirectX12Buffer* RenderEngine_DirectX12::getBuffer()
-    {
-        if (!m_UnusedBuffers.isEmpty())
-        {
-            DirectX12Buffer* buffer = m_UnusedBuffers.getLast();
-            m_UnusedBuffers.removeLast();
-            return buffer;
-        }
-        return registerObject(&m_Buffers.addDefault());
-    }
-    void RenderEngine_DirectX12::returnBuffer(DirectX12Buffer* buffer)
-    {
-        if (buffer != nullptr)
-        {
-            buffer->clear();
-            m_UnusedBuffers.addUnique(buffer);
-        }
     }
 
     WindowController* RenderEngine_DirectX12::createWindowController()

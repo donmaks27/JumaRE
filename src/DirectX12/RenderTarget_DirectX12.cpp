@@ -74,7 +74,7 @@ namespace JumaRenderEngine
         ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
         if (samplesCount > 1)
         {
-            renderTexture = renderEngine->createObject<DirectX12Texture>();
+            renderTexture = renderEngine->getDirectXTexture();
             renderTexture->initColor(
                 size, samplesCount, GetDirectXFormatByTextureFormat(getFormat()), 1, D3D12_RESOURCE_STATE_RENDER_TARGET, 
                 D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
@@ -82,7 +82,7 @@ namespace JumaRenderEngine
             if (!renderTexture->isValid())
             {
                 JUTILS_LOG(error, JSTR("Failed to create render texture"));
-                delete renderTexture;
+                renderEngine->returnDirectXTexture(renderTexture);
                 return false;
             }
 
@@ -90,7 +90,7 @@ namespace JumaRenderEngine
             if (rtvDescriptorHeap == nullptr)
             {
                 JUTILS_LOG(error, JSTR("Failed to create RTV descriptor for render texture"));
-                delete renderTexture;
+                renderEngine->returnDirectXTexture(renderTexture);
                 return false;
             }
             device->CreateRenderTargetView(renderTexture->getResource(), nullptr, rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -112,7 +112,7 @@ namespace JumaRenderEngine
             }
         }
 
-        DirectX12Texture* depthTexture = renderEngine->createObject<DirectX12Texture>();
+        DirectX12Texture* depthTexture = renderEngine->getDirectXTexture();
         depthTexture->initDepth(
             size, samplesCount, GetDirectXFormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8), D3D12_RESOURCE_STATE_DEPTH_WRITE, 
             D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE
@@ -120,9 +120,9 @@ namespace JumaRenderEngine
         if (!depthTexture->isValid())
         {
             JUTILS_LOG(error, JSTR("Failed to create depth texture"));
-            delete depthTexture;
+            renderEngine->returnDirectXTexture(depthTexture);
             rtvDescriptorHeap->Release();
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
 
@@ -130,9 +130,9 @@ namespace JumaRenderEngine
         if (dsvDescriptorHeap == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to create descriptor heap for DSV"));
-            delete depthTexture;
+            renderEngine->returnDirectXTexture(depthTexture);
             rtvDescriptorHeap->Release();
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
         device->CreateDepthStencilView(depthTexture->getResource(), nullptr, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -159,18 +159,18 @@ namespace JumaRenderEngine
         const uint8 resolveMipLevelsCount = 0;
         //const uint8 resolveMipLevelsCount = 1;
 
-        DirectX12Texture* renderTexture = renderEngine->createObject<DirectX12Texture>();
+        DirectX12Texture* renderTexture = renderEngine->getDirectXTexture();
         renderTexture->initColor(
             size, samplesCount, format, colorMipLevelsCount, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
         );
         if (!renderTexture->isValid())
         {
             JUTILS_LOG(error, JSTR("Failed to create render texture"));
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
 
-        DirectX12Texture* depthTexture = renderEngine->createObject<DirectX12Texture>();
+        DirectX12Texture* depthTexture = renderEngine->getDirectXTexture();
         depthTexture->initDepth(
             size, samplesCount, GetDirectXFormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8), D3D12_RESOURCE_STATE_DEPTH_WRITE, 
             D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE
@@ -178,22 +178,22 @@ namespace JumaRenderEngine
         if (!depthTexture->isValid())
         {
             JUTILS_LOG(error, JSTR("Failed to create depth texture"));
-            delete depthTexture;
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(depthTexture);
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
 
         DirectX12Texture* resolveTexture = nullptr;
         if (shouldResolve)
         {
-            resolveTexture = renderEngine->createObject<DirectX12Texture>();
+            resolveTexture = renderEngine->getDirectXTexture();
             resolveTexture->initColor(size, 1, format, resolveMipLevelsCount, D3D12_RESOURCE_STATE_RESOLVE_DEST);
             if (!resolveTexture->isValid())
             {
                 JUTILS_LOG(error, JSTR("Failed to create resolve texture"));
-                delete resolveTexture;
-                delete depthTexture;
-                delete renderTexture;
+                renderEngine->returnDirectXTexture(resolveTexture);
+                renderEngine->returnDirectXTexture(depthTexture);
+                renderEngine->returnDirectXTexture(renderTexture);
                 return false;
             }
         }
@@ -202,9 +202,9 @@ namespace JumaRenderEngine
         if (rtvDescriptorHeap == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to create RTV descriptor heap"));
-            delete resolveTexture;
-            delete depthTexture;
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(resolveTexture);
+            renderEngine->returnDirectXTexture(depthTexture);
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
         ID3D12DescriptorHeap* dsvDescriptorHeap = renderEngine->createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -212,9 +212,9 @@ namespace JumaRenderEngine
         {
             JUTILS_LOG(error, JSTR("Failed to create descriptor heap for DSV"));
             rtvDescriptorHeap->Release();
-            delete resolveTexture;
-            delete depthTexture;
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(resolveTexture);
+            renderEngine->returnDirectXTexture(depthTexture);
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
         ID3D12DescriptorHeap* srvDescriptorHeap = renderEngine->createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, false);
@@ -223,9 +223,9 @@ namespace JumaRenderEngine
             JUTILS_LOG(error, JSTR("Failed to create descriptor heap for SRV"));
             dsvDescriptorHeap->Release();
             rtvDescriptorHeap->Release();
-            delete resolveTexture;
-            delete depthTexture;
-            delete renderTexture;
+            renderEngine->returnDirectXTexture(resolveTexture);
+            renderEngine->returnDirectXTexture(depthTexture);
+            renderEngine->returnDirectXTexture(renderTexture);
             return false;
         }
 
@@ -269,21 +269,22 @@ namespace JumaRenderEngine
             m_DescriptorHeapRTV = nullptr;
         }
 
+        RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
         if (m_ColorTexture != nullptr)
         {
-            delete m_ColorTexture;
+            renderEngine->returnDirectXTexture(m_ColorTexture);
             m_ColorTexture = nullptr;
         }
         if (m_DepthTexture != nullptr)
         {
-            delete m_DepthTexture;
+            renderEngine->returnDirectXTexture(m_DepthTexture);
             m_DepthTexture = nullptr;
         }
         if (!isWindowRenderTarget())
         {
             for (const auto& texture : m_ResultTextures)
             {
-                delete texture; // TODO: Create texture object with RenderEngine
+                renderEngine->returnDirectXTexture(texture);
             }
         }
         m_ResultTextures.clear();

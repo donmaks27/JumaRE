@@ -19,12 +19,12 @@ namespace JumaRenderEngine
     {
         RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
 
-        DirectX12Texture* texture = renderEngine->createObject<DirectX12Texture>();
+        DirectX12Texture* texture = renderEngine->getDirectXTexture();
         texture->initColor(size, 1, GetDirectXFormatByTextureFormat(format), 1, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_NONE);
         if (!texture->isValid())
         {
             JUTILS_LOG(error, JSTR("Failed to create DirectX12Texture object"));
-            delete texture;
+            renderEngine->returnDirectXTexture(texture);
             return false;
         }
 
@@ -43,7 +43,7 @@ namespace JumaRenderEngine
         {
             JUTILS_LOG(error, JSTR("Failed to create staging buffer"));
             renderEngine->returnBuffer(stagingBuffer);
-            delete texture;
+            renderEngine->returnDirectXTexture(texture);
             return false;
         }
 
@@ -68,6 +68,7 @@ namespace JumaRenderEngine
         dstCopyLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         dstCopyLocation.SubresourceIndex = 0;
         commandList->CopyTextureRegion(&dstCopyLocation, 0, 0, 0, &srcCopyLocation, nullptr);
+        // TODO: Handle texture state change
         /*D3D12_RESOURCE_BARRIER resourceBarrier{};
         resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -92,7 +93,7 @@ namespace JumaRenderEngine
         if (srvDescriptorHeap == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to create SRV descriptor for texture"));
-            delete texture;
+            renderEngine->returnDirectXTexture(texture);
             return false;
         }
 
@@ -103,6 +104,8 @@ namespace JumaRenderEngine
 
     void Texture_DirectX12::clearDirectX()
     {
+        RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
+
         if (m_DescriptorHeapSRV != nullptr)
         {
             m_DescriptorHeapSRV->Release();
@@ -110,7 +113,7 @@ namespace JumaRenderEngine
         }
         if (m_Texture != nullptr)
         {
-            delete m_Texture;
+            renderEngine->returnDirectXTexture(m_Texture);
             m_Texture = nullptr;
         }
     }
