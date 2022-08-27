@@ -221,4 +221,30 @@ namespace JumaRenderEngine
             m_ChangedWindowSizes.clear();
         }
     }
+
+    void WindowController::updateWindowInputButtonState(const window_id windowID, const InputDeviceType device, const InputButton button, 
+        const InputButtonAction action, const input_mods_type mods)
+    {
+        WindowData* windowData = getWindowData(windowID);
+        if (windowData->inputData.setButtonState(device, button, action, mods))
+        {
+            // TODO: Notify button
+            switch (action)
+            {
+            case InputButtonAction::Press: JUTILS_LOG(correct, JSTR("Button")); break;
+            case InputButtonAction::Repeate: JUTILS_LOG(info, JSTR("Button")); break;
+            case InputButtonAction::Release: JUTILS_LOG(warning, JSTR("Button")); break;
+            default: ;
+            }
+        }
+    }
+    void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDeviceType device, const InputAxis axis, 
+        const math::vector2& value, const input_mods_type mods)
+    {
+        WindowData* windowData = getWindowData(windowID);
+        if (windowData->inputData.setAxisState(device, axis, value, mods))
+        {
+            // TODO: Notify axis
+        }
+    }
 }

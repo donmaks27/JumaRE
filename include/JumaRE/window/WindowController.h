@@ -13,6 +13,7 @@
 
 #include "WindowMode.h"
 #include "window_id.h"
+#include "../input/InputData.h"
 #include "../texture/TextureSamples.h"
 
 namespace JumaRenderEngine
@@ -31,6 +32,7 @@ namespace JumaRenderEngine
         TextureSamples samples = TextureSamples::X1;
 
         bool minimized = false;
+        InputData inputData;
     };
     
     struct WindowCreateInfo
@@ -97,6 +99,11 @@ namespace JumaRenderEngine
 
         virtual bool setMainWindowModeInternal(WindowMode windowMode) = 0;
         void updateMainWindowMode(WindowMode windowMode);
+
+        void updateWindowInputButtonState(window_id windowID, InputDeviceType device, InputButton button, InputButtonAction action, 
+            input_mods_type mods);
+        void updateWindowInputAxisState(window_id windowID, InputDeviceType device, InputAxis axis, const math::vector2& value, 
+            input_mods_type mods);
 
     private:
 
