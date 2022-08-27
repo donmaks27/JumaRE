@@ -32,6 +32,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) override;
+        virtual void clearAsset() override;
 
     private:
 

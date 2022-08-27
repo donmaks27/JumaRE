@@ -51,6 +51,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Material_DirectX11::clearAsset()
+    {
+        clearDirectX();
+        Super::clearAsset();
+    }
     void Material_DirectX11::clearDirectX()
     {
         for (const auto& uniformBuffer : m_UniformBuffers)

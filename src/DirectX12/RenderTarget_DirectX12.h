@@ -33,6 +33,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() override;
+        virtual void clearAsset() override;
 
         virtual DirectX12Texture* getMipGeneratorTargetTexture() const override
         {

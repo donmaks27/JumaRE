@@ -110,7 +110,7 @@ namespace JumaRenderEngine
     {
         if (windowData->windowRenderTarget != nullptr)
         {
-            delete windowData->windowRenderTarget;
+            getRenderEngine()->destroyRenderTarget(windowData->windowRenderTarget);
             windowData->windowRenderTarget = nullptr;
         }
     }
@@ -130,7 +130,11 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            destroyRenderTarget(windowID, getWindowData(windowID));
+            WindowData* windowData = getWindowData(windowID);
+            if (windowData != nullptr)
+            {
+                windowData->windowRenderTarget = nullptr;
+            }
         }
     }
 

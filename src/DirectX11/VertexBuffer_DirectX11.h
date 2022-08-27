@@ -23,6 +23,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(VertexBufferData* verticesData) override;
+        virtual void clearAsset() override;
 
     private:
 

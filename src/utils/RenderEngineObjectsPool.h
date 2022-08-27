@@ -9,7 +9,7 @@
 
 namespace JumaRenderEngine
 {
-    template<typename ObjectType, TEMPLATE_ENABLE(is_base_and_not_abstract<RenderEngineContextObjectBase, ObjectType>)>
+    template<typename ObjectType, typename StoreObjectType = ObjectType, TEMPLATE_ENABLE(is_base_and_not_abstract<RenderEngineContextObjectBase, StoreObjectType> && is_base<ObjectType, StoreObjectType>)>
     class RenderEngineObjectsPool
     {
     public:
@@ -42,7 +42,7 @@ namespace JumaRenderEngine
 
     private:
 
-        jlist<ObjectType> m_Objects;
+        jlist<StoreObjectType> m_Objects;
         jarray<ObjectType*> m_UnusedObjects;
 
 

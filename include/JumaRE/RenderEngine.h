@@ -53,36 +53,45 @@ namespace JumaRenderEngine
         template<typename T, TEMPLATE_ENABLE(is_base<RenderPipeline, T>)>
         T* getRenderPipeline() const { return dynamic_cast<T*>(getRenderPipeline()); }
 
+        RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
         VertexBuffer* createVertexBuffer(VertexBufferData* verticesData);
-        const VertexDescription* findVertexType(const jstringID& vertexName) const { return m_RegisteredVertexTypes.find(vertexName); }
+        Shader* createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
+        Material* createMaterial(Shader* shader);
+        Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
 
+        void destroyRenderTarget(RenderTarget* renderTarget);
+        void destroyVertexBuffer(VertexBuffer* vertexBuffer);
+        void destroyShader(Shader* shader);
+        void destroyMaterial(Material* material);
+        void destroyTexture(Texture* texture);
+
+        const VertexDescription* findVertexType(const jstringID& vertexName) const { return m_RegisteredVertexTypes.find(vertexName); }
         virtual math::vector2 getScreenCoordinateModifier() const { return { 1.0f, 1.0f }; }
         virtual bool shouldFlipLoadedTextures() const { return false; }
 
-        Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
         Texture* getDefaultTexture() const { return m_DefaultTexture; }
-
-        Shader* createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, 
-            jmap<jstringID, ShaderUniform> uniforms = {});
-        Material* createMaterial(Shader* shader);
-
-        RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
 
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);
         virtual void clearInternal() { clearData(); }
 
-        void clearRenderAssets();
+        void clearAssets();
         void clearData();
 
         virtual WindowController* createWindowController() = 0;
-        virtual VertexBuffer* createVertexBufferInternal() = 0;
-        virtual Texture* createTextureInternal() = 0;
-        virtual Shader* createShaderInternal() = 0;
-        virtual Material* createMaterialInternal() = 0;
-        virtual RenderTarget* createRenderTargetInternal() = 0;
         virtual RenderPipeline* createRenderPipelineInternal();
+        virtual RenderTarget* allocateRenderTarget() = 0;
+        virtual VertexBuffer* allocateVertexBuffer() = 0;
+        virtual Shader* allocateShader() = 0;
+        virtual Material* allocateMaterial() = 0;
+        virtual Texture* allocateTexture() = 0;
+
+        virtual void deallocateRenderTarget(RenderTarget* renderTarget) = 0;
+        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) = 0;
+        virtual void deallocateShader(Shader* shader) = 0;
+        virtual void deallocateMaterial(Material* material) = 0;
+        virtual void deallocateTexture(Texture* texture) = 0;
 
         virtual void onRegisteredVertexType(const jstringID& vertexName) {}
 

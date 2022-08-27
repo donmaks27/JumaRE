@@ -102,6 +102,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Texture_DirectX12::clearAsset()
+    {
+        clearDirectX();
+        Super::clearAsset();
+    }
     void Texture_DirectX12::clearDirectX()
     {
         RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();

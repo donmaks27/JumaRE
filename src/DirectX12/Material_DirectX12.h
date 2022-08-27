@@ -16,6 +16,8 @@ namespace JumaRenderEngine
 
     class Material_DirectX12 final : public Material
     {
+        using Super = Material;
+
     public:
         Material_DirectX12() = default;
         virtual ~Material_DirectX12() override;
@@ -26,6 +28,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() override;
+        virtual void clearAsset() override;
 
     private:
 

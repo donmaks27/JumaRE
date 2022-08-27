@@ -106,6 +106,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Shader_DirectX11::clearAsset()
+    {
+        clearDirectX();
+        Super::clearAsset();
+    }
     void Shader_DirectX11::clearDirectX()
     {
         for (const auto& inputLayout : m_VertexInputLayouts)

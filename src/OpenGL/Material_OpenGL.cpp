@@ -38,6 +38,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Material_OpenGL::clearAsset()
+    {
+        clearOpenGL();
+        Super::clearAsset();
+    }
     void Material_OpenGL::clearOpenGL()
     {
         for (const auto& buffer : m_UniformBufferIndices)

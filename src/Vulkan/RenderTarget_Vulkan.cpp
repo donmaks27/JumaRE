@@ -132,6 +132,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void RenderTarget_Vulkan::clearAsset()
+    {
+        clearVulkan();
+        Super::clearAsset();
+    }
     void RenderTarget_Vulkan::clearVulkan()
     {
         if (isWindowRenderTarget())

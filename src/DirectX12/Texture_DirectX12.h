@@ -14,6 +14,8 @@ namespace JumaRenderEngine
 
     class Texture_DirectX12 final : public Texture
     {
+        using Super = Texture;
+
     public:
         Texture_DirectX12() = default;
         virtual ~Texture_DirectX12() override;
@@ -24,6 +26,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const math::uvector2& size, TextureFormat format, const uint8* data) override;
+        virtual void clearAsset() override;
 
     private:
 

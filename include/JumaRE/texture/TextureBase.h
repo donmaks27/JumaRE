@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../core.h"
-#include "../RenderEngineContextObject.h"
+#include "../RenderEngineAsset.h"
 
 #include <jutils/math/vector2.h>
 
@@ -16,7 +16,7 @@ namespace JumaRenderEngine
         return math::roundDown<uint8>(static_cast<float>(std::log2(math::min(size.x, size.y)))) + 1;
     }
 
-    class TextureBase : public RenderEngineContextObjectBase
+    class TextureBase : public RenderEngineAsset
     {
     public:
         TextureBase() = default;

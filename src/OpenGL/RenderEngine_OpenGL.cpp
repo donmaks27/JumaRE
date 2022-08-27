@@ -6,11 +6,6 @@
 
 #include <GL/glew.h>
 
-#include "Material_OpenGL.h"
-#include "RenderTarget_OpenGL.h"
-#include "Shader_OpenGL.h"
-#include "Texture_OpenGL.h"
-#include "VertexBuffer_OpenGL.h"
 #include "window/WindowControllerImpl_OpenGL.h"
 
 namespace JumaRenderEngine
@@ -27,7 +22,12 @@ namespace JumaRenderEngine
     }
     void RenderEngine_OpenGL::clearOpenGL()
     {
-        clearRenderAssets();
+        clearAssets();
+        m_MaterialsPool.clear();
+        m_TexturesPool.clear();
+        m_ShadersPool.clear();
+        m_VertexBuffersPool.clear();
+        m_RenderTargetsPool.clear();
 
         for (const auto& sampler : m_SamplerObjectIndices)
         {
@@ -39,26 +39,6 @@ namespace JumaRenderEngine
     WindowController* RenderEngine_OpenGL::createWindowController()
     {
         return registerObject(CreateWindowController_OpenGL());
-    }
-    VertexBuffer* RenderEngine_OpenGL::createVertexBufferInternal()
-    {
-        return createObject<VertexBuffer_OpenGL>();
-    }
-    Texture* RenderEngine_OpenGL::createTextureInternal()
-    {
-        return createObject<Texture_OpenGL>();
-    }
-    Shader* RenderEngine_OpenGL::createShaderInternal()
-    {
-        return createObject<Shader_OpenGL>();
-    }
-    Material* RenderEngine_OpenGL::createMaterialInternal()
-    {
-        return createObject<Material_OpenGL>();
-    }
-    RenderTarget* RenderEngine_OpenGL::createRenderTargetInternal()
-    {
-        return createObject<RenderTarget_OpenGL>();
     }
 
     uint32 RenderEngine_OpenGL::getTextureSamplerIndex(const TextureSamplerType sampler)

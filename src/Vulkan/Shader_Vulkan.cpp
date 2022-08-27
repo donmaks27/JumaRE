@@ -203,6 +203,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Shader_Vulkan::clearAsset()
+    {
+        clearVulkan();
+        Super::clearAsset();
+    }
     void Shader_Vulkan::clearVulkan()
     {
         VkDevice device = getRenderEngine<RenderEngine_Vulkan>()->getDevice();

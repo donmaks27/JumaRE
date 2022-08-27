@@ -22,6 +22,8 @@ namespace JumaRenderEngine
 
     class Shader_DirectX12 final : public Shader
     {
+        using Super = Shader;
+
     public:
         Shader_DirectX12() = default;
         virtual ~Shader_DirectX12() override;
@@ -35,6 +37,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) override;
+        virtual void clearAsset() override;
 
     private:
         

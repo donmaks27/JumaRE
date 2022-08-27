@@ -12,6 +12,8 @@ namespace JumaRenderEngine
 
     class VertexBuffer_DirectX12 final : public VertexBuffer
     {
+        using Super = VertexBuffer;
+
     public:
         VertexBuffer_DirectX12() = default;
         virtual ~VertexBuffer_DirectX12() override;
@@ -21,6 +23,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(VertexBufferData* verticesData) override;
+        virtual void clearAsset() override;
 
     private:
 

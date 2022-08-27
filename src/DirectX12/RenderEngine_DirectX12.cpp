@@ -10,12 +10,7 @@
 #include <dxgidebug.h>
 #endif
 
-#include "Material_DirectX12.h"
 #include "RenderPipeline_DirectX12.h"
-#include "RenderTarget_DirectX12.h"
-#include "Shader_DirectX12.h"
-#include "Texture_DirectX12.h"
-#include "VertexBuffer_DirectX12.h"
 #include "DirectX12Objects/DirectX12MipGenerator.h"
 #include "window/WindowControllerImpl_DirectX12.h"
 
@@ -306,7 +301,12 @@ namespace JumaRenderEngine
             commandQueue.value.waitForFinish();
         }
 
-        clearRenderAssets();
+        clearAssets();
+        m_MaterialsPool.clear();
+        m_TexturesPool.clear();
+        m_ShadersPool.clear();
+        m_VertexBuffersPool.clear();
+        m_RenderTargetsPool.clear();
         {
             WindowController_DirectX12* windowController = getWindowController<WindowController_DirectX12>();
             if (windowController != nullptr)
@@ -367,26 +367,6 @@ namespace JumaRenderEngine
     WindowController* RenderEngine_DirectX12::createWindowController()
     {
         return registerObject(CreateWindowController_DirectX12());
-    }
-    VertexBuffer* RenderEngine_DirectX12::createVertexBufferInternal()
-    {
-        return createObject<VertexBuffer_DirectX12>();
-    }
-    Texture* RenderEngine_DirectX12::createTextureInternal()
-    {
-        return createObject<Texture_DirectX12>();
-    }
-    Shader* RenderEngine_DirectX12::createShaderInternal()
-    {
-        return createObject<Shader_DirectX12>();
-    }
-    Material* RenderEngine_DirectX12::createMaterialInternal()
-    {
-        return createObject<Material_DirectX12>();
-    }
-    RenderTarget* RenderEngine_DirectX12::createRenderTargetInternal()
-    {
-        return createObject<RenderTarget_DirectX12>();
     }
     RenderPipeline* RenderEngine_DirectX12::createRenderPipelineInternal()
     {

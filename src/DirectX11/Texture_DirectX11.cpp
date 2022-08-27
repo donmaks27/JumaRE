@@ -65,6 +65,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Texture_DirectX11::clearAsset()
+    {
+        clearDirectX();
+        Super::clearAsset();
+    }
     void Texture_DirectX11::clearDirectX()
     {
         if (m_TextureView != nullptr)

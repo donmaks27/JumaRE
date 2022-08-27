@@ -310,6 +310,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Material_Vulkan::clearAsset()
+    {
+        clearVulkan();
+        Super::clearAsset();
+    }
     void Material_Vulkan::clearVulkan()
     {
         RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();

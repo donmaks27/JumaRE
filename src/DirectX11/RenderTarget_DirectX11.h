@@ -34,6 +34,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() override;
+        virtual void clearAsset() override;
 
         virtual bool recreateRenderTarget() override;
 

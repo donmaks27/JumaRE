@@ -8,6 +8,11 @@
 
 #include "D3D12MemAlloc.h"
 
+#include "Material_DirectX12.h"
+#include "RenderTarget_DirectX12.h"
+#include "Shader_DirectX12.h"
+#include "Texture_DirectX12.h"
+#include "VertexBuffer_DirectX12.h"
 #include "DirectX12Objects/DirectX12Buffer.h"
 #include "DirectX12Objects/DirectX12CommandQueue.h"
 #include "DirectX12Objects/DirectX12Texture.h"
@@ -61,12 +66,18 @@ namespace JumaRenderEngine
         virtual void clearInternal() override;
 
         virtual WindowController* createWindowController() override;
-        virtual VertexBuffer* createVertexBufferInternal() override;
-        virtual Texture* createTextureInternal() override;
-        virtual Shader* createShaderInternal() override;
-        virtual Material* createMaterialInternal() override;
-        virtual RenderTarget* createRenderTargetInternal() override;
         virtual RenderPipeline* createRenderPipelineInternal() override;
+        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getObject(this); }
+        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getObject(this); }
+        virtual Shader* allocateShader() override { return m_ShadersPool.getObject(this); }
+        virtual Material* allocateMaterial() override { return m_MaterialsPool.getObject(this); }
+        virtual Texture* allocateTexture() override { return m_TexturesPool.getObject(this); }
+
+        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnObject(renderTarget); }
+        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnObject(vertexBuffer); }
+        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnObject(shader); }
+        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnObject(material); }
+        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnObject(texture); }
 
     private:
 
@@ -82,6 +93,12 @@ namespace JumaRenderEngine
         ID3D12DescriptorHeap* m_SamplersDescriptorHeap = nullptr;
 
         DirectX12MipGenerator* m_TextureMipGenerator = nullptr;
+
+        RenderEngineObjectsPool<RenderTarget, RenderTarget_DirectX12> m_RenderTargetsPool;
+        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_DirectX12> m_VertexBuffersPool;
+        RenderEngineObjectsPool<Shader, Shader_DirectX12> m_ShadersPool;
+        RenderEngineObjectsPool<Material, Material_DirectX12> m_MaterialsPool;
+        RenderEngineObjectsPool<Texture, Texture_DirectX12> m_TexturesPool;
 
         RenderEngineObjectsPool<DirectX12Buffer> m_BuffersPool;
         RenderEngineObjectsPool<DirectX12Texture> m_DirectXTexturesPool;

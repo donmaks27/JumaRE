@@ -6,6 +6,12 @@
 
 #include "../../include/JumaRE/RenderEngine.h"
 
+#include "Material_DirectX11.h"
+#include "RenderTarget_DirectX11.h"
+#include "Shader_DirectX11.h"
+#include "Texture_DirectX11.h"
+#include "VertexBuffer_DirectX11.h"
+#include "../utils/RenderEngineObjectsPool.h"
 #include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 struct ID3D11Device;
@@ -69,18 +75,30 @@ namespace JumaRenderEngine
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo) override;
         virtual void clearInternal() override;
-
+        
         virtual WindowController* createWindowController() override;
-        virtual VertexBuffer* createVertexBufferInternal() override;
-        virtual Texture* createTextureInternal() override;
-        virtual Shader* createShaderInternal() override;
-        virtual Material* createMaterialInternal() override;
-        virtual RenderTarget* createRenderTargetInternal() override;
+        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getObject(this); }
+        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getObject(this); }
+        virtual Shader* allocateShader() override { return m_ShadersPool.getObject(this); }
+        virtual Material* allocateMaterial() override { return m_MaterialsPool.getObject(this); }
+        virtual Texture* allocateTexture() override { return m_TexturesPool.getObject(this); }
+
+        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnObject(renderTarget); }
+        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnObject(vertexBuffer); }
+        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnObject(shader); }
+        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnObject(material); }
+        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnObject(texture); }
 
     private:
 
         ID3D11Device* m_Device = nullptr;
         ID3D11DeviceContext* m_DeviceContext = nullptr;
+        
+        RenderEngineObjectsPool<RenderTarget, RenderTarget_DirectX11> m_RenderTargetsPool;
+        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_DirectX11> m_VertexBuffersPool;
+        RenderEngineObjectsPool<Shader, Shader_DirectX11> m_ShadersPool;
+        RenderEngineObjectsPool<Material, Material_DirectX11> m_MaterialsPool;
+        RenderEngineObjectsPool<Texture, Texture_DirectX11> m_TexturesPool;
 
         jmap<DepthStencilState, ID3D11DepthStencilState*> m_DepthStencilStates;
         jmap<RasterizationState, ID3D11RasterizerState*> m_RasterizerStates;

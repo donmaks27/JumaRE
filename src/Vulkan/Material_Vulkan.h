@@ -29,6 +29,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() override;
+        virtual void clearAsset() override;
 
     private:
 

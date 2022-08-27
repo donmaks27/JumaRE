@@ -6,12 +6,7 @@
 
 #include "RenderEngine_Vulkan.h"
 
-#include "Material_Vulkan.h"
 #include "RenderPipeline_Vulkan.h"
-#include "RenderTarget_Vulkan.h"
-#include "Shader_Vulkan.h"
-#include "Texture_Vulkan.h"
-#include "VertexBuffer_Vulkan.h"
 #include "vulkanObjects/VulkanCommandPool.h"
 #include "window/WindowControllerImpl_Vulkan.h"
 
@@ -46,26 +41,6 @@ namespace JumaRenderEngine
     WindowController* RenderEngine_Vulkan::createWindowController()
     {
         return registerObject(CreateWindowController_Vulkan());
-    }
-    VertexBuffer* RenderEngine_Vulkan::createVertexBufferInternal()
-    {
-        return createObject<VertexBuffer_Vulkan>();
-    }
-    Texture* RenderEngine_Vulkan::createTextureInternal()
-    {
-        return createObject<Texture_Vulkan>();
-    }
-    Shader* RenderEngine_Vulkan::createShaderInternal()
-    {
-        return createObject<Shader_Vulkan>();
-    }
-    Material* RenderEngine_Vulkan::createMaterialInternal()
-    {
-        return createObject<Material_Vulkan>();
-    }
-    RenderTarget* RenderEngine_Vulkan::createRenderTargetInternal()
-    {
-        return createObject<RenderTarget_Vulkan>();
     }
     RenderPipeline* RenderEngine_Vulkan::createRenderPipelineInternal()
     {
@@ -462,7 +437,12 @@ namespace JumaRenderEngine
             vkDeviceWaitIdle(m_Device);
         }
 
-        clearRenderAssets();
+        clearAssets();
+        m_MaterialsPool.clear();
+        m_TexturesPool.clear();
+        m_ShadersPool.clear();
+        m_VertexBuffersPool.clear();
+        m_RenderTargetsPool.clear();
         {
             WindowController_Vulkan* windowController = getWindowController<WindowController_Vulkan>();
             if (windowController != nullptr)

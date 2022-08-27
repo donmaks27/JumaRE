@@ -300,6 +300,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Shader_DirectX12::clearAsset()
+    {
+        clearDirectX();
+        Super::clearAsset();
+    }
     void Shader_DirectX12::clearDirectX()
     {
         for (const auto& pipelineState : m_PipelineStates)
@@ -361,6 +366,7 @@ namespace JumaRenderEngine
         }
 
         jarray<D3D12_INPUT_ELEMENT_DESC> inputLayouts;
+        inputLayouts.reserve(getRequiredVertexComponents().getSize());
         for (const auto& requiredVertexComponent : getRequiredVertexComponents())
         {
             bool componentFound = false;

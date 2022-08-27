@@ -81,13 +81,9 @@ namespace JumaRenderEngine
 
         return true;
     }
-    void RenderEngine::clearRenderAssets()
+    void RenderEngine::clearAssets()
     {
-        if (m_DefaultTexture != nullptr)
-        {
-            delete m_DefaultTexture;
-            m_DefaultTexture = nullptr;
-        }
+        m_DefaultTexture = nullptr;
         if (m_RenderPipeline != nullptr)
         {
             delete m_RenderPipeline;
@@ -128,6 +124,35 @@ namespace JumaRenderEngine
     {
         return createObject<RenderPipeline>();
     }
+    
+    RenderTarget* RenderEngine::createWindowRenderTarget(const window_id windowID, const TextureSamples samples)
+    {
+        RenderTarget* renderTarget = allocateRenderTarget();
+        if (!renderTarget->init(windowID, samples))
+        {
+            destroyRenderTarget(renderTarget);
+            return nullptr;
+        }
+        return renderTarget;
+    }
+    RenderTarget* RenderEngine::createRenderTarget(const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
+    {
+        RenderTarget* renderTarget = allocateRenderTarget();
+        if (!renderTarget->init(format, size, samples))
+        {
+            destroyRenderTarget(renderTarget);
+            return nullptr;
+        }
+        return renderTarget;
+    }
+    void RenderEngine::destroyRenderTarget(RenderTarget* renderTarget)
+    {
+        if (renderTarget != nullptr)
+        {
+            renderTarget->clearAsset();
+            deallocateRenderTarget(renderTarget);
+        }
+    }
 
     VertexBuffer* RenderEngine::createVertexBuffer(VertexBufferData* verticesData)
     {
@@ -136,10 +161,10 @@ namespace JumaRenderEngine
             return nullptr;
         }
 
-        VertexBuffer* vertexBuffer = createVertexBufferInternal();
+        VertexBuffer* vertexBuffer = allocateVertexBuffer();
         if (!vertexBuffer->init(verticesData))
         {
-            delete vertexBuffer;
+            destroyVertexBuffer(vertexBuffer);
             return nullptr;
         }
         return vertexBuffer;
@@ -167,58 +192,70 @@ namespace JumaRenderEngine
         onRegisteredVertexType(vertexName);
         return description;
     }
-
-    Texture* RenderEngine::createTexture(const math::uvector2& size, const TextureFormat format, const uint8* data)
+    void RenderEngine::destroyVertexBuffer(VertexBuffer* vertexBuffer)
     {
-        Texture* texture = createTextureInternal();
-        if (!texture->init(size, format, data))
+        if (vertexBuffer != nullptr)
         {
-            delete texture;
-            return nullptr;
+            vertexBuffer->clearAsset();
+            deallocateVertexBuffer(vertexBuffer);
         }
-        return texture;
     }
 
     Shader* RenderEngine::createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, 
         jmap<jstringID, ShaderUniform> uniforms)
     {
-        Shader* shader = createShaderInternal();
+        Shader* shader = allocateShader();
         if (!shader->init(fileNames, std::move(vertexComponents), std::move(uniforms)))
         {
-            delete shader;
+            destroyShader(shader);
             return nullptr;
         }
         return shader;
     }
+    void RenderEngine::destroyShader(Shader* shader)
+    {
+        if (shader != nullptr)
+        {
+            shader->clearAsset();
+            deallocateShader(shader);
+        }
+    }
+
     Material* RenderEngine::createMaterial(Shader* shader)
     {
-        Material* material = createMaterialInternal();
+        Material* material = allocateMaterial();
         if (!material->init(shader))
         {
-            delete material;
+            destroyMaterial(material);
             return nullptr;
         }
         return material;
     }
-
-    RenderTarget* RenderEngine::createWindowRenderTarget(const window_id windowID, const TextureSamples samples)
+    void RenderEngine::destroyMaterial(Material* material)
     {
-        RenderTarget* renderTarget = createRenderTargetInternal();
-        if (!renderTarget->init(windowID, samples))
+        if (material != nullptr)
         {
-            delete renderTarget;
-            return nullptr;
+            material->clearAsset();
+            deallocateMaterial(material);
         }
-        return renderTarget;
     }
-    RenderTarget* RenderEngine::createRenderTarget(const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
+
+    Texture* RenderEngine::createTexture(const math::uvector2& size, const TextureFormat format, const uint8* data)
     {
-        RenderTarget* renderTarget = createRenderTargetInternal();
-        if (!renderTarget->init(format, size, samples))
+        Texture* texture = allocateTexture();
+        if (!texture->init(size, format, data))
         {
-            delete renderTarget;
+            destroyTexture(texture);
             return nullptr;
         }
-        return renderTarget;
+        return texture;
+    }
+    void RenderEngine::destroyTexture(Texture* texture)
+    {
+        if (texture != nullptr)
+        {
+            texture->clearAsset();
+            deallocateTexture(texture);
+        }
     }
 }

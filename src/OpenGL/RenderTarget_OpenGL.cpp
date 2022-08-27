@@ -145,6 +145,11 @@ namespace JumaRenderEngine
         }
     }
 
+    void RenderTarget_OpenGL::clearAsset()
+    {
+        clearOpenGL();
+        Super::clearAsset();
+    }
     void RenderTarget_OpenGL::clearOpenGL()
     {
         clearFramebuffers();

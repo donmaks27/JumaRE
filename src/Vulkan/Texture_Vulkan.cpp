@@ -49,6 +49,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Texture_Vulkan::clearAsset()
+    {
+        clearVulkan();
+        Super::clearAsset();
+    }
     void Texture_Vulkan::clearVulkan()
     {
         if (m_Image != nullptr)

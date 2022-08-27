@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../core.h"
-#include "../RenderEngineContextObject.h"
+#include "../RenderEngineAsset.h"
 
 #include <jutils/jstringID.h>
 
@@ -13,7 +13,7 @@ namespace JumaRenderEngine
     class Material;
     class VertexBufferData;
 
-    class VertexBuffer : public RenderEngineContextObjectBase
+    class VertexBuffer : public RenderEngineAsset
     {
         friend RenderEngine;
 
@@ -30,6 +30,7 @@ namespace JumaRenderEngine
         bool init(VertexBufferData* verticesData);
 
         virtual bool initInternal(VertexBufferData* verticesData) = 0;
+        virtual void clearAsset() override { clearData(); }
 
     private:
 

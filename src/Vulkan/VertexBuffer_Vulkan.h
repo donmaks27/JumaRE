@@ -12,6 +12,8 @@ namespace JumaRenderEngine
 
     class VertexBuffer_Vulkan final : public VertexBuffer
     {
+        using Super = VertexBuffer;
+
     public:
         VertexBuffer_Vulkan() = default;
         virtual ~VertexBuffer_Vulkan() override;
@@ -21,6 +23,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(VertexBufferData* verticesData) override;
+        virtual void clearAsset() override;
 
     private:
 

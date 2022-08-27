@@ -58,6 +58,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void VertexBuffer_OpenGL::clearAsset()
+    {
+        clearOpenGL();
+        Super::clearAsset();
+    }
     void VertexBuffer_OpenGL::clearOpenGL()
     {
         if (!m_VertexArrayIndices.isEmpty())

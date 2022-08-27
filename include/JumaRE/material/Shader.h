@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../core.h"
-#include "../RenderEngineContextObject.h"
+#include "../RenderEngineAsset.h"
 
 #include <jutils/jmap.h>
 #include <jutils/jset.h>
@@ -19,7 +19,7 @@ namespace JumaRenderEngine
         uint8 shaderStages = 0;
     };
 
-    class Shader : public RenderEngineContextObjectBase
+    class Shader : public RenderEngineAsset
     {
         friend RenderEngine;
 
@@ -37,6 +37,7 @@ namespace JumaRenderEngine
         bool init(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) = 0;
+        virtual void clearAsset() override { clearData(); }
 
     private:
 

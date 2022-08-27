@@ -70,6 +70,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void VertexBuffer_Vulkan::clearAsset()
+    {
+        clearVulkan();
+        Super::clearAsset();
+    }
     void VertexBuffer_Vulkan::clearVulkan()
     {
         if (m_VertexBuffer != nullptr)

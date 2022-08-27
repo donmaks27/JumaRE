@@ -30,6 +30,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Texture_OpenGL::clearAsset()
+    {
+        clearOpenGL();
+        Super::clearAsset();
+    }
     void Texture_OpenGL::clearOpenGL()
     {
         if (m_TextureIndex != 0)

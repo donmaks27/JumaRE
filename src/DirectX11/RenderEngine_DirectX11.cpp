@@ -6,11 +6,6 @@
 
 #include <d3d11.h>
 
-#include "Material_DirectX11.h"
-#include "RenderTarget_DirectX11.h"
-#include "Shader_DirectX11.h"
-#include "Texture_DirectX11.h"
-#include "VertexBuffer_DirectX11.h"
 #include "window/WindowControllerImpl_DirectX11.h"
 #include "window/WindowController_DirectX11.h"
 
@@ -72,7 +67,12 @@ namespace JumaRenderEngine
     }
     void RenderEngine_DirectX11::clearDirectX()
     {
-        clearRenderAssets();
+        clearAssets();
+        m_MaterialsPool.clear();
+        m_TexturesPool.clear();
+        m_ShadersPool.clear();
+        m_VertexBuffersPool.clear();
+        m_RenderTargetsPool.clear();
         {
             WindowController_DirectX11* windowController = getWindowController<WindowController_DirectX11>();
             if (windowController != nullptr)
@@ -117,26 +117,6 @@ namespace JumaRenderEngine
     WindowController* RenderEngine_DirectX11::createWindowController()
     {
         return registerObject(CreateWindowController_DirectX11());
-    }
-    VertexBuffer* RenderEngine_DirectX11::createVertexBufferInternal()
-    {
-        return createObject<VertexBuffer_DirectX11>();
-    }
-    Texture* RenderEngine_DirectX11::createTextureInternal()
-    {
-        return createObject<Texture_DirectX11>();
-    }
-    Shader* RenderEngine_DirectX11::createShaderInternal()
-    {
-        return createObject<Shader_DirectX11>();
-    }
-    Material* RenderEngine_DirectX11::createMaterialInternal()
-    {
-        return createObject<Material_DirectX11>();
-    }
-    RenderTarget* RenderEngine_DirectX11::createRenderTargetInternal()
-    {
-        return createObject<RenderTarget_DirectX11>();
     }
 
     ID3D11DepthStencilState* RenderEngine_DirectX11::getDepthStencilState(const DepthStencilState& description)

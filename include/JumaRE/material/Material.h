@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../core.h"
-#include "../RenderEngineContextObject.h"
+#include "../RenderEngineAsset.h"
 
 #include <jutils/jset.h>
 
@@ -14,7 +14,7 @@ namespace JumaRenderEngine
 {
     class Shader;
 
-    class Material : public RenderEngineContextObjectBase
+    class Material : public RenderEngineAsset
     {
         friend RenderEngine;
 
@@ -48,6 +48,7 @@ namespace JumaRenderEngine
         bool init(Shader* shader);
 
         virtual bool initInternal() = 0;
+        virtual void clearAsset() override { clearData(); }
 
         template<typename T, TEMPLATE_ENABLE(is_base<Shader, T>)>
         T* getShader() const { return dynamic_cast<T*>(getShader()); }
