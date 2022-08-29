@@ -197,6 +197,85 @@ namespace JumaRenderEngine
             renderTarget->invalidate();
         }
     }
+    
+    void WindowController::updateWindowFocused(const window_id focusedWindowID, const bool focused)
+    {
+        if (focused)
+        {
+            if (m_FocusedWindowID != focusedWindowID)
+            {
+                m_FocusedWindowID = focusedWindowID;
+                // TODO: Notify
+            }
+        }
+        else if (m_FocusedWindowID == focusedWindowID)
+        {
+            m_FocusedWindowID = window_id_INVALID;
+            // TODO: Notify
+        }
+    }
+    void WindowController::updateWindowCursorPosition(const window_id windowID, const math::ivector2& position, const math::ivector2& offset)
+    {
+        if (m_CursorLockedToMainWindow && ((windowID != m_MainWindowID) || (m_FocusedWindowID != m_MainWindowID)))
+        {
+            return;
+        }
+
+        WindowData* windowData = getWindowData(windowID);
+        if (!m_CursorLockedToMainWindow)
+        {
+            windowData->cursorPosition = position;
+        }
+        else
+        {
+            const math::ivector2 newPosition = offset + windowData->cursorPosition;
+            windowData->cursorPosition.x = static_cast<uint32>(math::clamp(newPosition.x, 0, windowData->size.x));
+            windowData->cursorPosition.y = static_cast<uint32>(math::clamp(newPosition.y, 0, windowData->size.y));
+            updateWindowInputAxisState(windowID, InputDeviceType::Mouse, InputAxis::Mouse2D, offset, 0);
+        }
+    }
+    void WindowController::setCursorLockedToMainWindow(const bool locked)
+    {
+        if ((m_CursorLockedToMainWindow != locked) && setCursorLockedToMainWindowInternal(locked))
+        {
+            m_CursorLockedToMainWindow = locked;
+            resetLockedCursorPosition();
+        }
+    }
+    void WindowController::resetLockedCursorPosition()
+    {
+        if (m_CursorLockedToMainWindow)
+        {
+            WindowData* windowData = getWindowData(getMainWindowID());
+            windowData->cursorPosition = windowData->size / 2;
+        }
+    }
+    
+    void WindowController::updateWindowInputButtonState(const window_id windowID, const InputDeviceType device, const InputButton button, 
+        const InputButtonAction action, const input_mods_type mods)
+    {
+        WindowData* windowData = getWindowData(windowID);
+        if (windowData->inputData.setButtonState(device, button, action, mods))
+        {
+            OnInputButton.call(this, windowData, device, button, action);
+        }
+    }
+    void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDeviceType device, const InputAxis axis, 
+        const math::vector2& value, const input_mods_type mods)
+    {
+        WindowData* windowData = getWindowData(windowID);
+        if (windowData->inputData.setAxisState(device, axis, value, mods))
+        {
+            if (IsInputAxis2D(axis))
+            {
+                OnInputAxis2D.call(this, windowData, device, axis, value);
+            }
+            else
+            {
+                OnInputAxis.call(this, windowData, device, axis, value.x);
+            }
+        }
+    }
 
     void WindowController::updateWindows()
     {
@@ -219,32 +298,6 @@ namespace JumaRenderEngine
                 }
             }
             m_ChangedWindowSizes.clear();
-        }
-    }
-
-    void WindowController::updateWindowInputButtonState(const window_id windowID, const InputDeviceType device, const InputButton button, 
-        const InputButtonAction action, const input_mods_type mods)
-    {
-        WindowData* windowData = getWindowData(windowID);
-        if (windowData->inputData.setButtonState(device, button, action, mods))
-        {
-            // TODO: Notify button
-            switch (action)
-            {
-            case InputButtonAction::Press: JUTILS_LOG(correct, JSTR("Button")); break;
-            case InputButtonAction::Repeate: JUTILS_LOG(info, JSTR("Button")); break;
-            case InputButtonAction::Release: JUTILS_LOG(warning, JSTR("Button")); break;
-            default: ;
-            }
-        }
-    }
-    void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDeviceType device, const InputAxis axis, 
-        const math::vector2& value, const input_mods_type mods)
-    {
-        WindowData* windowData = getWindowData(windowID);
-        if (windowData->inputData.setAxisState(device, axis, value, mods))
-        {
-            // TODO: Notify axis
         }
     }
 }

@@ -26,12 +26,13 @@ namespace JumaRenderEngine
         window_id windowID = window_id_INVALID;
 
         RenderTarget* windowRenderTarget = nullptr;
+        TextureSamples samples = TextureSamples::X1;
 
         math::uvector2 desiredSize = { 0, 0 };
         math::uvector2 size = { 0, 0 };
-        TextureSamples samples = TextureSamples::X1;
-
         bool minimized = false;
+
+        math::uvector2 cursorPosition;
         InputData inputData;
     };
     
@@ -43,6 +44,9 @@ namespace JumaRenderEngine
     };
 
     CREATE_JUTILS_MULTICAST_DELEGATE_TwoParams(OnWindowControllerWindowEvent, WindowController*, windowController, const WindowData*, windowData);
+    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputButtonEvent, WindowController*, windowController, const WindowData*, windowData, InputDeviceType, device, InputButton, button, InputButtonAction, action);
+    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxisEvent, WindowController*, windowController, const WindowData*, windowData, InputDeviceType, device, InputAxis, axis, float, value);
+    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxis2DEvent, WindowController*, windowController, const WindowData*, windowData, InputDeviceType, device, InputAxis, axis, const math::vector2&, value);
 
     class WindowController : public RenderEngineContextObjectBase
     {
@@ -55,6 +59,9 @@ namespace JumaRenderEngine
         using WindowDataType = WindowData;
 
         OnWindowControllerWindowEvent OnWindowPropertiesChanged;
+        OnWindowControllerInputButtonEvent OnInputButton;
+        OnWindowControllerInputAxisEvent OnInputAxis;
+        OnWindowControllerInputAxis2DEvent OnInputAxis2D;
 
 
         window_id createWindow(const WindowCreateInfo& createInfo);
@@ -73,6 +80,11 @@ namespace JumaRenderEngine
 
         bool setMainWindowMode(WindowMode windowMode);
         WindowMode getMainWindowMode() const { return m_MainWindowMode; }
+
+        window_id getFocusedWindowID() const { return m_FocusedWindowID; }
+        void setCursorLockedToMainWindow(bool locked);
+        bool isCursorLockedToMainWindow() const { return m_CursorLockedToMainWindow; }
+        void resetLockedCursorPosition();
 
         virtual bool onStartRender() { return !isAllWindowsMinimized(); }
         virtual bool onStartWindowRender(const window_id windowID) { return !isWindowMinimized(windowID); }
@@ -100,22 +112,27 @@ namespace JumaRenderEngine
         virtual bool setMainWindowModeInternal(WindowMode windowMode) = 0;
         void updateMainWindowMode(WindowMode windowMode);
 
+        void updateWindowFocused(window_id focusedWindowID, bool focused);
+        void updateWindowCursorPosition(window_id windowID, const math::ivector2& position, const math::ivector2& offset);
+        virtual bool setCursorLockedToMainWindowInternal(bool locked) = 0;
+
         void updateWindowInputButtonState(window_id windowID, InputDeviceType device, InputButton button, InputButtonAction action, 
-            input_mods_type mods);
+            input_mods_type mods = 0);
         void updateWindowInputAxisState(window_id windowID, InputDeviceType device, InputAxis axis, const math::vector2& value, 
-            input_mods_type mods);
+            input_mods_type mods = 0);
 
     private:
 
         juid<window_id> m_WindowIDs;
         jarray<window_id> m_CreatedWindowIDs;
 
-        window_id m_MainWindowID = window_id_INVALID;
-        WindowMode m_MainWindowMode = WindowMode::Normal;
-
         jmap<window_id, math::uvector2> m_ChangedWindowSizes;
 
+        window_id m_MainWindowID = window_id_INVALID;
         uint8 m_MinimizedWindowsCount = 0;
+        WindowMode m_MainWindowMode = WindowMode::Normal;
+        window_id m_FocusedWindowID = window_id_INVALID;
+        bool m_CursorLockedToMainWindow = false;
 
 
         void clearData();

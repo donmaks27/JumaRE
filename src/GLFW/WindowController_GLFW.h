@@ -20,6 +20,8 @@ namespace JumaRenderEngine
         math::ivector2 originalWindowPosition;
         math::ivector2 originalMonitorSize;
         int32 originalMonitorRedreshRate = 0;
+
+        math::ivector2 cachedCursorPosotion = { 0, 0 };
     };
 
     template<typename BaseWindowController, TEMPLATE_ENABLE(is_base_and_not_same<WindowController, BaseWindowController>)>
@@ -47,6 +49,8 @@ namespace JumaRenderEngine
 
         virtual bool setMainWindowModeInternal(WindowMode windowMode) override;
 
+        virtual bool setCursorLockedToMainWindowInternal(bool locked) override;
+
     private:
 
         static inline WindowController_GLFW* GlobalWindowController = nullptr;
@@ -60,12 +64,12 @@ namespace JumaRenderEngine
 
         static void GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, int width, int height);
         static void GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, int minimized);
+        static void GLFW_WindowFocusCallback(GLFWwindow* window, int focused);
 
         static void GLFW_KeyboarbCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
         static void GLFW_MouseButtonCallback(GLFWwindow* window, int buttonCode, int action, int mods);
         static void GLFW_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
         static void GLFW_CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
-        static void GLFW_CursorEnterCallback(GLFWwindow* window, int entered);
         static void GLFW_TextInputCallback(GLFWwindow* window, unsigned int codepoint);
         static void GLFW_JoystickCallback(int joystickID, int eventCode);
     };
@@ -147,8 +151,14 @@ namespace JumaRenderEngine
 
         windowData->windowGLFW = window;
         glfwSetWindowUserPointer(window, windowData);
+
+        double x = 0, y = 0;
+        glfwGetCursorPos(window, &x, &y);
+        windowData->cachedCursorPosotion = { math::roundDown(static_cast<float>(x)), math::roundDown(static_cast<float>(y)) };
+
         glfwSetFramebufferSizeCallback(window, WindowController_GLFW::GLFW_FramebufferResizeCallback);
         glfwSetWindowIconifyCallback(window, WindowController_GLFW::GLFW_WindowMinimizationCallback);
+        glfwSetWindowFocusCallback(window, WindowController_GLFW::GLFW_WindowFocusCallback);
 
         glfwSetKeyCallback(window, WindowController_GLFW::GLFW_KeyboarbCallback);
         glfwSetMouseButtonCallback(window, WindowController_GLFW::GLFW_MouseButtonCallback);
@@ -188,6 +198,15 @@ namespace JumaRenderEngine
         if (windowData != nullptr)
         {
             GlobalWindowController->updateWindowMinimization(windowData->windowID, minimized == GLFW_TRUE);
+        }
+    }
+    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
+    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_WindowFocusCallback(GLFWwindow* window, const int focused)
+    {
+        const WindowData* windowData = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+        if (windowData != nullptr)
+        {
+            GlobalWindowController->updateWindowFocused(windowData->windowID, focused == GLFW_TRUE);
         }
     }
 
@@ -252,6 +271,18 @@ namespace JumaRenderEngine
     }
 
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
+    bool WindowController_GLFW<BaseWindowController, Condition>::setCursorLockedToMainWindowInternal(const bool locked)
+    {
+        WindowDataType* windowData = this->template getWindowData<WindowDataType>(this->getMainWindowID());
+        if (windowData == nullptr)
+        {
+            return false;
+        }
+        glfwSetInputMode(windowData->windowGLFW, GLFW_CURSOR, locked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        return true;
+    }
+
+    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::updateWindows()
     {
         glfwPollEvents();
@@ -308,7 +339,6 @@ namespace JumaRenderEngine
             return;
         }
 
-        constexpr InputDeviceType device = InputDeviceType::Keyboard;
         InputButton button = InputButton::NONE;
         switch (key)
         {
@@ -423,8 +453,8 @@ namespace JumaRenderEngine
         GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDeviceType::Keyboard, button, buttonAction, inputMods);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_MouseButtonCallback(GLFWwindow* window, const int buttonCode, const int action, 
-        const int mods)
+    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_MouseButtonCallback(GLFWwindow* window, const int buttonCode, 
+        const int action, const int mods)
     {
         const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
         if (windowData == nullptr)
@@ -432,7 +462,6 @@ namespace JumaRenderEngine
             return;
         }
 
-        constexpr InputDeviceType device = InputDeviceType::Mouse;
         InputButton button = InputButton::NONE;
         switch (buttonCode)
         {
@@ -449,7 +478,7 @@ namespace JumaRenderEngine
         const InputButtonAction buttonAction = GetInputButtonActionByGLFW(action);
         const input_mods_type inputMods = GetInputModsByGLFW(mods);
 
-        // TODO: Input button event
+        GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDeviceType::Mouse, button, buttonAction, inputMods);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_ScrollCallback(GLFWwindow* window, const double xoffset, const double yoffset)
@@ -464,34 +493,22 @@ namespace JumaRenderEngine
         constexpr InputAxis axis = InputAxis::MouseWheel;
         const float offset = static_cast<float>(yoffset);
 
-        // TODO: Input axis event
+        GlobalWindowController->updateWindowInputAxisState(windowData->windowID, InputDeviceType::Mouse, InputAxis::MouseWheel, { offset, 0.0f }, 0);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_CursorPositionCallback(GLFWwindow* window, const double xpos, 
         const double ypos)
     {
-        const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
+        WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
         if (windowData == nullptr)
         {
             return;
         }
 
-        constexpr InputDeviceType device = InputDeviceType::Mouse;
-
-        // TODO: Cursor position. Cache prev position, handle offset
-        // TODO: Input axis event
-    }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_CursorEnterCallback(GLFWwindow* window, const int entered)
-    {
-        const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
-        if (windowData == nullptr)
-        {
-            return;
-        }
-
-        const bool cursorInWindow = entered == GLFW_TRUE;
-        // TODO: Cursor enter/leave
+        const math::ivector2 position = { math::roundDown(static_cast<float>(xpos)), math::roundDown(static_cast<float>(ypos)) };
+        const math::ivector2 offset = position - windowData->cachedCursorPosotion;
+        windowData->cachedCursorPosotion = position;
+        GlobalWindowController->updateWindowCursorPosition(windowData->windowID, position, offset);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_TextInputCallback(GLFWwindow* window, const unsigned int codepoint)
