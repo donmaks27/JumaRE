@@ -50,6 +50,8 @@ namespace JumaRenderEngine
         windowData->samples = createInfo.samples;
         windowData->minimized = false;
 
+        updateWindowFocused(windowID, true);
+
         if (!createRenderTarget(windowID, windowData))
         {
             destroyWindow(windowID);
@@ -249,32 +251,40 @@ namespace JumaRenderEngine
             windowData->cursorPosition = windowData->size / 2;
         }
     }
+
+    void WindowController::updateGamepadConnected(const gamepad_index_type gamepadIndex, const bool connected)
+    {
+        if (IsGamepadIndexValid(gamepadIndex))
+        {
+            if (connected)
+            {
+                m_ConnectedGamepads.add(gamepadIndex);
+                JUTILS_LOG(info, JSTR("Gamepad {} connected"), gamepadIndex + 1);
+            }
+            else
+            {
+                m_ConnectedGamepads.remove(gamepadIndex);
+                JUTILS_LOG(info, JSTR("Gamepad {} disconnected"), gamepadIndex + 1);
+            }
+        }
+    }
     
     void WindowController::updateWindowInputButtonState(const window_id windowID, const InputDeviceType device, const InputButton button, 
         const InputButtonAction action, const input_mods_type mods)
     {
         WindowData* windowData = getWindowData(windowID);
-        if (windowData->inputData.setButtonState(device, button, action, mods))
+        if ((windowData != nullptr) && windowData->inputData.setButtonState(device, button, action, mods))
         {
             m_ReceivedButtonInput.add({ windowID, device, button }, action);
-            //OnInputButton.call(this, windowData, device, button, action);
         }
     }
     void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDeviceType device, const InputAxis axis, 
         const math::vector2& value, const input_mods_type mods)
     {
         WindowData* windowData = getWindowData(windowID);
-        if (windowData->inputData.setAxisState(device, axis, value, mods))
+        if ((windowData != nullptr) && windowData->inputData.setAxisState(device, axis, value, mods))
         {
             m_ReceivedAxisInput.add({ windowID, device, axis }, value);
-            /*if (IsInputAxis2D(axis))
-            {
-                OnInputAxis2D.call(this, windowData, device, axis, value);
-            }
-            else
-            {
-                OnInputAxis.call(this, windowData, device, axis, value.x);
-            }*/
         }
     }
 

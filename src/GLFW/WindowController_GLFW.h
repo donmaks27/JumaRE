@@ -65,13 +65,15 @@ namespace JumaRenderEngine
         static void GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, int width, int height);
         static void GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, int minimized);
         static void GLFW_WindowFocusCallback(GLFWwindow* window, int focused);
+        static void GLFW_JoystickCallback(int joystickID, int eventCode);
 
         static void GLFW_KeyboarbCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
         static void GLFW_MouseButtonCallback(GLFWwindow* window, int buttonCode, int action, int mods);
         static void GLFW_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
         static void GLFW_CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
         static void GLFW_TextInputCallback(GLFWwindow* window, unsigned int codepoint);
-        static void GLFW_JoystickCallback(int joystickID, int eventCode);
+
+        void gatherGamepadsInput();
     };
 
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
@@ -156,16 +158,24 @@ namespace JumaRenderEngine
         glfwGetCursorPos(window, &x, &y);
         windowData->cachedCursorPosotion = { math::roundDown(static_cast<float>(x)), math::roundDown(static_cast<float>(y)) };
 
+        for (gamepad_index_type gamepadIndex = GLFW_JOYSTICK_1; gamepadIndex <= GLFW_JOYSTICK_16; gamepadIndex++)
+        {
+            if (glfwJoystickIsGamepad(gamepadIndex) == GLFW_TRUE)
+            {
+                GlobalWindowController->updateGamepadConnected(gamepadIndex, true);
+            }
+        }
+
         glfwSetFramebufferSizeCallback(window, WindowController_GLFW::GLFW_FramebufferResizeCallback);
         glfwSetWindowIconifyCallback(window, WindowController_GLFW::GLFW_WindowMinimizationCallback);
         glfwSetWindowFocusCallback(window, WindowController_GLFW::GLFW_WindowFocusCallback);
+        glfwSetJoystickCallback(WindowController_GLFW::GLFW_JoystickCallback);
 
         glfwSetKeyCallback(window, WindowController_GLFW::GLFW_KeyboarbCallback);
         glfwSetMouseButtonCallback(window, WindowController_GLFW::GLFW_MouseButtonCallback);
         glfwSetScrollCallback(window, WindowController_GLFW::GLFW_ScrollCallback);
         glfwSetCursorPosCallback(window, WindowController_GLFW::GLFW_CursorPositionCallback);
         glfwSetCharCallback(window, WindowController_GLFW::GLFW_TextInputCallback);
-        glfwSetJoystickCallback(WindowController_GLFW::GLFW_JoystickCallback);
         return true;
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
@@ -207,6 +217,21 @@ namespace JumaRenderEngine
         if (windowData != nullptr)
         {
             GlobalWindowController->updateWindowFocused(windowData->windowID, focused == GLFW_TRUE);
+        }
+    }
+    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
+    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_JoystickCallback(const int joystickID, const int eventCode)
+    {
+        if (eventCode == GLFW_CONNECTED)
+        {
+            if (glfwJoystickIsGamepad(joystickID) == GLFW_TRUE)
+            {
+                GlobalWindowController->updateGamepadConnected(static_cast<gamepad_index_type>(joystickID), true);
+            }
+        }
+        else if (eventCode == GLFW_DISCONNECTED)
+        {
+            GlobalWindowController->updateGamepadConnected(static_cast<gamepad_index_type>(joystickID), false);
         }
     }
 
@@ -286,6 +311,9 @@ namespace JumaRenderEngine
     void WindowController_GLFW<BaseWindowController, Condition>::updateWindows()
     {
         glfwPollEvents();
+
+        gatherGamepadsInput();
+
         Super::updateWindows();
     }
 
@@ -552,19 +580,59 @@ namespace JumaRenderEngine
         }
         // TODO: Text input
     }
+
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_JoystickCallback(const int joystickID, const int eventCode)
+    void WindowController_GLFW<BaseWindowController, Condition>::gatherGamepadsInput()
     {
-        if (eventCode == GLFW_CONNECTED)
+        const window_id focusedWindowID = GlobalWindowController->getFocusedWindowID();
+        for (const auto& gamepadIndex : GlobalWindowController->getConnectedGamepads())
         {
-            if (glfwJoystickIsGamepad(joystickID))
+            GLFWgamepadstate state;
+            if (glfwGetGamepadState(gamepadIndex, &state) == GLFW_FALSE)
             {
-                // TODO: Joystick connected
+                continue;
             }
-        }
-        else if (eventCode == GLFW_DISCONNECTED)
-        {
-            // TODO: Joystick disconnected
+            const InputDeviceType device = GetGamepadDeviceByIndex(gamepadIndex);
+
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadA, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadB, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_B] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadX, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_X] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadY, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_Y] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadBumperLeft, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadBumperRight, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadTriggerLeft, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_THUMB] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadTriggerRight, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_THUMB] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadBack, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_BACK] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadStart, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_START] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadGuide, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_GUIDE] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadDPadUp, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadDPadRight, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadDPadDown, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+            GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadDPadLeft, 
+                state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
+
+            GlobalWindowController->updateWindowInputAxisState(focusedWindowID, device, InputAxis::GamepadTriggerLeft, 
+                { state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER], 0.0f });
+            GlobalWindowController->updateWindowInputAxisState(focusedWindowID, device, InputAxis::GamepadTriggerRight, 
+                { state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER], 0.0f });
+            GlobalWindowController->updateWindowInputAxisState(focusedWindowID, device, InputAxis::GamepadStick2DLeft, 
+                { state.axes[GLFW_GAMEPAD_AXIS_LEFT_X], state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] });
+            GlobalWindowController->updateWindowInputAxisState(focusedWindowID, device, InputAxis::GamepadStick2DRight, 
+                { state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X], state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] });
         }
     }
 }

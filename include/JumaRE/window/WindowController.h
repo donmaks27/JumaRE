@@ -8,6 +8,7 @@
 #include <jutils/jarray.h>
 #include <jutils/jdelegate_multicast.h>
 #include <jutils/jmap.h>
+#include <jutils/jset.h>
 #include <jutils/juid.h>
 #include <jutils/math/vector2.h>
 
@@ -83,9 +84,12 @@ namespace JumaRenderEngine
         WindowMode getMainWindowMode() const { return m_MainWindowMode; }
 
         window_id getFocusedWindowID() const { return m_FocusedWindowID; }
+
         void setCursorLockedToMainWindow(bool locked);
         bool isCursorLockedToMainWindow() const { return m_CursorLockedToMainWindow; }
         void resetLockedCursorPosition();
+
+        const jset<gamepad_index_type>& getConnectedGamepads() const { return m_ConnectedGamepads; }
 
         virtual bool onStartRender() { return !isAllWindowsMinimized(); }
         virtual bool onStartWindowRender(const window_id windowID) { return !isWindowMinimized(windowID); }
@@ -116,6 +120,8 @@ namespace JumaRenderEngine
         void updateWindowFocused(window_id focusedWindowID, bool focused);
         void updateWindowCursorPosition(window_id windowID, const math::ivector2& position, const math::ivector2& offset);
         virtual bool setCursorLockedToMainWindowInternal(bool locked) = 0;
+
+        void updateGamepadConnected(gamepad_index_type gamepadIndex, bool connected);
 
         void updateWindowInputButtonState(window_id windowID, InputDeviceType device, InputButton button, InputButtonAction action, 
             input_mods_type mods = 0);
@@ -155,6 +161,7 @@ namespace JumaRenderEngine
 
         juid<window_id> m_WindowIDs;
         jarray<window_id> m_CreatedWindowIDs;
+        jset<gamepad_index_type> m_ConnectedGamepads;
 
         jmap<window_id, math::uvector2> m_ChangedWindowSizes;
         jmap<ReceivedWindowButtonInput, InputButtonAction> m_ReceivedButtonInput;
