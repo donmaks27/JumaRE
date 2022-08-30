@@ -74,6 +74,7 @@ namespace JumaRenderEngine
         const T* findWindowData(const window_id windowID) const { return reinterpret_cast<const T*>(findWindowData(windowID)); }
 
         virtual bool shouldCloseWindow(window_id windowID) const = 0;
+        bool isMainWindowClosed() const { return shouldCloseWindow(getMainWindowID()); }
 
         bool isWindowMinimized(window_id windowID) const;
         bool isAllWindowsMinimized() const { return static_cast<uint8>(m_CreatedWindowIDs.getSize()) == m_MinimizedWindowsCount; }
@@ -123,10 +124,41 @@ namespace JumaRenderEngine
 
     private:
 
+        struct ReceivedWindowButtonInput
+        {
+            window_id windowID = window_id_INVALID;
+            InputDeviceType device = InputDeviceType::NONE;
+            InputButton button = InputButton::NONE;
+            constexpr bool operator<(const ReceivedWindowButtonInput& input) const
+            {
+                if (windowID != input.windowID)
+                {
+                    return windowID < input.windowID;
+                }
+                return device != input.device ? device < input.device : button < input.button;
+            }
+        };
+        struct ReceivedWindowAxisInput
+        {
+            window_id windowID = window_id_INVALID;
+            InputDeviceType device = InputDeviceType::NONE;
+            InputAxis axis = InputAxis::NONE;
+            constexpr bool operator<(const ReceivedWindowAxisInput& input) const
+            {
+                if (windowID != input.windowID)
+                {
+                    return windowID < input.windowID;
+                }
+                return device != input.device ? device < input.device : axis < input.axis;
+            }
+        };
+
         juid<window_id> m_WindowIDs;
         jarray<window_id> m_CreatedWindowIDs;
 
         jmap<window_id, math::uvector2> m_ChangedWindowSizes;
+        jmap<ReceivedWindowButtonInput, InputButtonAction> m_ReceivedButtonInput;
+        jmap<ReceivedWindowAxisInput, math::vector2> m_ReceivedAxisInput;
 
         window_id m_MainWindowID = window_id_INVALID;
         uint8 m_MinimizedWindowsCount = 0;

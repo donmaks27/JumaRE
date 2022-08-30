@@ -27,6 +27,7 @@ namespace JumaRenderEngine
             return false;
         }
         m_MainWindowID = windowID;
+        m_FocusedWindowID = m_MainWindowID;
         return true;
     }
     window_id WindowController::createWindow(const WindowCreateInfo& createInfo)
@@ -205,13 +206,11 @@ namespace JumaRenderEngine
             if (m_FocusedWindowID != focusedWindowID)
             {
                 m_FocusedWindowID = focusedWindowID;
-                // TODO: Notify
             }
         }
         else if (m_FocusedWindowID == focusedWindowID)
         {
             m_FocusedWindowID = window_id_INVALID;
-            // TODO: Notify
         }
     }
     void WindowController::updateWindowCursorPosition(const window_id windowID, const math::ivector2& position, const math::ivector2& offset)
@@ -257,7 +256,8 @@ namespace JumaRenderEngine
         WindowData* windowData = getWindowData(windowID);
         if (windowData->inputData.setButtonState(device, button, action, mods))
         {
-            OnInputButton.call(this, windowData, device, button, action);
+            m_ReceivedButtonInput.add({ windowID, device, button }, action);
+            //OnInputButton.call(this, windowData, device, button, action);
         }
     }
     void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDeviceType device, const InputAxis axis, 
@@ -266,14 +266,15 @@ namespace JumaRenderEngine
         WindowData* windowData = getWindowData(windowID);
         if (windowData->inputData.setAxisState(device, axis, value, mods))
         {
-            if (IsInputAxis2D(axis))
+            m_ReceivedAxisInput.add({ windowID, device, axis }, value);
+            /*if (IsInputAxis2D(axis))
             {
                 OnInputAxis2D.call(this, windowData, device, axis, value);
             }
             else
             {
                 OnInputAxis.call(this, windowData, device, axis, value.x);
-            }
+            }*/
         }
     }
 
@@ -287,7 +288,7 @@ namespace JumaRenderEngine
                 WindowData* windowData = getWindowData(windowID);
                 if (windowData != nullptr)
                 {
-                    JUTILS_LOG(info, JSTR("Window {} size changed - {{ {}; {} }}"), windowID, changedWindowSize.value.x, changedWindowSize.value.y);
+                    JUTILS_LOG(info, JSTR("Window {} size changed - {}"), windowID, changedWindowSize.value.toString());
                     windowData->size = changedWindowSize.value;
                     if ((windowID == getMainWindowID()) && (getMainWindowMode() != WindowMode::WindowedFullscreen))
                     {
@@ -298,6 +299,38 @@ namespace JumaRenderEngine
                 }
             }
             m_ChangedWindowSizes.clear();
+        }
+
+        if (!m_ReceivedButtonInput.isEmpty())
+        {
+            for (const auto& input : m_ReceivedButtonInput)
+            {
+                const WindowData* windowData = findWindowData(input.key.windowID);
+                if (windowData != nullptr)
+                {
+                    OnInputButton.call(this, windowData, input.key.device, input.key.button, input.value);
+                }
+            }
+            m_ReceivedButtonInput.clear();
+        }
+        if (!m_ReceivedAxisInput.isEmpty())
+        {
+            for (const auto& input : m_ReceivedAxisInput)
+            {
+                const WindowData* windowData = findWindowData(input.key.windowID);
+                if (windowData != nullptr)
+                {
+                    if (IsInputAxis2D(input.key.axis))
+                    {
+                        OnInputAxis2D.call(this, windowData, input.key.device, input.key.axis, input.value);
+                    }
+                    else
+                    {
+                        OnInputAxis.call(this, windowData, input.key.device, input.key.axis, input.value.x);
+                    }
+                }
+            }
+            m_ReceivedAxisInput.clear();
         }
     }
 }

@@ -10,11 +10,14 @@
 
 namespace JumaRenderEngine
 {
+    class WindowController;
+
     class InputData
     {
+        friend WindowController;
+
     public:
         InputData() = default;
-        ~InputData() = default;
 
         bool getButtonState(InputDeviceType device, InputButton button, InputButtonAction* outAction, input_mods_type* outMods = nullptr) const;
         bool getAxisState(InputDeviceType device, InputAxis axis, float* outValue, input_mods_type* outMods = nullptr) const;
@@ -56,96 +59,4 @@ namespace JumaRenderEngine
         jmap<InputButtonDataKey, InputButtonData> m_ButtonStates;
         jmap<InputAxisDataKey, InputAxisData> m_AxisStates;
     };
-
-    inline bool InputData::getButtonState(const InputDeviceType device, const InputButton button, InputButtonAction* outAction, 
-        input_mods_type* outMods) const
-    {
-        if (!IsInputDeviceContainsInputButton(device, button))
-        {
-            return false;
-        }
-        const InputButtonData* data = m_ButtonStates.find({ button, device });
-        if (outAction != nullptr)
-        {
-            *outAction = data != nullptr ? data->action : InputButtonAction::Release;
-        }
-        if (outMods != nullptr)
-        {
-            *outMods = data != nullptr ? data->mods : 0;
-        }
-        return true;
-    }
-    inline bool InputData::getAxisState(const InputDeviceType device, const InputAxis axis, float* outValue, input_mods_type* outMods) const
-    {
-        if (!IsInputDeviceContainsInputAxis(device, axis) || IsInputAxis2D(axis))
-        {
-            return false;
-        }
-        const InputAxisData* data = m_AxisStates.find({ axis, device });
-        if (outValue != nullptr)
-        {
-            *outValue = data != nullptr ? data->value.x : 0.0f;
-        }
-        if (outMods != nullptr)
-        {
-            *outMods = data != nullptr ? data->mods : 0;
-        }
-        return true;
-    }
-    inline bool InputData::getAxisState2D(const InputDeviceType device, const InputAxis axis, math::vector2* outValue, input_mods_type* outMods) const
-    {
-        if (!IsInputDeviceContainsInputAxis(device, axis) || !IsInputAxis2D(axis))
-        {
-            return false;
-        }
-        const InputAxisData* data = m_AxisStates.find({ axis, device });
-        if (outValue != nullptr)
-        {
-            *outValue = data != nullptr ? data->value : math::vector2(0.0f, 0.0f);
-        }
-        if (outMods != nullptr)
-        {
-            *outMods = data != nullptr ? data->mods : 0;
-        }
-        return true;
-    }
-
-    inline bool InputData::setButtonState(const InputDeviceType device, const InputButton button, const InputButtonAction action, 
-        const input_mods_type mods)
-    {
-        if (!IsInputDeviceContainsInputButton(device, button))
-        {
-            return false;
-        }
-        m_ButtonStates.add({ button, device }, { action, mods });
-        return true;
-    }
-    inline bool InputData::setAxisState(const InputDeviceType device, const InputAxis axis, const math::vector2& value, const input_mods_type mods)
-    {
-        if (!IsInputDeviceContainsInputAxis(device, axis))
-        {
-            return false;
-        }
-        m_AxisStates.add({ axis, device }, { value, mods });
-        return true;
-    }
-    inline bool InputData::setAxisState(const InputDeviceType device, const InputAxis axis, const float value, const input_mods_type mods)
-    {
-        if (!IsInputDeviceContainsInputAxis(device, axis) && !IsInputAxis2D(axis))
-        {
-            return false;
-        }
-        m_AxisStates.add({ axis, device }, { { value, 0.0f }, mods });
-        return true;
-    }
-    inline bool InputData::setAxisState2D(const InputDeviceType device, const InputAxis axis, const math::vector2& value, 
-        const input_mods_type mods)
-    {
-        if (!IsInputDeviceContainsInputAxis(device, axis) && IsInputAxis2D(axis))
-        {
-            return false;
-        }
-        m_AxisStates.add({ axis, device }, { value, mods });
-        return true;
-    }
 }
