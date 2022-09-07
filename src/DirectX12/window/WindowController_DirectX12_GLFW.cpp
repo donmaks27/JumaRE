@@ -1,6 +1,6 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#if defined(JUMARE_ENABLE_DX12) && defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_DX12) && defined(GLFW_ENABLED)
 
 #include "WindowController_DirectX12_GLFW.h"
 
@@ -20,7 +20,7 @@ namespace JumaRenderEngine
         {
             for (auto& window : m_Windows)
             {
-                destroyWindowInternal(window.key, &window.value);
+                clearWindowDataInternal(window.key, &window.value);
             }
             m_Windows.clear();
         }
@@ -44,9 +44,9 @@ namespace JumaRenderEngine
         }
         return windowData;
     }
-    void WindowController_DirectX12_GLFW::destroyWindowInternal(window_id windowID, WindowData* windowData)
+    void WindowController_DirectX12_GLFW::destroyWindowInternal(const window_id windowID, WindowData* windowData)
     {
-        Super::destroyWindowInternal(windowID, windowData);
+        clearWindowDataInternal(windowID, windowData);
 
         m_Windows.remove(windowID);
     }

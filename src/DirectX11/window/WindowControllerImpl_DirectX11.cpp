@@ -10,7 +10,7 @@ namespace JumaRenderEngine
 {
     WindowController_DirectX11* CreateWindowController_DirectX11()
     {
-#if defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(GLFW_ENABLED)
         return new WindowController_DirectX11_GLFW();
 #else
         static_assert(false, "There is no implementation of WindowController_DirectX11 class");

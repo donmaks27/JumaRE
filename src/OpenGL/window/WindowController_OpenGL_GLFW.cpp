@@ -1,6 +1,6 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#if defined(JUMARE_ENABLE_OPENGL) && defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_OPENGL) && defined(GLFW_ENABLED)
 
 #include "WindowController_OpenGL_GLFW.h"
 
@@ -17,7 +17,7 @@ namespace JumaRenderEngine
         {
             for (auto& window : m_Windows)
             {
-                destroyWindowInternal(window.key, &window.value);
+                clearWindowDataInternal(window.key, &window.value);
             }
             m_Windows.clear();
         }
@@ -59,7 +59,7 @@ namespace JumaRenderEngine
     }
     void WindowController_OpenGL_GLFW::destroyWindowInternal(const window_id windowID, WindowData* windowData)
     {
-        Super::destroyWindowInternal(windowID, windowData);
+        clearWindowDataInternal(windowID, windowData);
 
         m_Windows.remove(windowID);
     }

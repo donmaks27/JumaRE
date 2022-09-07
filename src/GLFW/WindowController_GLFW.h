@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(GLFW_ENABLED)
 
 #include "../../include/JumaRE/window/WindowController.h"
 
@@ -45,7 +45,7 @@ namespace JumaRenderEngine
 
         bool createWindowGLFW(window_id windowID, WindowDataType* windowData, const math::uvector2& size, const jstring& title, 
             GLFWwindow* sharedWindow = nullptr);
-        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
+        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
 
         virtual bool setMainWindowModeInternal(WindowMode windowMode) override;
 
@@ -169,9 +169,9 @@ namespace JumaRenderEngine
         return true;
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::destroyWindowInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_GLFW<BaseWindowController, Condition>::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
     {
-        Super::destroyWindowInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowID, windowData);
 
         WindowDataType* windowDataGLFW = reinterpret_cast<WindowDataType*>(windowData);
         if (windowDataGLFW->windowGLFW != nullptr)

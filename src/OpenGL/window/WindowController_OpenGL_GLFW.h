@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if defined(JUMARE_ENABLE_OPENGL) && defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_OPENGL) && defined(GLFW_ENABLED)
 
 #include "WindowController_OpenGL.h"
 #include "../../GLFW/WindowController_GLFW.h"
