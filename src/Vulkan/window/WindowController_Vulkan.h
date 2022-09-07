@@ -41,7 +41,7 @@ namespace JumaRenderEngine
         static constexpr RenderAPI API = RenderAPI::Vulkan;
 
 
-        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
+        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_Vulkan* windowData);
 

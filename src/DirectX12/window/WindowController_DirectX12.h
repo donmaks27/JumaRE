@@ -39,7 +39,7 @@ namespace JumaRenderEngine
         static constexpr RenderAPI API = RenderAPI::DirectX12;
 
 
-        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) override;
+        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
 

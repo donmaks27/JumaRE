@@ -102,7 +102,8 @@ namespace JumaRenderEngine
         virtual bool initWindowController() { return true; }
 
         virtual WindowData* createWindowInternal(window_id windowID, const WindowCreateInfo& createInfo) = 0;
-        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData);
+        virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) = 0;
+        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData);
 
         virtual WindowData* getWindowData(window_id windowID) = 0;
         template<typename T, TEMPLATE_ENABLE(is_base<WindowData, T>)>

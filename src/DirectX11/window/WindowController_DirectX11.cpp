@@ -23,9 +23,9 @@ namespace JumaRenderEngine
     {
     }
 
-    void WindowController_DirectX11::destroyWindowInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_DirectX11::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
     {
-        Super::destroyWindowInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowID, windowData);
 
         WindowData_DirectX11* windowDataDirectX11 = reinterpret_cast<WindowData_DirectX11*>(windowData);
         destroyWindowSwapchain(windowID, windowDataDirectX11);

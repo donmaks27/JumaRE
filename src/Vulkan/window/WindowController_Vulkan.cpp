@@ -18,9 +18,9 @@ namespace JumaRenderEngine
     {
     }
 
-    void WindowController_Vulkan::destroyWindowInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_Vulkan::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
     {
-        Super::destroyWindowInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowID, windowData);
 
         WindowData_Vulkan* windowDataVulkan = reinterpret_cast<WindowData_Vulkan*>(windowData);
         destroyWindowSwapchain(windowID, windowDataVulkan);

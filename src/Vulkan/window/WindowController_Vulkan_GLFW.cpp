@@ -1,6 +1,6 @@
 ﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
 
-#if defined(JUMARE_ENABLE_VULKAN) && defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_VULKAN) && defined(GLFW_ENABLED)
 
 #include "WindowController_Vulkan_GLFW.h"
 
@@ -36,7 +36,7 @@ namespace JumaRenderEngine
         {
             for (auto& window : m_Windows)
             {
-                destroyWindowInternal(window.key, &window.value);
+                clearWindowDataInternal(window.key, &window.value);
             }
             m_Windows.clear();
         }
@@ -71,7 +71,7 @@ namespace JumaRenderEngine
     }
     void WindowController_Vulkan_GLFW::destroyWindowInternal(const window_id windowID, WindowData* windowData)
     {
-        Super::destroyWindowInternal(windowID, windowData);
+        clearWindowDataInternal(windowID, windowData);
 
         m_Windows.remove(windowID);
     }

@@ -78,7 +78,7 @@ namespace JumaRenderEngine
         destroyWindowInternal(windowID, windowData);
         m_CreatedWindowIDs.remove(windowID);
     }
-    void WindowController::destroyWindowInternal(const window_id windowID, WindowData* windowData)
+    void WindowController::clearWindowDataInternal(window_id windowID, WindowData* windowData)
     {
         destroyRenderTarget(windowID, windowData);
 

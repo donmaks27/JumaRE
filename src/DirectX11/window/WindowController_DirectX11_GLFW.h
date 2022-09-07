@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if defined(JUMARE_ENABLE_DX11) && defined(JUMARE_ENABLE_LIB_GLFW)
+#if defined(JUMARE_ENABLE_DX11) && defined(GLFW_ENABLED)
 
 #include "WindowController_DirectX11.h"
 #include "../../GLFW/WindowController_GLFW.h"
