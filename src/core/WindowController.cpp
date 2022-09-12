@@ -65,13 +65,18 @@ namespace JumaRenderEngine
     }
     void WindowController::destroyWindow(const window_id windowID)
     {
-        if ((windowID == window_id_INVALID) || (windowID == getMainWindowID()))
+        if (windowID == window_id_INVALID)
         {
             return;
         }
         WindowData* windowData = getWindowData(windowID);
         if (windowData == nullptr)
         {
+            return;
+        }
+        if (windowID == getMainWindowID())
+        {
+            markWindowShouldClose(windowID, windowData);
             return;
         }
 

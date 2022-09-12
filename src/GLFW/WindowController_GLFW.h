@@ -45,6 +45,7 @@ namespace JumaRenderEngine
 
         bool createWindowGLFW(window_id windowID, WindowDataType* windowData, const math::uvector2& size, const jstring& title, 
             GLFWwindow* sharedWindow = nullptr);
+        virtual void markWindowShouldClose(window_id windowID, WindowData* windowData) override;
         virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
 
         virtual bool setMainWindowModeInternal(WindowMode windowMode) override;
@@ -177,6 +178,15 @@ namespace JumaRenderEngine
         glfwSetCursorPosCallback(window, WindowController_GLFW::GLFW_CursorPositionCallback);
         glfwSetCharCallback(window, WindowController_GLFW::GLFW_TextInputCallback);
         return true;
+    }
+    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
+    void WindowController_GLFW<BaseWindowController, Condition>::markWindowShouldClose(const window_id windowID, WindowData* windowData)
+    {
+        WindowDataType* windowDataGLFW = reinterpret_cast<WindowDataType*>(windowData);
+        if (windowDataGLFW->windowGLFW != nullptr)
+        {
+            glfwSetWindowShouldClose(windowDataGLFW->windowGLFW, GLFW_TRUE);
+        }
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
