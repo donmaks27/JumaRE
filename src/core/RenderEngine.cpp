@@ -70,6 +70,7 @@ namespace JumaRenderEngine
             return false;
         }
         m_RenderPipeline = renderPipeline;
+        m_WindowController->addPipelineStages();
 
         constexpr uint8 defaultTextureData[] = { 255, 0, 255, 255 };
         m_DefaultTexture = createTexture({ 1, 1 }, TextureFormat::RGBA8, defaultTextureData);

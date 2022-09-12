@@ -9,6 +9,7 @@
 #include <jutils/jdelegate_multicast.h>
 #include <jutils/jmap.h>
 #include <jutils/jset.h>
+#include <jutils/jstringID.h>
 #include <jutils/juid.h>
 #include <jutils/math/vector2.h>
 
@@ -28,6 +29,7 @@ namespace JumaRenderEngine
 
         RenderTarget* windowRenderTarget = nullptr;
         TextureSamples samples = TextureSamples::X1;
+        jstringID pipelineStageName = jstringID_NONE;
 
         math::uvector2 desiredSize = { 0, 0 };
         math::uvector2 size = { 0, 0 };
@@ -183,5 +185,9 @@ namespace JumaRenderEngine
         void destroyRenderTarget(window_id windowID, WindowData* windowData);
         bool createRenderTargets();
         void destroyRenderTargets();
+
+        bool addPipelineStage(window_id windowID, const WindowData* windowData, bool rebuildPipeline = false);
+        bool removePipelineStage(window_id windowID, const WindowData* windowData, bool rebuildPipeline = false);
+        void addPipelineStages();
     };
 }

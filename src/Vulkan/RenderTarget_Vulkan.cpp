@@ -132,10 +132,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void RenderTarget_Vulkan::clearAsset()
+    void RenderTarget_Vulkan::clearAssetInternal()
     {
         clearVulkan();
-        Super::clearAsset();
+        Super::clearAssetInternal();
     }
     void RenderTarget_Vulkan::clearVulkan()
     {

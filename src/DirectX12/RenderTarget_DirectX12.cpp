@@ -245,10 +245,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void RenderTarget_DirectX12::clearAsset()
+    void RenderTarget_DirectX12::clearAssetInternal()
     {
         clearDirectX();
-        Super::clearAsset();
+        Super::clearAssetInternal();
     }
     void RenderTarget_DirectX12::clearDirectX()
     {

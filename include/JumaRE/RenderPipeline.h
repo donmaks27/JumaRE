@@ -50,9 +50,9 @@ namespace JumaRenderEngine
         const RenderPipelineStage* getPipelineStage(const jstringID& stageName) const { return m_PipelineStages.find(stageName); }
 
         bool addPipelineStage(const jstringID& stageName, RenderTarget* renderTarget);
-        void removePipelineStage(const jstringID& stageName);
+        bool removePipelineStage(const jstringID& stageName);
         bool addPipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
-        void removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
+        bool removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
 
         bool addRenderPrimitive(const jstringID& stageName, const RenderPrimitive& primitive);
         void clearRenderPrimitives();
@@ -84,6 +84,8 @@ namespace JumaRenderEngine
 
 
         bool init();
+
+        void onRenderTargetStartDestroying(RenderTarget* renderTarget);
 
         void clearData();
         

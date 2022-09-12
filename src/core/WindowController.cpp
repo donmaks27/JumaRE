@@ -3,6 +3,7 @@
 #include "../../include/JumaRE/window/WindowController.h"
 
 #include "../../include/JumaRE/RenderEngine.h"
+#include "../../include/JumaRE/RenderPipeline.h"
 #include "../../include/JumaRE/RenderTarget.h"
 
 namespace JumaRenderEngine
@@ -49,6 +50,7 @@ namespace JumaRenderEngine
         windowData->size = createInfo.size;
         windowData->samples = createInfo.samples;
         windowData->minimized = false;
+        windowData->pipelineStageName = JSTR("window") + TO_JSTR(windowID);
 
         updateWindowFocused(windowID, true);
 
@@ -57,6 +59,8 @@ namespace JumaRenderEngine
             destroyWindow(windowID);
             return window_id_INVALID;
         }
+
+        addPipelineStage(windowID, windowData, true);
         return windowID;
     }
     void WindowController::destroyWindow(const window_id windowID)
@@ -75,6 +79,7 @@ namespace JumaRenderEngine
         {
             m_MinimizedWindowsCount--;
         }
+        removePipelineStage(windowID, windowData, true);
         destroyWindowInternal(windowID, windowData);
         m_CreatedWindowIDs.remove(windowID);
     }
@@ -138,6 +143,51 @@ namespace JumaRenderEngine
             {
                 windowData->windowRenderTarget = nullptr;
             }
+        }
+    }
+
+    bool WindowController::addPipelineStage(const window_id windowID, const WindowData* windowData, 
+        const bool rebuildPipeline)
+    {
+        if (windowData->windowRenderTarget == nullptr)
+        {
+            return false;
+        }
+        RenderPipeline* pipeline = getRenderEngine()->getRenderPipeline();
+        if (pipeline == nullptr)
+        {
+            return false;
+        }
+        if (!pipeline->addPipelineStage(windowData->pipelineStageName, windowData->windowRenderTarget))
+        {
+            return false;
+        }
+        if (rebuildPipeline)
+        {
+            pipeline->buildPipelineQueue();
+        }
+        return true;
+    }
+    bool WindowController::removePipelineStage(const window_id windowID, const WindowData* windowData, 
+        const bool rebuildPipeline)
+    {
+        RenderPipeline* pipeline = getRenderEngine()->getRenderPipeline();
+        if ((pipeline == nullptr) || !pipeline->removePipelineStage(windowData->pipelineStageName))
+        {
+            return false;
+        }
+        if (rebuildPipeline)
+        {
+            pipeline->buildPipelineQueue();
+        }
+        return true;
+    }
+    void WindowController::addPipelineStages()
+    {
+        for (int32 index = 0; index < m_CreatedWindowIDs.getSize(); index++)
+        {
+            const window_id windowID = m_CreatedWindowIDs[index];
+            addPipelineStage(windowID, findWindowData(windowID), index == (m_CreatedWindowIDs.getSize() - 1));
         }
     }
 

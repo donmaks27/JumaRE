@@ -5,6 +5,7 @@
 #include "core.h"
 #include "texture/TextureBase.h"
 
+#include <jutils/jdelegate_multicast.h>
 #include <jutils/math/vector2.h>
 
 #include "texture/TextureFormat.h"
@@ -13,9 +14,12 @@
 
 namespace JumaRenderEngine
 {
+    class RenderTarget;
     class WindowController;
     struct WindowData;
     struct RenderOptions;
+
+    CREATE_JUTILS_MULTICAST_DELEGATE_OneParam(OnRenderTargetEvent, RenderTarget*, renderTarget);
 
     class RenderTarget : public TextureBase
     {
@@ -24,6 +28,9 @@ namespace JumaRenderEngine
     public:
         RenderTarget() = default;
         virtual ~RenderTarget() override;
+
+        OnRenderTargetEvent onStartDestroying;
+
 
         bool isWindowRenderTarget() const { return m_WindowID != window_id_INVALID; }
         window_id getWindowID() const { return m_WindowID; }
@@ -41,7 +48,8 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() { return true; }
-        virtual void clearAsset() override { clearData(); }
+        virtual void clearAsset() override final;
+        virtual void clearAssetInternal() { clearData(); }
 
         virtual bool recreateRenderTarget() { return false; }
 

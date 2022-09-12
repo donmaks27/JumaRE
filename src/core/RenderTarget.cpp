@@ -84,6 +84,12 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void RenderTarget::clearAsset()
+    {
+        onStartDestroying.call(this);
+        clearAssetInternal();
+    }
+
     void RenderTarget::onWindowPropertiesChanged(WindowController* windowController, const WindowData* windowData)
     {
         if (windowData->windowID == getWindowID())

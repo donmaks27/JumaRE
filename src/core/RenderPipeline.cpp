@@ -107,26 +107,50 @@ namespace JumaRenderEngine
         }
         if (m_PipelineStages.contains(stageName))
         {
-            JUTILS_LOG(error, JSTR("Stage already exists"));
+            JUTILS_LOG(warning, JSTR("Stage already exists"));
             return false;
         }
 
         RenderPipelineStage& newStage = m_PipelineStages.add(stageName);
         newStage.renderTarget = renderTarget;
         m_PipelineStagesQueueValid = false;
+
+        renderTarget->onStartDestroying.bind(this, &RenderPipeline::onRenderTargetStartDestroying);
         return true;
     }
-    void RenderPipeline::removePipelineStage(const jstringID& stageName)
+    bool RenderPipeline::removePipelineStage(const jstringID& stageName)
     {
         const RenderPipelineStage* stage = m_PipelineStages.find(stageName);
         if (stage != nullptr)
         {
+            stage->renderTarget->onStartDestroying.unbind(this, &RenderPipeline::onRenderTargetStartDestroying);
+            waitForRenderFinished();
+
             m_PipelineStages.remove(stageName);
             for (auto& pipelineStage : m_PipelineStages)
             {
                 pipelineStage.value.dependencies.remove(stageName);
             }
+
             m_PipelineStagesQueueValid = false;
+            return true;
+        }
+        return false;
+    }
+    void RenderPipeline::onRenderTargetStartDestroying(RenderTarget* renderTarget)
+    {
+        jstringID stageName = jstringID_NONE;
+        for (const auto& pipelineStage : m_PipelineStages)
+        {
+            if (pipelineStage.value.renderTarget == renderTarget)
+            {
+                stageName = pipelineStage.key;
+                break;
+            }
+        }
+        if (stageName != jstringID_NONE)
+        {
+            removePipelineStage(stageName);
         }
     }
 
@@ -165,13 +189,15 @@ namespace JumaRenderEngine
         m_PipelineStagesQueueValid = false;
         return true;
     }
-    void RenderPipeline::removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName)
+    bool RenderPipeline::removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName)
     {
         RenderPipelineStage* stage = m_PipelineStages.find(stageName);
         if ((stage != nullptr) && stage->dependencies.remove(dependencyStageName))
         {
             m_PipelineStagesQueueValid = false;
+            return true;
         }
+        return false;
     }
 
     bool RenderPipeline::addRenderPrimitive(const jstringID& stageName, const RenderPrimitive& primitive)
