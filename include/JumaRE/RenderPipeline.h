@@ -11,22 +11,13 @@
 
 namespace JumaRenderEngine
 {
-    class Material;
     struct RenderOptions;
     class RenderTarget;
-    class VertexBuffer;
 
-    struct RenderPrimitive
-    {
-        VertexBuffer* vertexBuffer = nullptr;
-        Material* material = nullptr;
-    };
     struct RenderPipelineStage
     {
         RenderTarget* renderTarget = nullptr;
         jset<jstringID> dependencies;
-
-        jarray<RenderPrimitive> renderPrimitives;
     };
     struct RenderPipelineStageQueueEntry
     {
@@ -53,9 +44,6 @@ namespace JumaRenderEngine
         bool removePipelineStage(const jstringID& stageName);
         bool addPipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
         bool removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
-
-        bool addRenderPrimitive(const jstringID& stageName, const RenderPrimitive& primitive);
-        void clearRenderPrimitives();
 
         bool render();
         virtual void waitForRenderFinished() {}

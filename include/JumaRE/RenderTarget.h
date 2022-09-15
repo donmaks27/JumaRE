@@ -14,12 +14,20 @@
 
 namespace JumaRenderEngine
 {
+    class VertexBuffer;
+    class Material;
     class RenderTarget;
     class WindowController;
     struct WindowData;
     struct RenderOptions;
 
     CREATE_JUTILS_MULTICAST_DELEGATE_OneParam(OnRenderTargetEvent, RenderTarget*, renderTarget);
+
+    struct RenderTargetPrimitive
+    {
+        VertexBuffer* vertexBuffer = nullptr;
+        Material* material = nullptr;
+    };
 
     class RenderTarget : public TextureBase
     {
@@ -45,6 +53,10 @@ namespace JumaRenderEngine
         void invalidate() { m_Invalid = true; }
         bool update();
 
+        bool addRenderPrimitive(const RenderTargetPrimitive& primitive);
+        void clearRenderPrimitives();
+        const jarray<RenderTargetPrimitive>& getRenderPrimitives() const { return m_RenderPrimitives; }
+
     protected:
 
         virtual bool initInternal() { return true; }
@@ -61,6 +73,8 @@ namespace JumaRenderEngine
         TextureFormat m_Format = TextureFormat::RGBA8;
 
         bool m_Invalid = true;
+
+        jarray<RenderTargetPrimitive> m_RenderPrimitives;
 
 
         bool init(window_id windowID, TextureSamples samples);

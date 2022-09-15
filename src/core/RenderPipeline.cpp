@@ -200,24 +200,6 @@ namespace JumaRenderEngine
         return false;
     }
 
-    bool RenderPipeline::addRenderPrimitive(const jstringID& stageName, const RenderPrimitive& primitive)
-    {
-        RenderPipelineStage* stage = m_PipelineStages.find(stageName);
-        if (stage == nullptr)
-        {
-            return false;
-        }
-        stage->renderPrimitives.add(primitive);
-        return true;
-    }
-    void RenderPipeline::clearRenderPrimitives()
-    {
-        for (auto& stage : m_PipelineStages)
-        {
-            stage.value.renderPrimitives.clear();
-        }
-    }
-
     bool RenderPipeline::render()
     {
         if (!isPipelineQueueValid())
@@ -245,7 +227,7 @@ namespace JumaRenderEngine
                     break;
                 }
 
-                for (const auto& renderPrimitive : pipelineStage->renderPrimitives)
+                for (const auto& renderPrimitive : pipelineStage->renderTarget->getRenderPrimitives())
                 {
                     renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
                 }

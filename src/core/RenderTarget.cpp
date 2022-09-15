@@ -103,6 +103,20 @@ namespace JumaRenderEngine
         }
     }
 
+    bool RenderTarget::addRenderPrimitive(const RenderTargetPrimitive& primitive)
+    {
+        if ((primitive.vertexBuffer == nullptr) || (primitive.material == nullptr))
+        {
+            return false;
+        }
+        m_RenderPrimitives.add(primitive);
+        return true;
+    }
+    void RenderTarget::clearRenderPrimitives()
+    {
+        m_RenderPrimitives.clear();
+    }
+
     bool RenderTarget::onStartRender(RenderOptions* renderOptions)
     {
         if (!update())
