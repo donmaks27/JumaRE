@@ -29,7 +29,7 @@ namespace JumaRenderEngine
         RenderTarget() = default;
         virtual ~RenderTarget() override;
 
-        OnRenderTargetEvent onStartDestroying;
+        OnRenderTargetEvent OnStartDestroying;
 
 
         bool isWindowRenderTarget() const { return m_WindowID != window_id_INVALID; }

@@ -86,7 +86,7 @@ namespace JumaRenderEngine
 
     void RenderTarget::clearAsset()
     {
-        onStartDestroying.call(this);
+        OnStartDestroying.call(this);
         clearAssetInternal();
     }
 

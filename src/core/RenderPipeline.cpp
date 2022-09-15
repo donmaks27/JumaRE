@@ -115,7 +115,7 @@ namespace JumaRenderEngine
         newStage.renderTarget = renderTarget;
         m_PipelineStagesQueueValid = false;
 
-        renderTarget->onStartDestroying.bind(this, &RenderPipeline::onRenderTargetStartDestroying);
+        renderTarget->OnStartDestroying.bind(this, &RenderPipeline::onRenderTargetStartDestroying);
         return true;
     }
     bool RenderPipeline::removePipelineStage(const jstringID& stageName)
@@ -123,7 +123,7 @@ namespace JumaRenderEngine
         const RenderPipelineStage* stage = m_PipelineStages.find(stageName);
         if (stage != nullptr)
         {
-            stage->renderTarget->onStartDestroying.unbind(this, &RenderPipeline::onRenderTargetStartDestroying);
+            stage->renderTarget->OnStartDestroying.unbind(this, &RenderPipeline::onRenderTargetStartDestroying);
             waitForRenderFinished();
 
             m_PipelineStages.remove(stageName);
