@@ -46,10 +46,12 @@ namespace JumaRenderEngine
         TextureSamples samples = TextureSamples::X1;
     };
 
+    CREATE_JUTILS_MULTICAST_DELEGATE_OneParam(OnWindowControllerEvent, WindowController*, windowController);
     CREATE_JUTILS_MULTICAST_DELEGATE_TwoParams(OnWindowControllerWindowEvent, WindowController*, windowController, const WindowData*, windowData);
-    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputButtonEvent, WindowController*, windowController, const WindowData*, windowData, InputDeviceType, device, InputButton, button, InputButtonAction, action);
-    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxisEvent, WindowController*, windowController, const WindowData*, windowData, InputDeviceType, device, InputAxis, axis, float, value);
-    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxis2DEvent, WindowController*, windowController, const WindowData*, windowData, InputDeviceType, device, InputAxis, axis, const math::vector2&, value);
+
+    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputButtonEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputButton, button, InputButtonAction, action);
+    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxisEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, float, value);
+    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxis2DEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, const math::vector2&, value);
 
     class WindowController : public RenderEngineContextObjectBase
     {
@@ -62,6 +64,8 @@ namespace JumaRenderEngine
         using WindowDataType = WindowData;
 
         OnWindowControllerWindowEvent OnWindowPropertiesChanged;
+        OnWindowControllerEvent OnCursorLockedFlagChanged;
+
         OnWindowControllerInputButtonEvent OnInputButton;
         OnWindowControllerInputAxisEvent OnInputAxis;
         OnWindowControllerInputAxis2DEvent OnInputAxis2D;
@@ -87,9 +91,8 @@ namespace JumaRenderEngine
 
         window_id getFocusedWindowID() const { return m_FocusedWindowID; }
 
-        void setCursorLockedToMainWindow(bool locked);
-        bool isCursorLockedToMainWindow() const { return m_CursorLockedToMainWindow; }
-        void resetLockedCursorPosition();
+        void setCursorLocked(bool locked);
+        bool isCursorLocked() const { return m_CursorLockedToMainWindow; }
 
         const jset<gamepad_index_type>& getConnectedGamepads() const { return m_ConnectedGamepads; }
 
@@ -127,9 +130,9 @@ namespace JumaRenderEngine
 
         void updateGamepadConnected(gamepad_index_type gamepadIndex, bool connected);
 
-        void updateWindowInputButtonState(window_id windowID, InputDeviceType device, InputButton button, InputButtonAction action, 
+        void updateWindowInputButtonState(window_id windowID, InputDevice device, InputButton button, InputButtonAction action, 
             input_mods_type mods = 0);
-        void updateWindowInputAxisState(window_id windowID, InputDeviceType device, InputAxis axis, const math::vector2& value, 
+        void updateWindowInputAxisState(window_id windowID, InputDevice device, InputAxis axis, const math::vector2& value, 
             input_mods_type mods = 0);
 
     private:
@@ -137,7 +140,7 @@ namespace JumaRenderEngine
         struct ReceivedWindowButtonInput
         {
             window_id windowID = window_id_INVALID;
-            InputDeviceType device = InputDeviceType::NONE;
+            InputDevice device = InputDevice::NONE;
             InputButton button = InputButton::NONE;
             constexpr bool operator<(const ReceivedWindowButtonInput& input) const
             {
@@ -151,7 +154,7 @@ namespace JumaRenderEngine
         struct ReceivedWindowAxisInput
         {
             window_id windowID = window_id_INVALID;
-            InputDeviceType device = InputDeviceType::NONE;
+            InputDevice device = InputDevice::NONE;
             InputAxis axis = InputAxis::NONE;
             constexpr bool operator<(const ReceivedWindowAxisInput& input) const
             {

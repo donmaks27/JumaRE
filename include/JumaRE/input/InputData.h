@@ -19,21 +19,21 @@ namespace JumaRenderEngine
     public:
         InputData() = default;
 
-        bool getButtonState(InputDeviceType device, InputButton button, InputButtonAction* outAction, input_mods_type* outMods = nullptr) const;
-        bool getAxisState(InputDeviceType device, InputAxis axis, float* outValue, input_mods_type* outMods = nullptr) const;
-        bool getAxisState2D(InputDeviceType device, InputAxis axis, math::vector2* outValue, input_mods_type* outMods = nullptr) const;
+        bool getButtonState(InputDevice device, InputButton button, InputButtonAction* outAction, input_mods_type* outMods = nullptr) const;
+        bool getAxisState(InputDevice device, InputAxis axis, float* outValue, input_mods_type* outMods = nullptr) const;
+        bool getAxisState2D(InputDevice device, InputAxis axis, math::vector2* outValue, input_mods_type* outMods = nullptr) const;
 
-        bool setButtonState(InputDeviceType device, InputButton button, InputButtonAction action, input_mods_type mods = 0);
-        bool setAxisState(InputDeviceType device, InputAxis axis, const math::vector2& value, input_mods_type mods = 0);
-        bool setAxisState(InputDeviceType device, InputAxis axis, float value, input_mods_type mods = 0);
-        bool setAxisState2D(InputDeviceType device, InputAxis axis, const math::vector2& value, input_mods_type mods = 0);
+        bool setButtonState(InputDevice device, InputButton button, InputButtonAction action, input_mods_type mods = 0);
+        bool setAxisState(InputDevice device, InputAxis axis, const math::vector2& value, input_mods_type mods = 0);
+        bool setAxisState(InputDevice device, InputAxis axis, float value, input_mods_type mods = 0);
+        bool setAxisState2D(InputDevice device, InputAxis axis, const math::vector2& value, input_mods_type mods = 0);
 
     private:
 
         struct InputButtonDataKey
         {
             InputButton button = InputButton::NONE;
-            InputDeviceType device = InputDeviceType::NONE;
+            InputDevice device = InputDevice::NONE;
 
             constexpr bool operator<(const InputButtonDataKey& key) const { return button != key.button ? button < key.button : device < key.device; }
         };
@@ -46,7 +46,7 @@ namespace JumaRenderEngine
         struct InputAxisDataKey
         {
             InputAxis axis = InputAxis::NONE;
-            InputDeviceType device = InputDeviceType::NONE;
+            InputDevice device = InputDevice::NONE;
 
             constexpr bool operator<(const InputAxisDataKey& key) const { return axis != key.axis ? axis < key.axis : device < key.device; }
         };

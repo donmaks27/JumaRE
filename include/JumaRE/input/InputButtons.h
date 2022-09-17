@@ -6,7 +6,7 @@
 
 namespace JumaRenderEngine
 {
-    enum class InputDeviceType : uint8
+    enum class InputDevice : uint8
     {
         NONE,
         Keyboard,
@@ -189,9 +189,9 @@ namespace JumaRenderEngine
         INPUT_MOD_FLAG_NUM_LOCK = 32
     };
 
-    constexpr bool IsInputDeviceContainsInputButton(const InputDeviceType device, const InputButton button)
+    constexpr bool IsInputDeviceContainsInputButton(const InputDevice device, const InputButton button)
     {
-        if ((device == InputDeviceType::NONE) || (button == InputButton::NONE))
+        if ((device == InputDevice::NONE) || (button == InputButton::NONE))
         {
             return false;
         }
@@ -205,7 +205,7 @@ namespace JumaRenderEngine
         case InputButton::MouseButton6:
         case InputButton::MouseButton7:
         case InputButton::MouseButton8:
-            return device == InputDeviceType::Mouse;
+            return device == InputDevice::Mouse;
 
         case InputButton::GamepadA:
         case InputButton::GamepadB:
@@ -224,22 +224,22 @@ namespace JumaRenderEngine
         case InputButton::GamepadDPadLeft:
             switch (device)
             {
-            case InputDeviceType::Gamepad1:
-            case InputDeviceType::Gamepad2:
-            case InputDeviceType::Gamepad3:
-            case InputDeviceType::Gamepad4:
-            case InputDeviceType::Gamepad5:
-            case InputDeviceType::Gamepad6:
-            case InputDeviceType::Gamepad7:
-            case InputDeviceType::Gamepad8:
-            case InputDeviceType::Gamepad9:
-            case InputDeviceType::Gamepad10:
-            case InputDeviceType::Gamepad11:
-            case InputDeviceType::Gamepad12:
-            case InputDeviceType::Gamepad13:
-            case InputDeviceType::Gamepad14:
-            case InputDeviceType::Gamepad15:
-            case InputDeviceType::Gamepad16:
+            case InputDevice::Gamepad1:
+            case InputDevice::Gamepad2:
+            case InputDevice::Gamepad3:
+            case InputDevice::Gamepad4:
+            case InputDevice::Gamepad5:
+            case InputDevice::Gamepad6:
+            case InputDevice::Gamepad7:
+            case InputDevice::Gamepad8:
+            case InputDevice::Gamepad9:
+            case InputDevice::Gamepad10:
+            case InputDevice::Gamepad11:
+            case InputDevice::Gamepad12:
+            case InputDevice::Gamepad13:
+            case InputDevice::Gamepad14:
+            case InputDevice::Gamepad15:
+            case InputDevice::Gamepad16:
                 return true;
             default: ;
             }
@@ -247,11 +247,11 @@ namespace JumaRenderEngine
 
         default: ;
         }
-        return device == InputDeviceType::Keyboard;
+        return device == InputDevice::Keyboard;
     }
-    constexpr bool IsInputDeviceContainsInputAxis(const InputDeviceType device, const InputAxis axis)
+    constexpr bool IsInputDeviceContainsInputAxis(const InputDevice device, const InputAxis axis)
     {
-        if ((device == InputDeviceType::NONE) || (axis == InputAxis::NONE))
+        if ((device == InputDevice::NONE) || (axis == InputAxis::NONE))
         {
             return false;
         }
@@ -259,7 +259,7 @@ namespace JumaRenderEngine
         {
         case InputAxis::Mouse2D:
         case InputAxis::MouseWheel:
-            return device == InputDeviceType::Mouse;
+            return device == InputDevice::Mouse;
 
         case InputAxis::GamepadTriggerLeft:
         case InputAxis::GamepadTriggerRight:
@@ -267,22 +267,22 @@ namespace JumaRenderEngine
         case InputAxis::GamepadStick2DRight:
             switch (device)
             {
-            case InputDeviceType::Gamepad1:
-            case InputDeviceType::Gamepad2:
-            case InputDeviceType::Gamepad3:
-            case InputDeviceType::Gamepad4:
-            case InputDeviceType::Gamepad5:
-            case InputDeviceType::Gamepad6:
-            case InputDeviceType::Gamepad7:
-            case InputDeviceType::Gamepad8:
-            case InputDeviceType::Gamepad9:
-            case InputDeviceType::Gamepad10:
-            case InputDeviceType::Gamepad11:
-            case InputDeviceType::Gamepad12:
-            case InputDeviceType::Gamepad13:
-            case InputDeviceType::Gamepad14:
-            case InputDeviceType::Gamepad15:
-            case InputDeviceType::Gamepad16:
+            case InputDevice::Gamepad1:
+            case InputDevice::Gamepad2:
+            case InputDevice::Gamepad3:
+            case InputDevice::Gamepad4:
+            case InputDevice::Gamepad5:
+            case InputDevice::Gamepad6:
+            case InputDevice::Gamepad7:
+            case InputDevice::Gamepad8:
+            case InputDevice::Gamepad9:
+            case InputDevice::Gamepad10:
+            case InputDevice::Gamepad11:
+            case InputDevice::Gamepad12:
+            case InputDevice::Gamepad13:
+            case InputDevice::Gamepad14:
+            case InputDevice::Gamepad15:
+            case InputDevice::Gamepad16:
                 return true;
             default: ;
             }
@@ -306,78 +306,78 @@ namespace JumaRenderEngine
     }
 
     using gamepad_index_type = int8;
-    constexpr InputDeviceType GetGamepadDeviceByIndex(const gamepad_index_type gamepadIndex)
+    constexpr InputDevice GetGamepadDeviceByIndex(const gamepad_index_type gamepadIndex)
     {
         switch (gamepadIndex)
         {
-        case 0: return InputDeviceType::Gamepad1;
-        case 1: return InputDeviceType::Gamepad2;
-        case 2: return InputDeviceType::Gamepad3;
-        case 3: return InputDeviceType::Gamepad4;
-        case 4: return InputDeviceType::Gamepad5;
-        case 5: return InputDeviceType::Gamepad6;
-        case 6: return InputDeviceType::Gamepad7;
-        case 7: return InputDeviceType::Gamepad8;
-        case 8: return InputDeviceType::Gamepad9;
-        case 9: return InputDeviceType::Gamepad10;
-        case 10: return InputDeviceType::Gamepad11;
-        case 11: return InputDeviceType::Gamepad12;
-        case 12: return InputDeviceType::Gamepad13;
-        case 13: return InputDeviceType::Gamepad14;
-        case 14: return InputDeviceType::Gamepad15;
-        case 15: return InputDeviceType::Gamepad16;
+        case 0: return InputDevice::Gamepad1;
+        case 1: return InputDevice::Gamepad2;
+        case 2: return InputDevice::Gamepad3;
+        case 3: return InputDevice::Gamepad4;
+        case 4: return InputDevice::Gamepad5;
+        case 5: return InputDevice::Gamepad6;
+        case 6: return InputDevice::Gamepad7;
+        case 7: return InputDevice::Gamepad8;
+        case 8: return InputDevice::Gamepad9;
+        case 9: return InputDevice::Gamepad10;
+        case 10: return InputDevice::Gamepad11;
+        case 11: return InputDevice::Gamepad12;
+        case 12: return InputDevice::Gamepad13;
+        case 13: return InputDevice::Gamepad14;
+        case 14: return InputDevice::Gamepad15;
+        case 15: return InputDevice::Gamepad16;
         default: ;
         }
-        return InputDeviceType::NONE;
+        return InputDevice::NONE;
     }
-    constexpr gamepad_index_type GetGamepadIndexByDevice(const InputDeviceType device)
+    constexpr gamepad_index_type GetGamepadIndexByDevice(const InputDevice device)
     {
         switch (device)
         {
-        case InputDeviceType::Gamepad1:  return 0;
-        case InputDeviceType::Gamepad2:  return 1;
-        case InputDeviceType::Gamepad3:  return 2;
-        case InputDeviceType::Gamepad4:  return 3;
-        case InputDeviceType::Gamepad5:  return 4;
-        case InputDeviceType::Gamepad6:  return 5;
-        case InputDeviceType::Gamepad7:  return 6;
-        case InputDeviceType::Gamepad8:  return 7;
-        case InputDeviceType::Gamepad9:  return 8;
-        case InputDeviceType::Gamepad10: return 9;
-        case InputDeviceType::Gamepad11: return 10;
-        case InputDeviceType::Gamepad12: return 11;
-        case InputDeviceType::Gamepad13: return 12;
-        case InputDeviceType::Gamepad14: return 13;
-        case InputDeviceType::Gamepad15: return 14;
-        case InputDeviceType::Gamepad16: return 15;
+        case InputDevice::Gamepad1:  return 0;
+        case InputDevice::Gamepad2:  return 1;
+        case InputDevice::Gamepad3:  return 2;
+        case InputDevice::Gamepad4:  return 3;
+        case InputDevice::Gamepad5:  return 4;
+        case InputDevice::Gamepad6:  return 5;
+        case InputDevice::Gamepad7:  return 6;
+        case InputDevice::Gamepad8:  return 7;
+        case InputDevice::Gamepad9:  return 8;
+        case InputDevice::Gamepad10: return 9;
+        case InputDevice::Gamepad11: return 10;
+        case InputDevice::Gamepad12: return 11;
+        case InputDevice::Gamepad13: return 12;
+        case InputDevice::Gamepad14: return 13;
+        case InputDevice::Gamepad15: return 14;
+        case InputDevice::Gamepad16: return 15;
         default: ;
         }
         return -1;
     }
-    constexpr bool IsGamepadIndexValid(const gamepad_index_type gamepadIndex) { return GetGamepadDeviceByIndex(gamepadIndex) != InputDeviceType::NONE; }
+    constexpr bool IsGamepadIndexValid(const gamepad_index_type gamepadIndex) { return GetGamepadDeviceByIndex(gamepadIndex) != InputDevice::NONE; }
 
-    constexpr const char* InputDeviceTypeToString(const InputDeviceType device)
+    constexpr const char* InputDeviceToString(const InputDevice device)
     {
         switch (device)
         {
-        case InputDeviceType::Keyboard: return JSTR("Keyboard");
-        case InputDeviceType::Mouse: return JSTR("Mouse");
-        case InputDeviceType::Gamepad1: return JSTR("Gamepad1");
-        case InputDeviceType::Gamepad2: return JSTR("Gamepad2");
-        case InputDeviceType::Gamepad3: return JSTR("Gamepad3");
-        case InputDeviceType::Gamepad4: return JSTR("Gamepad4");
-        case InputDeviceType::Gamepad5: return JSTR("Gamepad5");
-        case InputDeviceType::Gamepad6: return JSTR("Gamepad6");
-        case InputDeviceType::Gamepad7: return JSTR("Gamepad7");
-        case InputDeviceType::Gamepad8: return JSTR("Gamepad8");
-        case InputDeviceType::Gamepad9: return JSTR("Gamepad9");
-        case InputDeviceType::Gamepad10: return JSTR("Gamepad10");
-        case InputDeviceType::Gamepad11: return JSTR("Gamepad11");
-        case InputDeviceType::Gamepad12: return JSTR("Gamepad12");
-        case InputDeviceType::Gamepad13: return JSTR("Gamepad13");
-        case InputDeviceType::Gamepad14: return JSTR("Gamepad14");
-        case InputDeviceType::Gamepad15: return JSTR("Gamepad15");
-        case InputDeviceType::Gamepad16: return JSTR("Gamepad16");
+        case InputDevice::Keyboard: return JSTR("Keyboard");
+        case InputDevice::Mouse: return JSTR("Mouse");
+        case InputDevice::Gamepad1: return JSTR("Gamepad1");
+        case InputDevice::Gamepad2: return JSTR("Gamepad2");
+        case InputDevice::Gamepad3: return JSTR("Gamepad3");
+        case InputDevice::Gamepad4: return JSTR("Gamepad4");
+        case InputDevice::Gamepad5: return JSTR("Gamepad5");
+        case InputDevice::Gamepad6: return JSTR("Gamepad6");
+        case InputDevice::Gamepad7: return JSTR("Gamepad7");
+        case InputDevice::Gamepad8: return JSTR("Gamepad8");
+        case InputDevice::Gamepad9: return JSTR("Gamepad9");
+        case InputDevice::Gamepad10: return JSTR("Gamepad10");
+        case InputDevice::Gamepad11: return JSTR("Gamepad11");
+        case InputDevice::Gamepad12: return JSTR("Gamepad12");
+        case InputDevice::Gamepad13: return JSTR("Gamepad13");
+        case InputDevice::Gamepad14: return JSTR("Gamepad14");
+        case InputDevice::Gamepad15: return JSTR("Gamepad15");
+        case InputDevice::Gamepad16: return JSTR("Gamepad16");
         default: ;
         }
         return JSTR("NONE");
@@ -543,7 +543,7 @@ namespace JumaRenderEngine
     }
 }
 
-JUTILS_LOG_FORMATTER(JumaRenderEngine::InputDeviceType, JumaRenderEngine::InputDeviceTypeToString);
-JUTILS_LOG_FORMATTER(JumaRenderEngine::InputButton, JumaRenderEngine::InputButtonToString);
-JUTILS_LOG_FORMATTER(JumaRenderEngine::InputButtonAction, JumaRenderEngine::InputButtonActionToString);
-JUTILS_LOG_FORMATTER(JumaRenderEngine::InputAxis, JumaRenderEngine::InputAxisToString);
+JUTILS_FMT_FORMATTER(JumaRenderEngine::InputDevice, JumaRenderEngine::InputDeviceToString);
+JUTILS_FMT_FORMATTER(JumaRenderEngine::InputButton, JumaRenderEngine::InputButtonToString);
+JUTILS_FMT_FORMATTER(JumaRenderEngine::InputButtonAction, JumaRenderEngine::InputButtonActionToString);
+JUTILS_FMT_FORMATTER(JumaRenderEngine::InputAxis, JumaRenderEngine::InputAxisToString);

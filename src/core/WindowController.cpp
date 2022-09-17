@@ -284,26 +284,18 @@ namespace JumaRenderEngine
         }
         else
         {
-            const math::ivector2 newPosition = offset + windowData->cursorPosition;
+            /*const math::ivector2 newPosition = offset + windowData->cursorPosition;
             windowData->cursorPosition.x = static_cast<uint32>(math::clamp(newPosition.x, 0, windowData->size.x));
-            windowData->cursorPosition.y = static_cast<uint32>(math::clamp(newPosition.y, 0, windowData->size.y));
-            updateWindowInputAxisState(windowID, InputDeviceType::Mouse, InputAxis::Mouse2D, offset, 0);
+            windowData->cursorPosition.y = static_cast<uint32>(math::clamp(newPosition.y, 0, windowData->size.y));*/
+            updateWindowInputAxisState(windowID, InputDevice::Mouse, InputAxis::Mouse2D, offset, 0);
         }
     }
-    void WindowController::setCursorLockedToMainWindow(const bool locked)
+    void WindowController::setCursorLocked(const bool locked)
     {
         if ((m_CursorLockedToMainWindow != locked) && setCursorLockedToMainWindowInternal(locked))
         {
             m_CursorLockedToMainWindow = locked;
-            resetLockedCursorPosition();
-        }
-    }
-    void WindowController::resetLockedCursorPosition()
-    {
-        if (m_CursorLockedToMainWindow)
-        {
-            WindowData* windowData = getWindowData(getMainWindowID());
-            windowData->cursorPosition = windowData->size / 2;
+            OnCursorLockedFlagChanged.call(this);
         }
     }
 
@@ -324,7 +316,7 @@ namespace JumaRenderEngine
         }
     }
     
-    void WindowController::updateWindowInputButtonState(const window_id windowID, const InputDeviceType device, const InputButton button, 
+    void WindowController::updateWindowInputButtonState(const window_id windowID, const InputDevice device, const InputButton button, 
         const InputButtonAction action, const input_mods_type mods)
     {
         WindowData* windowData = getWindowData(windowID);
@@ -333,7 +325,7 @@ namespace JumaRenderEngine
             m_ReceivedButtonInput.add({ windowID, device, button }, action);
         }
     }
-    void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDeviceType device, const InputAxis axis, 
+    void WindowController::updateWindowInputAxisState(const window_id windowID, const InputDevice device, const InputAxis axis, 
         const math::vector2& value, const input_mods_type mods)
     {
         WindowData* windowData = getWindowData(windowID);

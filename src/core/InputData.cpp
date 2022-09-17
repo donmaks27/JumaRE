@@ -4,7 +4,7 @@
 
 namespace JumaRenderEngine
 {
-    bool InputData::getButtonState(const InputDeviceType device, const InputButton button, InputButtonAction* outAction, 
+    bool InputData::getButtonState(const InputDevice device, const InputButton button, InputButtonAction* outAction, 
         input_mods_type* outMods) const
     {
         if (!IsInputDeviceContainsInputButton(device, button))
@@ -22,7 +22,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    bool InputData::getAxisState(const InputDeviceType device, const InputAxis axis, float* outValue, input_mods_type* outMods) const
+    bool InputData::getAxisState(const InputDevice device, const InputAxis axis, float* outValue, input_mods_type* outMods) const
     {
         if (!IsInputDeviceContainsInputAxis(device, axis) || IsInputAxis2D(axis))
         {
@@ -39,7 +39,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    bool InputData::getAxisState2D(const InputDeviceType device, const InputAxis axis, math::vector2* outValue, input_mods_type* outMods) const
+    bool InputData::getAxisState2D(const InputDevice device, const InputAxis axis, math::vector2* outValue, input_mods_type* outMods) const
     {
         if (!IsInputDeviceContainsInputAxis(device, axis) || !IsInputAxis2D(axis))
         {
@@ -57,7 +57,7 @@ namespace JumaRenderEngine
         return true;
     }
 
-    bool InputData::setButtonState(const InputDeviceType device, const InputButton button, const InputButtonAction action, 
+    bool InputData::setButtonState(const InputDevice device, const InputButton button, const InputButtonAction action, 
         const input_mods_type mods)
     {
         if (!IsInputDeviceContainsInputButton(device, button))
@@ -79,11 +79,11 @@ namespace JumaRenderEngine
         }
         return false;
     }
-    bool InputData::setAxisState(const InputDeviceType device, const InputAxis axis, const math::vector2& value, const input_mods_type mods)
+    bool InputData::setAxisState(const InputDevice device, const InputAxis axis, const math::vector2& value, const input_mods_type mods)
     {
         return IsInputAxis2D(axis) ? setAxisState2D(device, axis, value, mods) : setAxisState(device, axis, value.x, mods);
     }
-    bool InputData::setAxisState(const InputDeviceType device, const InputAxis axis, const float value, const input_mods_type mods)
+    bool InputData::setAxisState(const InputDevice device, const InputAxis axis, const float value, const input_mods_type mods)
     {
         if (!IsInputDeviceContainsInputAxis(device, axis) && !IsInputAxis2D(axis))
         {
@@ -102,7 +102,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    bool InputData::setAxisState2D(const InputDeviceType device, const InputAxis axis, const math::vector2& value, const input_mods_type mods)
+    bool InputData::setAxisState2D(const InputDevice device, const InputAxis axis, const math::vector2& value, const input_mods_type mods)
     {
         if (!IsInputDeviceContainsInputAxis(device, axis) && IsInputAxis2D(axis))
         {

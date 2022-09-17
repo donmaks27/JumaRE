@@ -488,7 +488,7 @@ namespace JumaRenderEngine
         const InputButtonAction buttonAction = GetInputButtonActionByGLFW(action);
         const input_mods_type inputMods = GetInputModsByGLFW(mods);
 
-        GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDeviceType::Keyboard, button, buttonAction, inputMods);
+        GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDevice::Keyboard, button, buttonAction, inputMods);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_MouseButtonCallback(GLFWwindow* window, const int buttonCode, 
@@ -516,7 +516,7 @@ namespace JumaRenderEngine
         const InputButtonAction buttonAction = GetInputButtonActionByGLFW(action);
         const input_mods_type inputMods = GetInputModsByGLFW(mods);
 
-        GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDeviceType::Mouse, button, buttonAction, inputMods);
+        GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDevice::Mouse, button, buttonAction, inputMods);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_ScrollCallback(GLFWwindow* window, const double xoffset, const double yoffset)
@@ -527,11 +527,11 @@ namespace JumaRenderEngine
             return;
         }
 
-        constexpr InputDeviceType device = InputDeviceType::Mouse;
+        constexpr InputDevice device = InputDevice::Mouse;
         constexpr InputAxis axis = InputAxis::MouseWheel;
         const float offset = static_cast<float>(yoffset);
 
-        GlobalWindowController->updateWindowInputAxisState(windowData->windowID, InputDeviceType::Mouse, InputAxis::MouseWheel, { offset, 0.0f }, 0);
+        GlobalWindowController->updateWindowInputAxisState(windowData->windowID, InputDevice::Mouse, InputAxis::MouseWheel, { offset, 0.0f }, 0);
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_CursorPositionCallback(GLFWwindow* window, const double xpos, 
@@ -602,7 +602,7 @@ namespace JumaRenderEngine
             {
                 continue;
             }
-            const InputDeviceType device = GetGamepadDeviceByIndex(gamepadIndex);
+            const InputDevice device = GetGamepadDeviceByIndex(gamepadIndex);
 
             GlobalWindowController->updateWindowInputButtonState(focusedWindowID, device, InputButton::GamepadA, 
                 state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS ? InputButtonAction::Press : InputButtonAction::Release);
