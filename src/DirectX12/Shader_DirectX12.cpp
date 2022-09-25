@@ -333,7 +333,7 @@ namespace JumaRenderEngine
         const MaterialProperties& materialProperties)
     {
         const RenderTarget* renderTarget = renderOptions->renderTarget;
-        const TextureFormat colorFormat = renderTarget->getFormat();
+        const TextureFormat colorFormat = renderTarget->getColorFormat();
         const TextureFormat depthFormat = TextureFormat::DEPTH24_STENCIL8;
         const TextureSamples samples = renderTarget->getSampleCount();
         ID3D12PipelineState* pipelineState = getPipelineState({ 

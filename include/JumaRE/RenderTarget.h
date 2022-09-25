@@ -42,20 +42,26 @@ namespace JumaRenderEngine
 
         bool isWindowRenderTarget() const { return m_WindowID != window_id_INVALID; }
         window_id getWindowID() const { return m_WindowID; }
-        TextureSamples getSampleCount() const { return m_TextureSamples; }
 
         math::uvector2 getSize() const { return m_Size; }
-        TextureFormat getFormat() const { return m_Format; }
+        TextureSamples getSampleCount() const { return m_TextureSamples; }
+        TextureFormat getColorFormat() const { return m_ColorFormat; }
+        bool isDepthEnabled() const { return m_DepthEnabled; }
+
+        void setSize(const math::uvector2& size);
+        void setSampleCount(TextureSamples samples);
+        void setColorFormat(TextureFormat format);
+        void setDepthEnabled(bool enabled);
+
+        bool addRenderPrimitive(const RenderTargetPrimitive& primitive);
+        void clearRenderPrimitives();
+        const jarray<RenderTargetPrimitive>& getRenderPrimitives() const { return m_RenderPrimitives; }
 
         virtual bool onStartRender(RenderOptions* renderOptions);
         virtual void onFinishRender(RenderOptions* renderOptions);
 
         void invalidate() { m_Invalid = true; }
         bool update();
-
-        bool addRenderPrimitive(const RenderTargetPrimitive& primitive);
-        void clearRenderPrimitives();
-        const jarray<RenderTargetPrimitive>& getRenderPrimitives() const { return m_RenderPrimitives; }
 
     protected:
 
@@ -68,9 +74,11 @@ namespace JumaRenderEngine
     private:
 
         window_id m_WindowID = window_id_INVALID;
-        TextureSamples m_TextureSamples = TextureSamples::X1;
         math::uvector2 m_Size = { 0, 0 };
-        TextureFormat m_Format = TextureFormat::RGBA8;
+
+        TextureSamples m_TextureSamples = TextureSamples::X1;
+        TextureFormat m_ColorFormat = TextureFormat::RGBA8;
+        bool m_DepthEnabled = true;
 
         bool m_Invalid = true;
 

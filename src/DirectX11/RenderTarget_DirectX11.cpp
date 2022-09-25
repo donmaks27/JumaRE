@@ -66,7 +66,7 @@ namespace JumaRenderEngine
 
         const math::uvector2 size = getSize();
         const uint8 sampleCount = GetTextureSamplesNumber(getSampleCount());
-        const bool useDepth = true;
+        const bool useDepth = isDepthEnabled();
         const bool resolveEnabled = getSampleCount() != TextureSamples::X1;
 
         HRESULT result;
@@ -90,7 +90,7 @@ namespace JumaRenderEngine
                 colorImageDescription.Height = size.y;
                 colorImageDescription.MipLevels = GetMipLevelCountByTextureSize(size);
                 colorImageDescription.ArraySize = 1;
-                colorImageDescription.Format = GetDirectXFormatByTextureFormat(getFormat());
+                colorImageDescription.Format = GetDirectXFormatByTextureFormat(getColorFormat());
                 colorImageDescription.SampleDesc.Count = 1;
                 colorImageDescription.SampleDesc.Quality = 0;
                 colorImageDescription.Usage = D3D11_USAGE_DEFAULT;
@@ -205,7 +205,7 @@ namespace JumaRenderEngine
                 resolveImageDescription.Height = size.y;
                 resolveImageDescription.MipLevels = GetMipLevelCountByTextureSize(size);
                 resolveImageDescription.ArraySize = 1;
-                resolveImageDescription.Format = GetDirectXFormatByTextureFormat(getFormat());
+                resolveImageDescription.Format = GetDirectXFormatByTextureFormat(getColorFormat());
                 resolveImageDescription.SampleDesc.Count = 1;
                 resolveImageDescription.SampleDesc.Quality = 0;
                 resolveImageDescription.Usage = D3D11_USAGE_DEFAULT;
@@ -329,7 +329,10 @@ namespace JumaRenderEngine
         
         constexpr float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         deviceContext->ClearRenderTargetView(m_ColorAttachmentView, clearColor);
-        deviceContext->ClearDepthStencilView(m_DepthAttachmentView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        if (m_DepthAttachmentView != nullptr)
+        {
+            deviceContext->ClearDepthStencilView(m_DepthAttachmentView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        }
         deviceContext->OMSetRenderTargets(1, &m_ColorAttachmentView, m_DepthAttachmentView);
 
         const math::uvector2 size = getSize();
@@ -348,7 +351,7 @@ namespace JumaRenderEngine
             deviceContext->ResolveSubresource(
                 m_ResolveAttachmentImage, 0, 
                 m_ColorAttachmentImage, 0, 
-                GetDirectXFormatByTextureFormat(getFormat())
+                GetDirectXFormatByTextureFormat(getColorFormat())
             );
         }
         if (!isWindowRenderTarget())

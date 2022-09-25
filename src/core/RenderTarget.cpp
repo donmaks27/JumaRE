@@ -43,7 +43,7 @@ namespace JumaRenderEngine
             return false;
         }
 
-        m_Format = format;
+        m_ColorFormat = format;
         m_Size = size;
         m_TextureSamples = samples;
         if (!initInternal())
@@ -67,7 +67,7 @@ namespace JumaRenderEngine
         m_WindowID = window_id_INVALID;
         m_TextureSamples = TextureSamples::X1;
         m_Size = { 0, 0 };
-        m_Format = TextureFormat::RGBA8;
+        m_ColorFormat = TextureFormat::RGBA8;
     }
 
     bool RenderTarget::update()
@@ -100,6 +100,39 @@ namespace JumaRenderEngine
                 m_TextureSamples = windowData->samples;
                 invalidate();
             }
+        }
+    }
+
+    void RenderTarget::setSize(const math::uvector2& size)
+    {
+        if (!isWindowRenderTarget() && (m_Size != size))
+        {
+            m_Size = size;
+            invalidate();
+        }
+    }
+    void RenderTarget::setSampleCount(const TextureSamples samples)
+    {
+        if (m_TextureSamples != samples)
+        {
+            m_TextureSamples = samples;
+            invalidate();
+        }
+    }
+    void RenderTarget::setColorFormat(const TextureFormat format)
+    {
+        if (m_ColorFormat != format)
+        {
+            m_ColorFormat = format;
+            invalidate();
+        }
+    }
+    void RenderTarget::setDepthEnabled(const bool enabled)
+    {
+        if (m_DepthEnabled != enabled)
+        {
+            m_DepthEnabled = enabled;
+            invalidate();
         }
     }
 

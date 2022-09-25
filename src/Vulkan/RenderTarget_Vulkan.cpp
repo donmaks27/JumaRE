@@ -70,10 +70,10 @@ namespace JumaRenderEngine
     bool RenderTarget_Vulkan::createFramebuffers()
     {
         VulkanRenderPassDescription renderPassDescription;
-        renderPassDescription.colorFormat = GetVulkanFormatByTextureFormat(getFormat());
+        renderPassDescription.colorFormat = GetVulkanFormatByTextureFormat(getColorFormat());
         renderPassDescription.depthFormat = VK_FORMAT_D24_UNORM_S8_UINT;
         renderPassDescription.sampleCount = GetVulkanSampleCountByTextureSamples(getSampleCount());
-        renderPassDescription.shouldUseDepth = true;
+        renderPassDescription.shouldUseDepth = isDepthEnabled();
         renderPassDescription.renderToSwapchain = false;
         m_RenderPass = getRenderEngine<RenderEngine_Vulkan>()->getRenderPass(renderPassDescription);
         if (m_RenderPass == nullptr)
@@ -109,7 +109,7 @@ namespace JumaRenderEngine
         renderPassDescription.colorFormat = swapchain->getImagesFormat();
         renderPassDescription.depthFormat = VK_FORMAT_D24_UNORM_S8_UINT;
         renderPassDescription.sampleCount = GetVulkanSampleCountByTextureSamples(getSampleCount());
-        renderPassDescription.shouldUseDepth = true;
+        renderPassDescription.shouldUseDepth = isDepthEnabled();
         renderPassDescription.renderToSwapchain = true;
         m_RenderPass = getRenderEngine<RenderEngine_Vulkan>()->getRenderPass(renderPassDescription);
         if (m_RenderPass == nullptr)

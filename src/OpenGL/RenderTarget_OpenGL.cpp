@@ -39,10 +39,10 @@ namespace JumaRenderEngine
             return;
         }
 
-        const GLenum colorFormat = GetOpenGLFormatByTextureFormat(getFormat());
+        const GLenum colorFormat = GetOpenGLFormatByTextureFormat(getColorFormat());
         const GLenum depthFormat = GetOpenGLFormatByTextureFormat(TextureFormat::DEPTH24_STENCIL8);
         const uint8 samplesNumber = GetTextureSamplesNumber(sampleCount);
-        const bool depthEnabled = true;
+        const bool depthEnabled = isDepthEnabled();
         const bool resolveFramebufferEnabled = !renderToWindow && shouldResolveMultisampling;
         const math::uvector2 size = getSize();
 
