@@ -126,12 +126,13 @@ namespace JumaRenderEngine
         return shaderIndex;
     }
     bool CompileOpenGLShader(uint32& outShaderIndex, const jmap<ShaderStageFlags, jstring>& fileNames, const ShaderStageFlags shaderStage, 
-        const bool binary, const jstring& filePostfix, const GLenum shaderStageOpenGL, const bool optionalShader = false)
+        const GLenum shaderStageOpenGL, const bool optionalShader = false)
     {
+        constexpr bool binary = true;
         const jstring* fileNamePtr = fileNames.find(shaderStage);
         if (fileNamePtr != nullptr)
         {
-            const uint32 shader = CompileOpenGLShader(binary, *fileNamePtr + filePostfix, shaderStageOpenGL, optionalShader);
+            const uint32 shader = CompileOpenGLShader(binary, *fileNamePtr, shaderStageOpenGL, optionalShader);
             if (shader != 0)
             {
                 outShaderIndex = shader;
@@ -157,8 +158,8 @@ namespace JumaRenderEngine
 
         constexpr uint8 shadersCount = 2;
         uint32 shaderIndices[shadersCount] = { 0, 0 };
-        if (!CompileOpenGLShader(shaderIndices[0], fileNames, SHADER_STAGE_VERTEX, true, ".vert.spv", GL_VERTEX_SHADER, false) ||
-            !CompileOpenGLShader(shaderIndices[1], fileNames, SHADER_STAGE_FRAGMENT, true, ".frag.spv", GL_FRAGMENT_SHADER, false))
+        if (!CompileOpenGLShader(shaderIndices[0], fileNames, SHADER_STAGE_VERTEX, GL_VERTEX_SHADER, false) ||
+            !CompileOpenGLShader(shaderIndices[1], fileNames, SHADER_STAGE_FRAGMENT, GL_FRAGMENT_SHADER, false))
         {
             JUTILS_LOG(error, JSTR("Failed to load shader"));
             success = false;

@@ -105,8 +105,11 @@ namespace JumaRenderEngine
             return false;
         }
 
+        MaterialProperties properties = getMaterialProperties();
+        properties.depthEnabled &= renderOptions->renderTarget->isDepthEnabled();
+
         Shader_DirectX12* shader = getShader<Shader_DirectX12>();
-        if (!shader->bindShader(renderOptions, vertexBuffer, getMaterialProperties()))
+        if (!shader->bindShader(renderOptions, vertexBuffer, properties))
         {
             return false;
         }

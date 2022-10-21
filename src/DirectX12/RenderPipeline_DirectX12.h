@@ -18,6 +18,8 @@ namespace JumaRenderEngine
         RenderPipeline_DirectX12() = default;
         virtual ~RenderPipeline_DirectX12() override;
 
+        virtual void waitForRenderFinished() override;
+
     protected:
 
         virtual void renderInternal() override;

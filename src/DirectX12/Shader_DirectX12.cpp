@@ -63,8 +63,7 @@ namespace JumaRenderEngine
 
         return shaderBlob;
     }
-    ID3DBlob* LoadDirectX12ShaderFile(const jmap<ShaderStageFlags, jstring>& fileNames, const ShaderStageFlags shaderStage, 
-        const jstring& filePostfix, const bool optional)
+    ID3DBlob* LoadDirectX12ShaderFile(const jmap<ShaderStageFlags, jstring>& fileNames, const ShaderStageFlags shaderStage, const bool optional)
     {
         const jstring* fileName = fileNames.find(shaderStage);
         if (fileName == nullptr)
@@ -75,7 +74,7 @@ namespace JumaRenderEngine
             }
             return nullptr;
         }
-        return LoadDirectX12ShaderFile(*fileName + filePostfix, optional);
+        return LoadDirectX12ShaderFile(*fileName, optional);
     }
 
     constexpr D3D12_SHADER_VISIBILITY GetDirectX12ShaderParamVisibility(const uint8 stages)
@@ -244,13 +243,13 @@ namespace JumaRenderEngine
 
     bool Shader_DirectX12::initInternal(const jmap<ShaderStageFlags, jstring>& fileNames)
     {
-        ID3DBlob* vertexShaderBlob = LoadDirectX12ShaderFile(fileNames, SHADER_STAGE_VERTEX, JSTR(".vert.hlsl.obj"), false);
+        ID3DBlob* vertexShaderBlob = LoadDirectX12ShaderFile(fileNames, SHADER_STAGE_VERTEX, false);
         if (vertexShaderBlob == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to load DirectX12 vertex shader"));
             return false;
         }
-        ID3DBlob* fragmentShaderBlob = LoadDirectX12ShaderFile(fileNames, SHADER_STAGE_FRAGMENT, JSTR(".frag.hlsl.obj"), false);
+        ID3DBlob* fragmentShaderBlob = LoadDirectX12ShaderFile(fileNames, SHADER_STAGE_FRAGMENT, false);
         if (fragmentShaderBlob == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to load DirectX12 fragment shader"));
@@ -421,7 +420,7 @@ namespace JumaRenderEngine
         // Image format data
         pipelineStateStream.RTVFormats.data.NumRenderTargets = 1;
         pipelineStateStream.RTVFormats.data.RTFormats[0] = GetDirectXFormatByTextureFormat(pipelineStateID.colorFormat);
-        pipelineStateStream.DSVFormat = GetDirectXFormatByTextureFormat(pipelineStateID.depthFormat);
+        pipelineStateStream.DSVFormat = pipelineStateID.properties.depthEnabled || pipelineStateID.properties.stencilEnabled ? GetDirectXFormatByTextureFormat(pipelineStateID.depthFormat) : DXGI_FORMAT_UNKNOWN;
 
         pipelineStateStream.primitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         // Depth data

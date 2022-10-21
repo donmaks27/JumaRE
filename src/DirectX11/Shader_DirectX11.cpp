@@ -38,8 +38,7 @@ namespace JumaRenderEngine
 
         return shaderBlob;
     }
-    ID3DBlob* LoadDirectX11ShaderFile(const jmap<ShaderStageFlags, jstring>& fileNames, const ShaderStageFlags shaderStage, 
-        const jstring& filePostfix, const bool optional)
+    ID3DBlob* LoadDirectX11ShaderFile(const jmap<ShaderStageFlags, jstring>& fileNames, const ShaderStageFlags shaderStage, const bool optional)
     {
         const jstring* fileName = fileNames.find(shaderStage);
         if (fileName == nullptr)
@@ -50,7 +49,7 @@ namespace JumaRenderEngine
             }
             return nullptr;
         }
-        return LoadDirectX11ShaderFile(*fileName + filePostfix, optional);
+        return LoadDirectX11ShaderFile(*fileName, optional);
     }
 
     Shader_DirectX11::~Shader_DirectX11()
@@ -60,13 +59,13 @@ namespace JumaRenderEngine
 
     bool Shader_DirectX11::initInternal(const jmap<ShaderStageFlags, jstring>& fileNames)
     {
-        ID3DBlob* vertexShaderBlob = LoadDirectX11ShaderFile(fileNames, SHADER_STAGE_VERTEX, JSTR(".vert.hlsl.obj"), false);
+        ID3DBlob* vertexShaderBlob = LoadDirectX11ShaderFile(fileNames, SHADER_STAGE_VERTEX, false);
         if (vertexShaderBlob == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to load DirectX11 vertex shader"));
             return false;
         }
-        ID3DBlob* fragmentShaderBlob = LoadDirectX11ShaderFile(fileNames, SHADER_STAGE_FRAGMENT, JSTR(".frag.hlsl.obj"), false);
+        ID3DBlob* fragmentShaderBlob = LoadDirectX11ShaderFile(fileNames, SHADER_STAGE_FRAGMENT, false);
         if (fragmentShaderBlob == nullptr)
         {
             JUTILS_LOG(error, JSTR("Failed to load DirectX11 fragment shader"));

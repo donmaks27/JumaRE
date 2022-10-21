@@ -51,7 +51,7 @@ namespace JumaRenderEngine
         return true;
     }
     bool CreateVulkanShaderModule(VkShaderModule& outShaderModule, VkDevice device, const jmap<ShaderStageFlags, jstring>& fileNames, 
-        const ShaderStageFlags shaderStage, const jstring& fileNamePostfix, const bool optional)
+        const ShaderStageFlags shaderStage, const bool optional)
     {
         const jstring* fileName = fileNames.find(shaderStage);
         if (fileName == nullptr)
@@ -64,7 +64,7 @@ namespace JumaRenderEngine
             outShaderModule = nullptr;
             return true;
         }
-        return CreateVulkanShaderModule(outShaderModule, device, *fileName + fileNamePostfix, optional);
+        return CreateVulkanShaderModule(outShaderModule, device, *fileName, optional);
     }
 
     Shader_Vulkan::~Shader_Vulkan()
@@ -97,12 +97,12 @@ namespace JumaRenderEngine
     bool Shader_Vulkan::createShaderModules(VkDevice device, const jmap<ShaderStageFlags, jstring>& fileNames)
     {
         VkShaderModule modules[2] = { nullptr, nullptr };
-        if (!CreateVulkanShaderModule(modules[0], device, fileNames, SHADER_STAGE_VERTEX, ".vert.spv", false))
+        if (!CreateVulkanShaderModule(modules[0], device, fileNames, SHADER_STAGE_VERTEX, false))
         {
             JUTILS_LOG(error, JSTR("Failed to create vulkan vertex shader module"));
             return false;
         }
-        if (!CreateVulkanShaderModule(modules[1], device, fileNames, SHADER_STAGE_FRAGMENT, ".frag.spv", false))
+        if (!CreateVulkanShaderModule(modules[1], device, fileNames, SHADER_STAGE_FRAGMENT, false))
         {
             JUTILS_LOG(error, JSTR("Failed to create vulkan fragment shader module"));
             vkDestroyShaderModule(device, modules[0], nullptr);

@@ -61,6 +61,11 @@ namespace JumaRenderEngine
         Super::onFinishRender(renderOptions);
     }
 
+    void RenderPipeline_DirectX12::waitForRenderFinished()
+    {
+        waitForPreviousRenderFinish();
+        RenderPipeline::waitForRenderFinished();
+    }
     void RenderPipeline_DirectX12::waitForPreviousRenderFinish()
     {
         if (m_RenderCommandList != nullptr)
