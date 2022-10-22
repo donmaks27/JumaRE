@@ -215,34 +215,34 @@ namespace JumaRenderEngine
         }
 
         jmap<uint32, D3D11_MAPPED_SUBRESOURCE> uniformBuffersData;
-        const MaterialParamsStorage& materialParams = getMaterialParams();
         const jmap<jstringID, ShaderUniform>& uniforms = getShader()->getUniforms();
-
         for (const auto& paramName : notUpdatedParams)
         {
             const ShaderUniform* uniformPtr = uniforms.find(paramName);
-            if (uniformPtr == nullptr)
+            const uint32 shaderLocation = uniformPtr != nullptr ? uniformPtr->shaderLocation : 0;
+            if ((uniformPtr != nullptr) && !uniformBuffersData.contains(shaderLocation))
             {
-                continue;
+                const UniformBufferDescription* bufferDescription = m_UniformBuffers.find(shaderLocation);
+                if (bufferDescription != nullptr)
+                {
+                    D3D11_MAPPED_SUBRESOURCE& mappedData = uniformBuffersData.add(shaderLocation);
+                    const HRESULT result = deviceContext->Map(bufferDescription->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
+                    if (FAILED(result))
+                    {
+                        JUTILS_ERROR_LOG(result, JSTR("Failed to map DirectX11 uniform buffer data"));
+                    }
+                }
             }
-            const ShaderUniform& uniform = *uniformPtr;
+        }
 
-            D3D11_MAPPED_SUBRESOURCE* mappedData = uniformBuffersData.find(uniform.shaderLocation);
+        const MaterialParamsStorage& materialParams = getMaterialParams();
+        for (const auto& shaderUniform : uniforms)
+        {
+            const ShaderUniform& uniform = shaderUniform.value;
+            const D3D11_MAPPED_SUBRESOURCE* mappedData = uniformBuffersData.find(uniform.shaderLocation);
             if (mappedData == nullptr)
             {
-                const UniformBufferDescription* uniformBuffer = m_UniformBuffers.find(uniform.shaderLocation);
-                if (uniformBuffer == nullptr)
-                {
-                    continue;
-                }
-
-                mappedData = &uniformBuffersData[uniform.shaderLocation];
-                const HRESULT result = deviceContext->Map(uniformBuffer->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, mappedData);
-                if (FAILED(result))
-                {
-                    JUTILS_ERROR_LOG(result, JSTR("Failed to map DirectX11 uniform buffer data"));
-                    continue;
-                }
+                continue;
             }
 
             switch (uniform.type)
@@ -250,7 +250,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Float:
                 {
                     ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Float>(paramName, value))
+                    if (materialParams.getValue<ShaderUniformType::Float>(shaderUniform.key, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value, sizeof(value));
                     }
@@ -259,7 +259,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Vec2:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec2>(paramName, value))
+                    if (materialParams.getValue<ShaderUniformType::Vec2>(shaderUniform.key, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0], sizeof(value));
                     }
@@ -268,7 +268,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Vec4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec4>(paramName, value))
+                    if (materialParams.getValue<ShaderUniformType::Vec4>(shaderUniform.key, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0], sizeof(value));
                     }
@@ -277,7 +277,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Mat4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Mat4>(paramName, value))
+                    if (materialParams.getValue<ShaderUniformType::Mat4>(shaderUniform.key, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0][0], sizeof(value));
                     }
@@ -286,12 +286,12 @@ namespace JumaRenderEngine
             default: ;
             }
         }
-        clearParamsForUpdate();
-
         for (const auto& mappedData : uniformBuffersData)
         {
             deviceContext->Unmap(m_UniformBuffers[mappedData.key].buffer, 0);
         }
+
+        clearParamsForUpdate();
     }
 }
 
