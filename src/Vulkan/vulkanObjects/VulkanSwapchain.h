@@ -21,7 +21,7 @@ namespace JumaRenderEngine
     class WindowController;
     class WindowController_Vulkan;
 
-    CREATE_JUTILS_MULTICAST_DELEGATE_OneParam(OnVulkanSwapchainEvent, VulkanSwapchain*, swapchain);
+    JUTILS_CREATE_MULTICAST_DELEGATE1(OnVulkanSwapchainEvent, VulkanSwapchain*, swapchain);
 
     class VulkanSwapchain final : public RenderEngineContextObjectBase
     {

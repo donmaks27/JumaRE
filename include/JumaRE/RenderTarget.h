@@ -21,7 +21,7 @@ namespace JumaRenderEngine
     struct WindowData;
     struct RenderOptions;
 
-    CREATE_JUTILS_MULTICAST_DELEGATE_OneParam(OnRenderTargetEvent, RenderTarget*, renderTarget);
+    JUTILS_CREATE_MULTICAST_DELEGATE1(OnRenderTargetEvent, RenderTarget*, renderTarget);
 
     struct RenderTargetPrimitive
     {

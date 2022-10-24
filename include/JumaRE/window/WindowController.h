@@ -46,12 +46,12 @@ namespace JumaRenderEngine
         TextureSamples samples = TextureSamples::X1;
     };
 
-    CREATE_JUTILS_MULTICAST_DELEGATE_OneParam(OnWindowControllerEvent, WindowController*, windowController);
-    CREATE_JUTILS_MULTICAST_DELEGATE_TwoParams(OnWindowControllerWindowEvent, WindowController*, windowController, const WindowData*, windowData);
+    JUTILS_CREATE_MULTICAST_DELEGATE1(OnWindowControllerEvent, WindowController*, windowController);
+    JUTILS_CREATE_MULTICAST_DELEGATE2(OnWindowControllerWindowEvent, WindowController*, windowController, const WindowData*, windowData);
 
-    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputButtonEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputButton, button, InputButtonAction, action);
-    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxisEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, float, value);
-    CREATE_JUTILS_MULTICAST_DELEGATE_FiveParams(OnWindowControllerInputAxis2DEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, const math::vector2&, value);
+    JUTILS_CREATE_MULTICAST_DELEGATE5(OnWindowControllerInputButtonEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputButton, button, InputButtonAction, action);
+    JUTILS_CREATE_MULTICAST_DELEGATE5(OnWindowControllerInputAxisEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, float, value);
+    JUTILS_CREATE_MULTICAST_DELEGATE5(OnWindowControllerInputAxis2DEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, const math::vector2&, value);
 
     class WindowController : public RenderEngineContextObjectBase
     {

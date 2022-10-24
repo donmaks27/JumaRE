@@ -38,7 +38,7 @@ namespace JumaRenderEngine
         }
         bool resetParamValue(const jstringID& name);
         template<ShaderUniformType Type>
-        bool getValue(const jstringID& name, typename ShaderUniformInfo<Type>::value_type& outValue) const
+        bool getParamValue(const jstringID& name, typename ShaderUniformInfo<Type>::value_type& outValue) const
         {
             return checkParamType(name, Type) && m_MaterialParams.getValue<Type>(name, outValue);
         }
