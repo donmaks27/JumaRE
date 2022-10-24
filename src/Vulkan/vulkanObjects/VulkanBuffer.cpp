@@ -286,7 +286,6 @@ namespace JumaRenderEngine
         {
             if (!m_StagingBuffer->flushMappedData(false) || !m_StagingBuffer->copyData(this, waitForFinish))
             {
-                JUTILS_LOG(error, JSTR("Failed to flush data from staging vulkan buffer"));
                 return false;
             }
             return true;
@@ -294,7 +293,6 @@ namespace JumaRenderEngine
 
         if (m_MappedData == nullptr)
         {
-            JUTILS_LOG(warning, JSTR("Vulkan buffer data not mapped"));
             return false;
         }
         vmaUnmapMemory(getRenderEngine<RenderEngine_Vulkan>()->getAllocator(), m_Allocation);
