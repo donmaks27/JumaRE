@@ -16,11 +16,14 @@
 namespace JumaRenderEngine
 {
     class Material;
+    class RenderEngine;
     class RenderPipeline;
     class Shader;
     class Texture;
     class VertexBuffer;
     class VertexBufferData;
+
+    JUTILS_CREATE_MULTICAST_DELEGATE1(OnRenderEngineEvent, RenderEngine*, renderEngine);
 
     class RenderEngine
     {
@@ -29,6 +32,9 @@ namespace JumaRenderEngine
     public:
         RenderEngine() = default;
         virtual ~RenderEngine();
+
+        OnRenderEngineEvent onDestroying;
+
 
         virtual RenderAPI getRenderAPI() const = 0;
 

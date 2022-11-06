@@ -100,6 +100,7 @@ namespace JumaRenderEngine
     {
         if (m_Initialized)
         {
+            onDestroying.call(this);
             clearInternal();
             m_Initialized = false;
         }
