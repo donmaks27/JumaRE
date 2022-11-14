@@ -221,9 +221,9 @@ namespace JumaRenderEngine
             for (const auto& renderQueueEntry : getPipelineQueue())
             {
                 const RenderPipelineStage* pipelineStage = getPipelineStage(renderQueueEntry.stage);
-                renderOptions->renderTarget = pipelineStage->renderTarget;
-                if (!pipelineStage->renderTarget->onStartRender(renderOptions))
+                if (!onStartRenderToRenderTarget(renderOptions, pipelineStage->renderTarget))
                 {
+                    JUTILS_LOG(warning, JSTR("Failed to start render to render target {}"), renderQueueEntry.stage.toString());
                     break;
                 }
 
@@ -231,7 +231,8 @@ namespace JumaRenderEngine
                 {
                     renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
                 }
-                pipelineStage->renderTarget->onFinishRender(renderOptions);
+
+                onFinishRenderToRenderTarget(renderOptions, pipelineStage->renderTarget);
             }
 
             onFinishRender(renderOptions);
@@ -241,6 +242,15 @@ namespace JumaRenderEngine
     bool RenderPipeline::onStartRender(RenderOptions* renderOptions)
     {
         return getRenderEngine()->getWindowController()->onStartRender();
+    }
+    bool RenderPipeline::onStartRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget)
+    {
+        renderOptions->renderTarget = renderTarget;
+        return renderTarget->onStartRender(renderOptions);
+    }
+    void RenderPipeline::onFinishRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget)
+    {
+        renderTarget->onFinishRender(renderOptions);
     }
     void RenderPipeline::onFinishRender(RenderOptions* renderOptions)
     {

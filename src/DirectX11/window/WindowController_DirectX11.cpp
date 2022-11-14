@@ -131,10 +131,15 @@ namespace JumaRenderEngine
 
     void WindowController_DirectX11::onFinishWindowRender(const window_id windowID)
     {
+        const bool vsyncEnabled = true;
+        const bool multipleWindows = getWindowIDs().getSize() > 1;
+        const bool shouldEnableVsync = (multipleWindows && (getMainWindowID() == windowID)) || (!multipleWindows && vsyncEnabled);
+        const uint32 syncInterval = shouldEnableVsync ? 1 : 0;
+
         const WindowData_DirectX11* windowData = findWindowData<WindowData_DirectX11>(windowID);
         if (windowData->swapchain != nullptr)
         {
-            windowData->swapchain->Present(1, 0);
+            windowData->swapchain->Present(syncInterval, 0);
         }
 
         Super::onFinishWindowRender(windowID);

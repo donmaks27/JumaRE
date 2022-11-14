@@ -147,10 +147,13 @@ namespace JumaRenderEngine
     bool DirectX12Swapchain::present()
     {
         const bool vsyncEnabled = true;
+        const WindowController* windowController = getRenderEngine()->getWindowController();
+        const bool multipleWindows = windowController->getWindowIDs().getSize() > 1;
+        const bool shouldEnableVsync = (multipleWindows && (windowController->getMainWindowID() == getWindowID())) || (!multipleWindows && vsyncEnabled);
         const bool tearingSupported = DirectX_IsTearingSupported();
 
-        const UINT syncInterval = vsyncEnabled ? 1 : 0;
-        const UINT presentFlags = tearingSupported && !vsyncEnabled ? DXGI_PRESENT_ALLOW_TEARING : 0;
+        const UINT syncInterval = shouldEnableVsync ? 1 : 0;
+        const UINT presentFlags = tearingSupported && !shouldEnableVsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
         const HRESULT result = m_Swapchain->Present(syncInterval, presentFlags);
         if (FAILED(result))
         {

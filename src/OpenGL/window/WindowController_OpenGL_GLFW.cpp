@@ -51,9 +51,13 @@ namespace JumaRenderEngine
             return nullptr;
         }
 
+        const bool vsyncEnabled = true;
+        const bool shouldEnabledVsync = vsyncEnabled && ((getMainWindowID() == window_id_INVALID) || (getMainWindowID() == windowID));
+        const int32 swapInterval = shouldEnabledVsync ? 1 : 0;
+
         const window_id prevActiveWindowID = getActiveWindowID();
         setActiveWindowID(windowID);
-        glfwSwapInterval(1);
+        glfwSwapInterval(swapInterval);
         setActiveWindowID(prevActiveWindowID);
         return windowData;
     }

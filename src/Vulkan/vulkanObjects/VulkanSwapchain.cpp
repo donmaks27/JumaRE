@@ -50,6 +50,17 @@ namespace JumaRenderEngine
         }
 
         VkPhysicalDevice physicalDevice = renderEngine->getPhysicalDevice();
+
+        uint32 presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, windowData->vulkanSurface, &presentModeCount, nullptr);
+        if (presentModeCount == 0)
+        {
+            JUTILS_LOG(error, JSTR("There is no vulkan present modes for window {}"), m_WindowID);
+            return false;
+        }
+        jarray<VkPresentModeKHR> presentModes(static_cast<int32>(presentModeCount));
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, windowData->vulkanSurface, &presentModeCount, presentModes.getData());
+
         uint32 surfaceFormatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, windowData->vulkanSurface, &surfaceFormatCount, nullptr);
         if (surfaceFormatCount == 0)
@@ -59,6 +70,7 @@ namespace JumaRenderEngine
         }
         jarray<VkSurfaceFormatKHR> surfaceFormats(static_cast<int32>(surfaceFormatCount));
         vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, windowData->vulkanSurface, &surfaceFormatCount, surfaceFormats.getData());
+
         VkSurfaceCapabilitiesKHR surfaceCapabilities;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, windowData->vulkanSurface, &surfaceCapabilities);
 
@@ -71,6 +83,11 @@ namespace JumaRenderEngine
 		    math::clamp(windowData->size.x, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
 		    math::clamp(windowData->size.y, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height)
 	    };
+        
+        const bool immediateModeSupported = presentModes.contains(VK_PRESENT_MODE_IMMEDIATE_KHR);
+        const bool vsyncEnabled = true;
+        const bool shouldEnableVsync = vsyncEnabled && immediateModeSupported;
+        const VkPresentModeKHR presentMode = shouldEnableVsync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
 
         VkSurfaceFormatKHR surfaceFormat = surfaceFormats[0];
         for (const auto& availableFormat : surfaceFormats)
@@ -101,7 +118,7 @@ namespace JumaRenderEngine
 		swapchainInfo.pQueueFamilyIndices = nullptr;
         swapchainInfo.preTransform = surfaceCapabilities.currentTransform;
 	    swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	    swapchainInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+	    swapchainInfo.presentMode = presentMode;
 	    swapchainInfo.clipped = VK_TRUE;
 	    swapchainInfo.oldSwapchain = oldSwapchain;
         const VkResult result = vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &m_Swapchain);

@@ -55,6 +55,14 @@ namespace JumaRenderEngine
 
         return startCommandListRecord(renderOptions);
     }
+    bool RenderPipeline_DirectX12::onStartRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget)
+    {
+        return Super::onStartRenderToRenderTarget(renderOptions, renderTarget);
+    }
+    void RenderPipeline_DirectX12::onFinishRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget)
+    {
+        Super::onFinishRenderToRenderTarget(renderOptions, renderTarget);
+    }
     void RenderPipeline_DirectX12::onFinishRender(RenderOptions* renderOptions)
     {
         finishCommandListRecord(renderOptions);
@@ -64,7 +72,7 @@ namespace JumaRenderEngine
     void RenderPipeline_DirectX12::waitForRenderFinished()
     {
         waitForPreviousRenderFinish();
-        RenderPipeline::waitForRenderFinished();
+        Super::waitForRenderFinished();
     }
     void RenderPipeline_DirectX12::waitForPreviousRenderFinish()
     {

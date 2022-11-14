@@ -61,6 +61,8 @@ namespace JumaRenderEngine
         }
 
         virtual bool onStartRender(RenderOptions* renderOptions);
+        virtual bool onStartRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget);
+        virtual void onFinishRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget);
         virtual void onFinishRender(RenderOptions* renderOptions);
 
     private:

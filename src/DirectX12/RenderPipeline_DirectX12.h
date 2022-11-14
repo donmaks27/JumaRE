@@ -25,6 +25,8 @@ namespace JumaRenderEngine
         virtual void renderInternal() override;
 
         virtual bool onStartRender(RenderOptions* renderOptions) override;
+        virtual bool onStartRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget) override;
+        virtual void onFinishRenderToRenderTarget(RenderOptions* renderOptions, RenderTarget* renderTarget) override;
         virtual void onFinishRender(RenderOptions* renderOptions) override;
 
     private:
