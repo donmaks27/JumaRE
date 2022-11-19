@@ -17,7 +17,6 @@
 #include "DirectX12Objects/DirectX12CommandQueue.h"
 #include "DirectX12Objects/DirectX12Texture.h"
 #include "../utils/RenderEngineObjectsPool.h"
-#include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 namespace JumaRenderEngine
 {

@@ -12,7 +12,6 @@
 #include "Texture_OpenGL.h"
 #include "VertexBuffer_OpenGL.h"
 #include "../utils/RenderEngineObjectsPool.h"
-#include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 namespace JumaRenderEngine
 {

@@ -4,6 +4,8 @@
 
 #include "../core.h"
 
+#include <jutils/jarray.h>
+
 #include "VertexDescription.h"
 
 namespace JumaRenderEngine

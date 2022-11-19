@@ -6,7 +6,6 @@
 
 #include <jutils/jmap.h>
 #include <jutils/math/vector2.h>
-#include <jutils/math/math_vector.h>
 
 namespace JumaRenderEngine
 {

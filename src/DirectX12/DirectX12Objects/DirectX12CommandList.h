@@ -7,7 +7,6 @@
 #include "../../../include/JumaRE/core.h"
 
 #include <d3d12.h>
-#include <jutils/jarray.h>
 #include <jutils/jmap.h>
 
 namespace JumaRenderEngine

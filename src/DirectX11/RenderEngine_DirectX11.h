@@ -12,7 +12,6 @@
 #include "Texture_DirectX11.h"
 #include "VertexBuffer_DirectX11.h"
 #include "../utils/RenderEngineObjectsPool.h"
-#include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;

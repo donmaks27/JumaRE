@@ -5,12 +5,9 @@
 #include "../core.h"
 #include "../RenderEngineContextObject.h"
 
-#include <jutils/jarray.h>
 #include <jutils/jdelegate_multicast.h>
-#include <jutils/jmap.h>
 #include <jutils/jset.h>
 #include <jutils/jstringID.h>
-#include <jutils/juid.h>
 #include <jutils/math/vector2.h>
 
 #include "WindowMode.h"

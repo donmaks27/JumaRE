@@ -4,8 +4,6 @@
 
 #include "../core.h"
 
-#include <jutils/jstringID.h>
-
 namespace JumaRenderEngine
 {
     struct MaterialProperties

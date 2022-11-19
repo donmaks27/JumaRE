@@ -4,11 +4,11 @@
 
 #include "../core.h"
 
-#include "ShaderUniform.h"
-
+#include <jutils/math/matrix4.h>
 #include <jutils/math/vector2.h>
 #include <jutils/math/vector4.h>
-#include <jutils/math/matrix4.h>
+
+#include "ShaderUniform.h"
 
 namespace JumaRenderEngine
 {

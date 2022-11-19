@@ -6,7 +6,6 @@
 #include "texture/TextureBase.h"
 
 #include <jutils/jdelegate_multicast.h>
-#include <jutils/math/vector2.h>
 
 #include "texture/TextureFormat.h"
 #include "texture/TextureSamples.h"

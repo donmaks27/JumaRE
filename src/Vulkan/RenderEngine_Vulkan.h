@@ -7,7 +7,6 @@
 #include "../../include/JumaRE/RenderEngine.h"
 
 #include <vma/vk_mem_alloc.h>
-#include <jutils/jlist.h>
 
 #include "Material_Vulkan.h"
 #include "RenderTarget_Vulkan.h"
@@ -18,7 +17,6 @@
 #include "vulkanObjects/VulkanImage.h"
 #include "vulkanObjects/VulkanRenderPass.h"
 #include "../utils/RenderEngineObjectsPool.h"
-#include "../../include/JumaRE/texture/TextureSamplerType.h"
 
 namespace JumaRenderEngine
 {

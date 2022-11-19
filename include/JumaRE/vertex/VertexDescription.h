@@ -4,7 +4,6 @@
 
 #include "../core.h"
 
-#include <jutils/jarray.h>
 #include <jutils/jstringID.h>
 #include <jutils/juid.h>
 

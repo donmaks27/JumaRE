@@ -7,7 +7,6 @@
 #include "../../../include/JumaRE/core.h"
 
 #include <vulkan/vulkan_core.h>
-#include <jutils/jarray.h>
 #include <jutils/jmap.h>
 
 namespace JumaRenderEngine

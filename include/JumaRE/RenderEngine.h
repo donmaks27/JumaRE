@@ -4,14 +4,10 @@
 
 #include "core.h"
 
-#include <jutils/jset.h>
-
 #include "RenderAPI.h"
 #include "material/ShaderUniform.h"
 #include "texture/TextureFormat.h"
-#include "texture/TextureSamples.h"
 #include "vertex/VertexBufferData.h"
-#include "vertex/VertexDescription.h"
 #include "window/WindowController.h"
 
 namespace JumaRenderEngine

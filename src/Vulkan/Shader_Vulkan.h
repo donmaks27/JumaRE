@@ -6,8 +6,6 @@
 
 #include "../../include/JumaRE/material/Shader.h"
 
-#include <vulkan/vulkan_core.h>
-
 #include "vulkanObjects/VulkanRenderPassDescription.h"
 #include "../../include/JumaRE/material/MaterialProperties.h"
 #include "../../include/JumaRE/vertex/VertexDescription.h"

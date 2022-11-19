@@ -6,7 +6,6 @@
 
 #include "../../../include/JumaRE/RenderEngineContextObject.h"
 
-#include <vulkan/vulkan_core.h>
 #include <jutils/math/vector2.h>
 
 #include "VulkanFramebufferData.h"
