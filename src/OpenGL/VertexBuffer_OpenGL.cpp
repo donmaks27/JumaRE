@@ -21,40 +21,31 @@ namespace JumaRenderEngine
         clearOpenGL();
     }
 
-    bool VertexBuffer_OpenGL::initInternal(VertexBufferData* verticesData)
+    bool VertexBuffer_OpenGL::initInternal(const VertexBufferData& data)
     {
-        const uint32 vertexCount = verticesData->getVertexCount();
-        if (vertexCount == 0)
+        if (data.vertexCount == 0)
         {
             JUTILS_LOG(error, JSTR("Empty vertex buffer data"));
             return false;
         }
-        const VertexDescription* vertexDescription = getRenderEngine()->findVertexType(getVertexTypeName());
+        const RegisteredVertexDescription* description = getRenderEngine()->findVertex(getVertexID());
 
         uint32 verticesVBO = 0, indicesVBO = 0;
         glGenBuffers(1, &verticesVBO);
         glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-        glBufferData(
-            GL_ARRAY_BUFFER, static_cast<int32>(vertexDescription->size * vertexCount), verticesData->getVertices(), GL_STATIC_DRAW
-        );
+        glBufferData(GL_ARRAY_BUFFER, static_cast<int32>(description->vertexSize * data.vertexCount), data.verticesData, GL_STATIC_DRAW);
 
-        const uint32 indexCount = verticesData->getIndexCount();
-        if (indexCount > 0)
+        if (data.indexCount > 0)
         {
             glGenBuffers(1, &indicesVBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVBO);
-            glBufferData(
-                GL_ELEMENT_ARRAY_BUFFER,
-                static_cast<int32>(sizeof(uint32) * indexCount), 
-                verticesData->getIndices(), 
-                GL_STATIC_DRAW
-            );
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<int32>(sizeof(uint32) * data.indexCount), data.indicesData, GL_STATIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
         m_VerticesBufferIndex = verticesVBO;
         m_IndicesBufferIndex = indicesVBO;
-        m_RenderElementsCount = static_cast<int32>(indexCount > 0 ? indexCount : vertexCount);
+        m_RenderElementsCount = static_cast<int32>(data.indexCount > 0 ? data.indexCount : data.vertexCount);
         return true;
     }
 
@@ -136,23 +127,22 @@ namespace JumaRenderEngine
     }
     uint32 VertexBuffer_OpenGL::createVerticesVAO() const
     {
-        const VertexDescription* vertexDescription = getRenderEngine()->findVertexType(getVertexTypeName());
-        if (vertexDescription == nullptr)
-        {
-            return 0;
-        }
+        const RenderEngine* renderEngine = getRenderEngine();
+        const RegisteredVertexDescription* vertexDescription = renderEngine->findVertex(getVertexID());
 
         uint32 VAO = 0;
         glGenVertexArrays(1, &VAO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VerticesBufferIndex);
         glBindVertexArray(VAO);
-        for (int32 index = 0; index < vertexDescription->components.getSize(); index++)
+
+        uint32 componentOffset = 0;
+        for (const auto& componentID : vertexDescription->description.components)
         {
-            const VertexComponentDescription& componentDescriprion = vertexDescription->components[index];
+            const VertexComponentDescription* componentDescriprion = renderEngine->findVertexComponent(componentID);
 
             GLenum componentType;
             GLint componentSize;
-            switch (componentDescriprion.type)
+            switch (componentDescriprion->type)
             {
             case VertexComponentType::Float: 
                 componentType = GL_FLOAT;
@@ -174,10 +164,12 @@ namespace JumaRenderEngine
             }
             
             glVertexAttribPointer(
-                componentDescriprion.shaderLocation, componentSize, componentType, GL_FALSE, 
-                static_cast<GLsizei>(vertexDescription->size), (const void*)static_cast<std::uintptr_t>(componentDescriprion.offset)
+                componentDescriprion->shaderLocation, componentSize, componentType, GL_FALSE, 
+                static_cast<GLsizei>(vertexDescription->vertexSize), (const void*)static_cast<std::uintptr_t>(componentOffset)
             );
-            glEnableVertexAttribArray(componentDescriprion.shaderLocation);
+            glEnableVertexAttribArray(componentDescriprion->shaderLocation);
+
+            componentOffset = GetVertexComponentSize(componentDescriprion->type);
         }
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);

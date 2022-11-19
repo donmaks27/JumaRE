@@ -16,20 +16,18 @@ namespace JumaRenderEngine
         clearDirectX();
     }
 
-    bool VertexBuffer_DirectX12::initInternal(VertexBufferData* verticesData)
+    bool VertexBuffer_DirectX12::initInternal(const VertexBufferData& data)
     {
-        RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
-
-        const uint32 vertexCount = verticesData->getVertexCount();
-        if (vertexCount == 0)
+        if (data.vertexCount == 0)
         {
             JUTILS_LOG(error, JSTR("Empty vertex buffer data"));
             return false;
         }
-        const VertexDescription* vertexDescription = renderEngine->findVertexType(getVertexTypeName());
+        RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
+        const uint32 vertexSize = renderEngine->findVertex(getVertexID())->vertexSize;
 
         DirectX12Buffer* vertexBuffer = renderEngine->getBuffer();
-        if ((vertexBuffer == nullptr) || !vertexBuffer->initGPU(vertexDescription->size * vertexCount, verticesData->getVertices(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER))
+        if ((vertexBuffer == nullptr) || !vertexBuffer->initGPU(vertexSize * data.vertexCount, data.verticesData, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER))
         {
             JUTILS_LOG(error, JSTR("Failed to create vertex buffer"));
             renderEngine->returnBuffer(vertexBuffer);
@@ -37,11 +35,10 @@ namespace JumaRenderEngine
         }
 
         DirectX12Buffer* indexBuffer = nullptr;
-        const uint32 indexCount = verticesData->getIndexCount();
-        if (indexCount > 0)
+        if (data.indexCount > 0)
         {
             indexBuffer = renderEngine->getBuffer();
-            if ((indexBuffer == nullptr) || !indexBuffer->initGPU(sizeof(uint32) * vertexCount, verticesData->getIndices(), D3D12_RESOURCE_STATE_INDEX_BUFFER))
+            if ((indexBuffer == nullptr) || !indexBuffer->initGPU(sizeof(uint32) * data.indexCount, data.indicesData, D3D12_RESOURCE_STATE_INDEX_BUFFER))
             {
                 JUTILS_LOG(error, JSTR("Failed to create index buffer"));
                 renderEngine->returnBuffer(indexBuffer);
@@ -52,8 +49,8 @@ namespace JumaRenderEngine
 
         m_VertexBuffer = vertexBuffer;
         m_IndexBuffer = indexBuffer;
-        m_CachedVertexSize = vertexDescription->size;
-        m_RenderElementsCount = m_IndexBuffer != nullptr ? indexCount : vertexCount;
+        m_CachedVertexSize = vertexSize;
+        m_RenderElementsCount = m_IndexBuffer != nullptr ? data.indexCount : data.vertexCount;
         return true;
     }
 

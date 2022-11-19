@@ -336,7 +336,7 @@ namespace JumaRenderEngine
         const TextureFormat depthFormat = TextureFormat::DEPTH24_STENCIL8;
         const TextureSamples samples = renderTarget->getSampleCount();
         ID3D12PipelineState* pipelineState = getPipelineState({ 
-            vertexBuffer->getVertexTypeName(), colorFormat, depthFormat, samples, materialProperties
+            vertexBuffer->getVertexID(), colorFormat, depthFormat, samples, materialProperties
         });
         if (pipelineState == nullptr)
         {
@@ -357,47 +357,44 @@ namespace JumaRenderEngine
         }
 
         const RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
-        const VertexDescription* vertexDescription = renderEngine->findVertexType(pipelineStateID.vertexName);
+        const RegisteredVertexDescription* vertexDescription = renderEngine->findVertex(pipelineStateID.vertexID);
         if (vertexDescription == nullptr)
         {
-            JUTILS_LOG(error, JSTR("Failed to get description for vertex {}"), pipelineStateID.vertexName.toString());
+            JUTILS_LOG(error, JSTR("Failed to get description for vertex {}"), pipelineStateID.vertexID);
             return nullptr;
         }
+        const jset<jstringID>& requiredComponents = getRequiredVertexComponents();
 
+        uint32 componentOffset = 0;
         jarray<D3D12_INPUT_ELEMENT_DESC> inputLayouts;
         inputLayouts.reserve(getRequiredVertexComponents().getSize());
-        for (const auto& requiredVertexComponent : getRequiredVertexComponents())
+        for (const auto& componentID : vertexDescription->description.components)
         {
-            bool componentFound = false;
-            for (const auto& vertexComponent : vertexDescription->components)
+            const VertexComponentDescription* componentDescription = renderEngine->findVertexComponent(componentID);
+            if (requiredComponents.contains(componentID))
             {
-                if (vertexComponent.name == requiredVertexComponent)
+                DXGI_FORMAT componentFormat = DXGI_FORMAT_UNKNOWN;
+                switch (componentDescription->type)
                 {
-                    componentFound = true;
-
-                    DXGI_FORMAT componentFormat = DXGI_FORMAT_UNKNOWN;
-                    switch (vertexComponent.type)
-                    {
-                    case VertexComponentType::Float: componentFormat = DXGI_FORMAT_R32_FLOAT; break;
-                    case VertexComponentType::Vec2:  componentFormat = DXGI_FORMAT_R32G32_FLOAT; break;
-                    case VertexComponentType::Vec3:  componentFormat = DXGI_FORMAT_R32G32B32_FLOAT; break;
-                    case VertexComponentType::Vec4:  componentFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
-                    default: 
-                        JUTILS_LOG(error, JSTR("Unsupported type of vertex component {} in vertex {}"), vertexComponent.shaderLocation, pipelineStateID.vertexName.toString());
-                        return nullptr;
-                    }
-                    inputLayouts.add({ 
-                        "TEXCOORD", vertexComponent.shaderLocation, componentFormat, 0,
-                        vertexComponent.offset, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-                    });
-                    break;
+                case VertexComponentType::Float: componentFormat = DXGI_FORMAT_R32_FLOAT; break;
+                case VertexComponentType::Vec2:  componentFormat = DXGI_FORMAT_R32G32_FLOAT; break;
+                case VertexComponentType::Vec3:  componentFormat = DXGI_FORMAT_R32G32B32_FLOAT; break;
+                case VertexComponentType::Vec4:  componentFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
+                default: 
+                    JUTILS_LOG(error, JSTR("Unsupported type of vertex component {} in vertex {}"), componentDescription->shaderLocation, pipelineStateID.vertexID);
+                    return nullptr;
                 }
+                inputLayouts.add({ 
+                    "TEXCOORD", componentDescription->shaderLocation, componentFormat, 0,
+                    componentOffset, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+                });
             }
-            if (!componentFound)
-            {
-                JUTILS_LOG(error, JSTR("Can't find vertex component {} in vertex {}"), requiredVertexComponent.toString(), pipelineStateID.vertexName.toString());
-                return nullptr;
-            }
+            componentOffset += GetVertexComponentSize(componentDescription->type);
+        }
+        if (inputLayouts.getSize() != requiredComponents.getSize())
+        {
+            JUTILS_LOG(error, JSTR("Can't find some of the vertex components in vertex {}"), pipelineStateID.vertexID);
+            return nullptr;
         }
 
         ID3D12Device2* device = renderEngine->getDevice();

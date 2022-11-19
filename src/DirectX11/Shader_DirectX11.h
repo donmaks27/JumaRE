@@ -8,6 +8,8 @@
 
 #include <d3dcompiler.h>
 
+#include "../../include/JumaRE/vertex/VertexDescription.h"
+
 struct ID3D11VertexShader;
 struct ID3D11PixelShader;
 struct ID3D11InputLayout;
@@ -39,12 +41,12 @@ namespace JumaRenderEngine
         ID3D11VertexShader* m_VertexShader = nullptr;
         ID3D11PixelShader* m_FragmentShader = nullptr;
 
-        jmap<jstringID, ID3D11InputLayout*> m_VertexInputLayouts;
+        jmap<vertex_id, ID3D11InputLayout*> m_VertexInputLayouts;
 
 
         void clearDirectX();
         
-        ID3D11InputLayout* getVertexInputLayout(const jstringID& vertexName);
+        ID3D11InputLayout* getVertexInputLayout(vertex_id vertexID);
     };
 }
 

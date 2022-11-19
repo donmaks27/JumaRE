@@ -11,10 +11,10 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool VertexBuffer::init(VertexBufferData* verticesData)
+    bool VertexBuffer::init(const vertex_id vertexID, const VertexBufferData& data)
     {
-        m_VertexTypeName = verticesData->getVertexTypeName();
-        if (!initInternal(verticesData))
+        m_VertexID = vertexID;
+        if (!initInternal(data))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize vertex buffer"));
             clearData();
@@ -25,6 +25,6 @@ namespace JumaRenderEngine
 
     void VertexBuffer::clearData()
     {
-        m_VertexTypeName = jstringID_NONE;
+        m_VertexID = vertex_id_NONE;
     }
 }

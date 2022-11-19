@@ -4,51 +4,34 @@
 
 #include "../core.h"
 
-#include "VertexInfo.h"
+#include "VertexDescription.h"
 
 namespace JumaRenderEngine
 {
-    class VertexBufferData
+    struct VertexBufferData
     {
-    public:
-        VertexBufferData() = default;
-        virtual ~VertexBufferData() = default;
+        VertexDescription vertexDescription;
 
-        virtual const jstringID& getVertexTypeName() const = 0;
-        virtual VertexDescription getVertexDescription() const = 0;
+        const void* verticesData = nullptr;
+        const uint32* indicesData = nullptr;
 
-        virtual const void* getVertices() const = 0;
-        virtual uint32 getVertexCount() const = 0;
-
-        const uint32* getIndices() const { return !vertexIndices.isEmpty() ? vertexIndices.getData() : nullptr; }
-        uint32 getIndexCount() const { return static_cast<uint32>(vertexIndices.getSize()); }
-
-        void setVertexIndices(jarray<uint32> data) { vertexIndices = std::move(data); }
-
-    protected:
-
-        jarray<uint32> vertexIndices;
+        uint32 vertexCount = 0;
+        uint32 indexCount = 0;
     };
-
-    template<typename T, TEMPLATE_ENABLE(is_vertex_type<T>)>
-    class VertexBufferDataImpl final : public VertexBufferData
+    template<typename T>
+    VertexBufferData MakeVertexBufferData(const VertexDescription& description, const jarray<T>& vertices, const jarray<uint32>& indices)
     {
-    public:
-        using VertexType = T;
-
-        VertexBufferDataImpl() = default;
-        virtual ~VertexBufferDataImpl() override = default;
-
-        virtual const jstringID& getVertexTypeName() const override { return VertexInfo<VertexType>::getVertexTypeName(); }
-        virtual VertexDescription getVertexDescription() const override { return { VertexInfo<VertexType>::getVertexSize(), VertexInfo<VertexType>::getVertexComponents() }; }
-
-        virtual const void* getVertices() const override { return vertices.getData(); }
-        virtual uint32 getVertexCount() const override { return static_cast<uint32>(vertices.getSize()); }
-        
-        void setVertices(jarray<VertexType> data) { vertices = std::move(data); }
-
-    private:
-
-        jarray<VertexType> vertices;
-    };
+        return {
+            description, vertices.getData(), indices.getData(),
+            static_cast<uint32>(vertices.getSize()), static_cast<uint32>(indices.getSize())
+        };
+    }
+    template<typename T>
+    VertexBufferData MakeVertexBufferData(const VertexDescription& description, const jarray<T>& vertices)
+    {
+        return {
+            description, vertices.getData(), nullptr,
+            static_cast<uint32>(vertices.getSize()), 0
+        };
+    }
 }

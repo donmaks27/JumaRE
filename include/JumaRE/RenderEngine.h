@@ -10,6 +10,7 @@
 #include "material/ShaderUniform.h"
 #include "texture/TextureFormat.h"
 #include "texture/TextureSamples.h"
+#include "vertex/VertexBufferData.h"
 #include "vertex/VertexDescription.h"
 #include "window/WindowController.h"
 
@@ -21,7 +22,12 @@ namespace JumaRenderEngine
     class Shader;
     class Texture;
     class VertexBuffer;
-    class VertexBufferData;
+
+    struct RegisteredVertexDescription
+    {
+        VertexDescription description;
+        uint32 vertexSize = 0;
+    };
 
     JUTILS_CREATE_MULTICAST_DELEGATE1(OnRenderEngineEvent, RenderEngine*, renderEngine);
 
@@ -60,7 +66,7 @@ namespace JumaRenderEngine
         T* getRenderPipeline() const { return dynamic_cast<T*>(getRenderPipeline()); }
 
         RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
-        VertexBuffer* createVertexBuffer(VertexBufferData* verticesData);
+        VertexBuffer* createVertexBuffer(const VertexBufferData& data);
         Shader* createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
         Material* createMaterial(Shader* shader);
         Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
@@ -71,7 +77,10 @@ namespace JumaRenderEngine
         void destroyMaterial(Material* material);
         void destroyTexture(Texture* texture);
 
-        const VertexDescription* findVertexType(const jstringID& vertexName) const { return m_RegisteredVertexTypes.find(vertexName); }
+        void registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description);
+        const VertexComponentDescription* findVertexComponent(const jstringID& componentID) const { return m_RegisteredVertexComponents.find(componentID); }
+        const RegisteredVertexDescription* findVertex(const vertex_id vertexID) const { return m_RegisteredVerticesData.find(vertexID); }
+
         virtual math::vector2 getScreenCoordinateModifier() const { return { 1.0f, 1.0f }; }
         virtual bool shouldFlipLoadedTextures() const { return false; }
 
@@ -99,7 +108,7 @@ namespace JumaRenderEngine
         virtual void deallocateMaterial(Material* material) = 0;
         virtual void deallocateTexture(Texture* texture) = 0;
 
-        virtual void onRegisteredVertexType(const jstringID& vertexName) {}
+        virtual void onRegisteredVertex(const vertex_id vertexID, const RegisteredVertexDescription& data) {}
 
     private:
 
@@ -107,7 +116,11 @@ namespace JumaRenderEngine
 
         WindowController* m_WindowController = nullptr;
         RenderPipeline* m_RenderPipeline = nullptr;
-        jmap<jstringID, VertexDescription> m_RegisteredVertexTypes;
+
+        jmap<jstringID, VertexComponentDescription> m_RegisteredVertexComponents;
+        juid<vertex_id> m_VertexIDGenerator;
+        jmap<VertexDescription, vertex_id> m_RegisteredVertices;
+        jmap<vertex_id, RegisteredVertexDescription> m_RegisteredVerticesData;
 
         Texture* m_DefaultTexture = nullptr;
 
@@ -115,10 +128,10 @@ namespace JumaRenderEngine
         bool createRenderAssets();
 
         void registerObjectInternal(RenderEngineContextObjectBase* object);
-        
-        const VertexDescription* registerVertexType(const VertexBufferData* verticesData);
 
         RenderTarget* createWindowRenderTarget(window_id windowID, TextureSamples samples);
+        
+        vertex_id registerVertex(const VertexDescription& description);
     };
 
     template<RenderAPI API>

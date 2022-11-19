@@ -10,6 +10,7 @@
 
 #include "vulkanObjects/VulkanRenderPassDescription.h"
 #include "../../include/JumaRE/material/MaterialProperties.h"
+#include "../../include/JumaRE/vertex/VertexDescription.h"
 
 namespace JumaRenderEngine
 {
@@ -26,7 +27,7 @@ namespace JumaRenderEngine
         VkDescriptorSetLayout getDescriptorSetLayout() const { return m_DescriptorSetLayout; }
         VkPipelineLayout getPipelineLayout() const { return m_PipelineLayout; }
 
-        bool bindRenderPipeline(VkCommandBuffer commandBuffer, const jstringID& vertexName, const VulkanRenderPass* renderPass, 
+        bool bindRenderPipeline(VkCommandBuffer commandBuffer, vertex_id vertexID, const VulkanRenderPass* renderPass, 
             const MaterialProperties& pipelineProperties);
 
     protected:
@@ -38,7 +39,7 @@ namespace JumaRenderEngine
 
         struct RenderPipelineID
         {
-            jstringID vertexName = jstringID_NONE;
+            vertex_id vertexID = vertex_id_NONE;
             render_pass_type_id renderPassID = render_pass_type_id_INVALID;
             MaterialProperties properties;
 
@@ -59,15 +60,14 @@ namespace JumaRenderEngine
 
         void clearVulkan();
         
-        VkPipeline getRenderPipeline(const jstringID& vertexName, const VulkanRenderPass* renderPass, 
-            const MaterialProperties& pipelineProperties);
+        VkPipeline getRenderPipeline(vertex_id vertexID, const VulkanRenderPass* renderPass, const MaterialProperties& pipelineProperties);
     };
 
     inline bool Shader_Vulkan::RenderPipelineID::operator<(const RenderPipelineID& otherID) const
     {
-        if (vertexName != otherID.vertexName)
+        if (vertexID != otherID.vertexID)
         {
-            return vertexName < otherID.vertexName;
+            return vertexID < otherID.vertexID;
         }
         if (renderPassID != otherID.renderPassID)
         {

@@ -18,22 +18,20 @@ namespace JumaRenderEngine
         clearVulkan();
     }
 
-    bool VertexBuffer_Vulkan::initInternal(VertexBufferData* verticesData)
+    bool VertexBuffer_Vulkan::initInternal(const VertexBufferData& data)
     {
-        RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
-
-        const uint32 vertexCount = verticesData->getVertexCount();
-        if (vertexCount == 0)
+        if (data.vertexCount == 0)
         {
             JUTILS_LOG(error, JSTR("Empty vertex buffer data"));
             return false;
         }
-        const VertexDescription* vertexDescription = renderEngine->findVertexType(getVertexTypeName());
+        RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
+        const RegisteredVertexDescription* description = renderEngine->findVertex(getVertexID());
 
         VulkanBuffer* vertexBuffer = renderEngine->getVulkanBuffer();
         vertexBuffer->initGPU(
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, { VulkanQueueType::Graphics, VulkanQueueType::Transfer }, 
-            vertexDescription->size * vertexCount, verticesData->getVertices()
+            description->vertexSize * data.vertexCount, data.verticesData
         );
         if (!vertexBuffer->isValid())
         {
@@ -42,13 +40,12 @@ namespace JumaRenderEngine
             return false;
         }
 
-        const uint32 indexCount = verticesData->getIndexCount();
-        if (indexCount > 0)
+        if (data.indexCount > 0)
         {
             VulkanBuffer* indexBuffer = renderEngine->getVulkanBuffer();
             indexBuffer->initGPU(
                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT, { VulkanQueueType::Graphics, VulkanQueueType::Transfer }, 
-                sizeof(uint32) * vertexCount, verticesData->getIndices()
+                sizeof(uint32) * data.indexCount, data.indicesData
             );
             if (!indexBuffer->isValid())
             {
@@ -59,11 +56,11 @@ namespace JumaRenderEngine
             }
 
             m_IndexBuffer = indexBuffer;
-            m_RenderElementsCount = indexCount;
+            m_RenderElementsCount = data.indexCount;
         }
         else
         {
-            m_RenderElementsCount = vertexCount;
+            m_RenderElementsCount = data.vertexCount;
         }
 
         m_VertexBuffer = vertexBuffer;

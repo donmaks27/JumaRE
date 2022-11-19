@@ -112,7 +112,10 @@ namespace JumaRenderEngine
             delete m_WindowController;
             m_WindowController = nullptr;
         }
-        m_RegisteredVertexTypes.clear();
+        m_RegisteredVertexComponents.clear();
+        m_RegisteredVertices.clear();
+        m_RegisteredVerticesData.clear();
+        m_VertexIDGenerator.reset();
     }
 
     void RenderEngine::registerObjectInternal(RenderEngineContextObjectBase* object)
@@ -122,6 +125,7 @@ namespace JumaRenderEngine
             object->m_RenderEngine = this;
         }
     }
+
     RenderPipeline* RenderEngine::createRenderPipelineInternal()
     {
         return createObject<RenderPipeline>();
@@ -156,43 +160,21 @@ namespace JumaRenderEngine
         }
     }
 
-    VertexBuffer* RenderEngine::createVertexBuffer(VertexBufferData* verticesData)
+    VertexBuffer* RenderEngine::createVertexBuffer(const VertexBufferData& data)
     {
-        if (registerVertexType(verticesData) == nullptr)
+        const vertex_id vertexID = registerVertex(data.vertexDescription);
+        if (vertexID == vertex_id_NONE)
         {
             return nullptr;
         }
 
         VertexBuffer* vertexBuffer = allocateVertexBuffer();
-        if (!vertexBuffer->init(verticesData))
+        if (!vertexBuffer->init(vertexID, data))
         {
             destroyVertexBuffer(vertexBuffer);
             return nullptr;
         }
         return vertexBuffer;
-    }
-    const VertexDescription* RenderEngine::registerVertexType(const VertexBufferData* verticesData)
-    {
-        if (!isValid() || (verticesData == nullptr))
-        {
-            return nullptr;
-        }
-
-        const jstringID& vertexName = verticesData->getVertexTypeName();
-        if (vertexName == jstringID_NONE)
-        {
-            return nullptr;
-        }
-
-        const VertexDescription* description = findVertexType(vertexName);
-        if (description != nullptr)
-        {
-            return description;
-        }
-
-        description = &m_RegisteredVertexTypes.add(vertexName, verticesData->getVertexDescription());
-        onRegisteredVertexType(vertexName);
-        return description;
     }
     void RenderEngine::destroyVertexBuffer(VertexBuffer* vertexBuffer)
     {
@@ -259,5 +241,45 @@ namespace JumaRenderEngine
             texture->clearAsset();
             deallocateTexture(texture);
         }
+    }
+    
+    void RenderEngine::registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description)
+    {
+        if (vertexComponentID != jstringID_NONE)
+        {
+            m_RegisteredVertexComponents.add(vertexComponentID, description);
+        }
+    }
+    vertex_id RenderEngine::registerVertex(const VertexDescription& description)
+    {
+        if (description.components.isEmpty())
+        {
+            return vertex_id_NONE;
+        }
+        const vertex_id* vertexIDPtr = m_RegisteredVertices.find(description);
+        if (vertexIDPtr != nullptr)
+        {
+            return *vertexIDPtr;
+        }
+
+        uint32 vertexSize = 0;
+        for (const auto& componentID : description.components)
+        {
+            const VertexComponentDescription* componentDescription = findVertexComponent(componentID);
+            if (componentDescription == nullptr)
+            {
+                JUTILS_LOG(error, JSTR("Invalid vertex component {}"), componentID.toString());
+                return vertex_id_NONE;
+            }
+            vertexSize += GetVertexComponentSize(componentDescription->type);
+        }
+
+        const vertex_id vertexID = m_VertexIDGenerator.getUID();
+        if (vertexID == vertex_id_NONE)
+        {
+            return vertex_id_NONE;
+        }
+        onRegisteredVertex(vertexID, m_RegisteredVerticesData.add(vertexID, { description, vertexSize }));
+        return vertexID;
     }
 }

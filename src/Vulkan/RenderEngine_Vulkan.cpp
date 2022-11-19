@@ -457,7 +457,7 @@ namespace JumaRenderEngine
         }
         m_TextureSamplers.clear();
 
-        m_RegisteredVertexTypes_Vulkan.clear();
+        m_RegisteredVertices_Vulkan.clear();
 
         m_RenderPasses.clear();
         m_RenderPassTypes.clear();
@@ -542,32 +542,36 @@ namespace JumaRenderEngine
         return nullptr;
     }
 
-    void RenderEngine_Vulkan::onRegisteredVertexType(const jstringID& vertexName)
+    void RenderEngine_Vulkan::onRegisteredVertex(const vertex_id vertexID, const RegisteredVertexDescription& data)
     {
-        const VertexDescription* description = findVertexType(vertexName);
-
-        VertexDescription_Vulkan& descriptionVulkan = m_RegisteredVertexTypes_Vulkan[vertexName];
+        VertexDescription_Vulkan& descriptionVulkan = m_RegisteredVertices_Vulkan[vertexID];
         descriptionVulkan.binding.binding = 0;
-        descriptionVulkan.binding.stride = description->size;
+        descriptionVulkan.binding.stride = data.vertexSize;
         descriptionVulkan.binding.inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
 
-        descriptionVulkan.attributes.reserve(description->components.getSize());
-        for (const auto& componentDescriprion : description->components)
+        int32 componentOffset = 0;
+        descriptionVulkan.attributes.reserve(data.description.components.getSize());
+        for (const auto& componentID : data.description.components)
         {
-            VkVertexInputAttributeDescription attribute;
-            switch (componentDescriprion.type)
-            {
-            case VertexComponentType::Float: attribute.format = VK_FORMAT_R32_SFLOAT; break;
-            case VertexComponentType::Vec2: attribute.format = VK_FORMAT_R32G32_SFLOAT; break;
-            case VertexComponentType::Vec3: attribute.format = VK_FORMAT_R32G32B32_SFLOAT; break;
-            case VertexComponentType::Vec4: attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
-            default: continue;
-            }
-            attribute.location = componentDescriprion.shaderLocation;
-            attribute.binding = descriptionVulkan.binding.binding;
-            attribute.offset = componentDescriprion.offset;
+            const VertexComponentDescription* componentDescription = findVertexComponent(componentID);
 
+            VkVertexInputAttributeDescription attribute;
+            switch (componentDescription->type)
+            {
+                case VertexComponentType::Float: attribute.format = VK_FORMAT_R32_SFLOAT; break;
+                case VertexComponentType::Vec2:  attribute.format = VK_FORMAT_R32G32_SFLOAT; break;
+                case VertexComponentType::Vec3:  attribute.format = VK_FORMAT_R32G32B32_SFLOAT; break;
+                case VertexComponentType::Vec4:  attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
+                default: 
+                    JUTILS_LOG(error, JSTR("Unsupported vertex component!"));
+                    continue;
+            }
+            attribute.location = componentDescription->shaderLocation;
+            attribute.binding = descriptionVulkan.binding.binding;
+            attribute.offset = componentOffset;
             descriptionVulkan.attributes.add(attribute);
+
+            componentOffset += GetVertexComponentSize(componentDescription->type);
         }
     }
 

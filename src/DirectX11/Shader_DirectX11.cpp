@@ -135,9 +135,9 @@ namespace JumaRenderEngine
         }
     }
 
-    ID3D11InputLayout* Shader_DirectX11::getVertexInputLayout(const jstringID& vertexName)
+    ID3D11InputLayout* Shader_DirectX11::getVertexInputLayout(const vertex_id vertexID)
     {
-        ID3D11InputLayout** existingInputLayoutPtr = m_VertexInputLayouts.find(vertexName);
+        ID3D11InputLayout** existingInputLayoutPtr = m_VertexInputLayouts.find(vertexID);
         if (existingInputLayoutPtr != nullptr)
         {
             return *existingInputLayoutPtr;
@@ -148,30 +148,35 @@ namespace JumaRenderEngine
             return nullptr;
         }
         const RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
-        const VertexDescription* vertexDescription = renderEngine->findVertexType(vertexName);
+        const RegisteredVertexDescription* vertexDescription = renderEngine->findVertex(vertexID);
         if (vertexDescription == nullptr)
         {
             return nullptr;
         }
 
+        uint32 componentOffset = 0;
         jarray<jstring> semanticNames;
         jarray<D3D11_INPUT_ELEMENT_DESC> vertexLayoutDescriptions;
-        vertexLayoutDescriptions.reserve(vertexDescription->components.getSize());
-        for (const auto& vertexComponent : vertexDescription->components)
+        vertexLayoutDescriptions.reserve(vertexDescription->description.components.getSize());
+        for (const auto& componentID : vertexDescription->description.components)
         {
+            const VertexComponentDescription* componentDescription = renderEngine->findVertexComponent(componentID);
             DXGI_FORMAT componentFormat;
-            switch (vertexComponent.type)
+            switch (componentDescription->type)
             {
             case VertexComponentType::Float: componentFormat = DXGI_FORMAT_R32_FLOAT; break;
             case VertexComponentType::Vec2: componentFormat = DXGI_FORMAT_R32G32_FLOAT; break;
             case VertexComponentType::Vec3: componentFormat = DXGI_FORMAT_R32G32B32_FLOAT; break;
             case VertexComponentType::Vec4: componentFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
-            default: continue;
+            default: 
+                JUTILS_LOG(error, JSTR("Unsupported vertex component type!"));
+                continue;
             }
 
             vertexLayoutDescriptions.add({
-                JSTR("TEXCOORD"), vertexComponent.shaderLocation, componentFormat, 0, vertexComponent.offset, D3D11_INPUT_PER_VERTEX_DATA, 0
+                JSTR("TEXCOORD"), componentDescription->shaderLocation, componentFormat, 0, componentOffset, D3D11_INPUT_PER_VERTEX_DATA, 0
             });
+            componentOffset += GetVertexComponentSize(componentDescription->type);
         }
 
         ID3D11InputLayout* inputLayout = nullptr;
@@ -182,15 +187,15 @@ namespace JumaRenderEngine
         );
         if (FAILED(result))
         {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create DirectX11 input layout for vertex {}"), vertexName.toString());
+            JUTILS_ERROR_LOG(result, JSTR("Failed to create DirectX11 input layout for vertex {}"), vertexID);
             return nullptr;
         }
-        return m_VertexInputLayouts[vertexName] = inputLayout;
+        return m_VertexInputLayouts.add(vertexID, inputLayout);
     }
 
     bool Shader_DirectX11::bindShader(const RenderOptions* renderOptions, VertexBuffer_DirectX11* vertexBuffer)
     {
-        ID3D11InputLayout* inputLayout = getVertexInputLayout(vertexBuffer->getVertexTypeName());
+        ID3D11InputLayout* inputLayout = getVertexInputLayout(vertexBuffer->getVertexID());
         if (inputLayout == nullptr)
         {
             return false;

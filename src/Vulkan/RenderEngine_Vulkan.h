@@ -66,7 +66,7 @@ namespace JumaRenderEngine
         VulkanRenderPass* getRenderPass(const VulkanRenderPassDescription& description);
         const VulkanRenderPassDescription* findRenderPassDescription(render_pass_type_id renderPassID) const;
 
-        const VertexDescription_Vulkan* findVertexType_Vulkan(const jstringID& vertexName) const { return m_RegisteredVertexTypes_Vulkan.find(vertexName); }
+        const VertexDescription_Vulkan* findVertexType_Vulkan(const vertex_id vertexID) const { return m_RegisteredVertices_Vulkan.find(vertexID); }
 
         VkSampler getTextureSampler(TextureSamplerType samplerType);
 
@@ -89,7 +89,7 @@ namespace JumaRenderEngine
         virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnObject(material); }
         virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnObject(texture); }
 
-        virtual void onRegisteredVertexType(const jstringID& vertexName) override;
+        virtual void onRegisteredVertex(vertex_id vertexID, const RegisteredVertexDescription& data) override;
 
     private:
 
@@ -126,7 +126,7 @@ namespace JumaRenderEngine
         jmap<VulkanRenderPassDescription, render_pass_type_id, VulkanRenderPassDescription::compatible_predicate> m_RenderPassTypes;
         jmap<VulkanRenderPassDescription, VulkanRenderPass, VulkanRenderPassDescription::equal_predicate> m_RenderPasses;
 
-        jmap<jstringID, VertexDescription_Vulkan> m_RegisteredVertexTypes_Vulkan;
+        jmap<vertex_id, VertexDescription_Vulkan> m_RegisteredVertices_Vulkan;
 
         jmap<TextureSamplerType, VkSampler> m_TextureSamplers;
 

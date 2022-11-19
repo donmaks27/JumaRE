@@ -239,10 +239,10 @@ namespace JumaRenderEngine
         m_ShaderModules.clear();
     }
 
-    bool Shader_Vulkan::bindRenderPipeline(VkCommandBuffer commandBuffer, const jstringID& vertexName, const VulkanRenderPass* renderPass, 
+    bool Shader_Vulkan::bindRenderPipeline(VkCommandBuffer commandBuffer, const vertex_id vertexID, const VulkanRenderPass* renderPass, 
         const MaterialProperties& pipelineProperties)
     {
-        VkPipeline renderPipeline = getRenderPipeline(vertexName, renderPass, pipelineProperties);
+        VkPipeline renderPipeline = getRenderPipeline(vertexID, renderPass, pipelineProperties);
         if (renderPipeline == nullptr)
         {
             return false;
@@ -250,17 +250,17 @@ namespace JumaRenderEngine
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
         return true;
     }
-    VkPipeline Shader_Vulkan::getRenderPipeline(const jstringID& vertexName, const VulkanRenderPass* renderPass, 
+    VkPipeline Shader_Vulkan::getRenderPipeline(const vertex_id vertexID, const VulkanRenderPass* renderPass, 
         const MaterialProperties& pipelineProperties)
     {
-        if ((vertexName == jstringID_NONE) || (renderPass == nullptr))
+        if ((vertexID == vertex_id_NONE) || (renderPass == nullptr))
         {
             JUTILS_LOG(warning, JSTR("Invalid input params"));
             return nullptr;
         }
 
         const render_pass_type_id renderPassID = renderPass->getTypeID();
-        const RenderPipelineID pipelineID = { vertexName, renderPassID, pipelineProperties };
+        const RenderPipelineID pipelineID = { vertexID, renderPassID, pipelineProperties };
         VkPipeline* existingPipeline = m_RenderPipelines.find(pipelineID);
         if (existingPipeline != nullptr)
         {
@@ -274,7 +274,7 @@ namespace JumaRenderEngine
             JUTILS_LOG(warning, JSTR("Invalid render pass type"));
             return nullptr;
         }
-        const VertexDescription_Vulkan* vertexDescription = renderEngine->findVertexType_Vulkan(vertexName);
+        const VertexDescription_Vulkan* vertexDescription = renderEngine->findVertexType_Vulkan(vertexID);
         if (vertexDescription == nullptr)
         {
             JUTILS_LOG(warning, JSTR("Invalid vertex type"));

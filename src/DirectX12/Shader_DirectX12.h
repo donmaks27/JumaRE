@@ -43,7 +43,7 @@ namespace JumaRenderEngine
         
         struct PipelineStateID
         {
-            jstringID vertexName = jstringID_NONE;
+            vertex_id vertexID = vertex_id_NONE;
             TextureFormat colorFormat = TextureFormat::RGBA8;
             TextureFormat depthFormat = TextureFormat::DEPTH24_STENCIL8;
             TextureSamples samplesCount = TextureSamples::X1;
@@ -68,9 +68,9 @@ namespace JumaRenderEngine
 
     bool Shader_DirectX12::PipelineStateID::operator<(const PipelineStateID& otherID) const
     {
-        if (vertexName != otherID.vertexName)
+        if (vertexID != otherID.vertexID)
         {
-            return vertexName < otherID.vertexName;
+            return vertexID < otherID.vertexID;
         }
         if (colorFormat != otherID.colorFormat)
         {

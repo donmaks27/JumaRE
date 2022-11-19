@@ -17,29 +17,27 @@ namespace JumaRenderEngine
         clearDirectX();
     }
 
-    bool VertexBuffer_DirectX11::initInternal(VertexBufferData* verticesData)
+    bool VertexBuffer_DirectX11::initInternal(const VertexBufferData& data)
     {
-        const uint32 vertexCount = verticesData->getVertexCount();
-        if (vertexCount == 0)
+        if (data.vertexCount == 0)
         {
             JUTILS_LOG(error, JSTR("Empty vertex buffer data"));
             return false;
         }
-
-        RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
-        const VertexDescription* vertexDescription = renderEngine->findVertexType(getVertexTypeName());
+        const RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
+        const uint32 vertexSize = renderEngine->findVertex(getVertexID())->vertexSize;
         ID3D11Device* device = renderEngine->getDevice();
 
         ID3D11Buffer* vertexBuffer = nullptr;
         D3D11_BUFFER_DESC vertexBufferDescription{};
-        vertexBufferDescription.StructureByteStride = vertexDescription->size;
-        vertexBufferDescription.ByteWidth = vertexDescription->size * vertexCount;
+        vertexBufferDescription.StructureByteStride = vertexSize;
+        vertexBufferDescription.ByteWidth = vertexSize * data.vertexCount;
         vertexBufferDescription.Usage = D3D11_USAGE_DEFAULT;
         vertexBufferDescription.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         vertexBufferDescription.CPUAccessFlags = 0;
         vertexBufferDescription.MiscFlags = 0;
         D3D11_SUBRESOURCE_DATA vertexBufferData{};
-        vertexBufferData.pSysMem = verticesData->getVertices();
+        vertexBufferData.pSysMem = data.verticesData;
         HRESULT result = device->CreateBuffer(&vertexBufferDescription, &vertexBufferData, &vertexBuffer);
         if (FAILED(result))
         {
@@ -48,18 +46,17 @@ namespace JumaRenderEngine
         }
 
         ID3D11Buffer* indexBuffer = nullptr;
-        const uint32 indexCount = verticesData->getIndexCount();
-        if (indexCount > 0)
+        if (data.indexCount > 0)
         {
             D3D11_BUFFER_DESC indexBufferDescription{};
             indexBufferDescription.StructureByteStride = sizeof(uint32);
-            indexBufferDescription.ByteWidth = sizeof(uint32) * indexCount;
+            indexBufferDescription.ByteWidth = sizeof(uint32) * data.indexCount;
             indexBufferDescription.Usage = D3D11_USAGE_DEFAULT;
             indexBufferDescription.BindFlags = D3D11_BIND_INDEX_BUFFER;
             indexBufferDescription.CPUAccessFlags = 0;
             indexBufferDescription.MiscFlags = 0;
             D3D11_SUBRESOURCE_DATA indexBufferData{};
-            indexBufferData.pSysMem = verticesData->getIndices();
+            indexBufferData.pSysMem = data.indicesData;
             result = device->CreateBuffer(&indexBufferDescription, &indexBufferData, &indexBuffer);
             if (FAILED(result))
             {
@@ -68,16 +65,16 @@ namespace JumaRenderEngine
                 return false;
             }
 
-            m_RenderElementsCount = indexCount;
+            m_RenderElementsCount = data.indexCount;
         }
         else
         {
-            m_RenderElementsCount = vertexCount;
+            m_RenderElementsCount = data.vertexCount;
         }
 
         m_VertexBuffer = vertexBuffer;
         m_IndexBuffer = indexBuffer;
-        m_VertexSize = vertexDescription->size;
+        m_VertexSize = vertexSize;
         return true;
     }
 
