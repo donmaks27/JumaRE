@@ -32,8 +32,6 @@ namespace JumaRenderEngine
 
         virtual RenderAPI getRenderAPI() const override { return RenderAPI::DirectX12; }
 
-        virtual math::vector2 getScreenCoordinateModifier() const override { return { 1.0f, -1.0f }; }
-
         ID3D12Device2* getDevice() const { return m_Device; }
         D3D12MA::Allocator* getResourceAllocator() const { return m_ResourceAllocator; }
         DirectX12CommandQueue* getCommandQueue(const D3D12_COMMAND_LIST_TYPE queueType) const { return m_CommandQueues.find(queueType); }

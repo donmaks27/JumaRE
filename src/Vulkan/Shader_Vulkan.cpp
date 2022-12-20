@@ -320,7 +320,7 @@ namespace JumaRenderEngine
         rasterizer.polygonMode = pipelineProperties.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = pipelineProperties.cullBackFaces ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_FRONT_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
         rasterizer.depthBiasConstantFactor = 0.0f;
         rasterizer.depthBiasClamp = 0.0f;

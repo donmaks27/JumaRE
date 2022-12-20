@@ -77,9 +77,6 @@ namespace JumaRenderEngine
         const VertexComponentDescription* findVertexComponent(const jstringID& componentID) const { return m_RegisteredVertexComponents.find(componentID); }
         const RegisteredVertexDescription* findVertex(const vertex_id vertexID) const { return m_RegisteredVerticesData.find(vertexID); }
 
-        virtual math::vector2 getScreenCoordinateModifier() const { return { 1.0f, 1.0f }; }
-        virtual bool shouldFlipLoadedTextures() const { return false; }
-
         Texture* getDefaultTexture() const { return m_DefaultTexture; }
 
     protected:

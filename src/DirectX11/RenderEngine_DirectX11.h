@@ -68,8 +68,6 @@ namespace JumaRenderEngine
         ID3D11BlendState* getBlendState(const BlendState& description);
         ID3D11SamplerState* getTextureSampler(TextureSamplerType samplerType);
 
-        virtual math::vector2 getScreenCoordinateModifier() const override { return { 1.0f, -1.0f }; }
-
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo) override;

@@ -440,7 +440,7 @@ namespace JumaRenderEngine
         // Rasterizer data
         pipelineStateStream.rasterizer.data.FillMode = pipelineStateID.properties.wireframe ? D3D12_FILL_MODE_WIREFRAME : D3D12_FILL_MODE_SOLID;
         pipelineStateStream.rasterizer.data.CullMode = pipelineStateID.properties.cullBackFaces ? D3D12_CULL_MODE_BACK : D3D12_CULL_MODE_FRONT;
-        pipelineStateStream.rasterizer.data.FrontCounterClockwise = FALSE;
+        pipelineStateStream.rasterizer.data.FrontCounterClockwise = TRUE;
         pipelineStateStream.rasterizer.data.DepthBias = 0;
         pipelineStateStream.rasterizer.data.DepthBiasClamp = 0.0f;
         pipelineStateStream.rasterizer.data.SlopeScaledDepthBias = 0.0f;

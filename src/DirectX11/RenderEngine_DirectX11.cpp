@@ -162,7 +162,7 @@ namespace JumaRenderEngine
         D3D11_RASTERIZER_DESC rasterizerDescription{};
         rasterizerDescription.FillMode = description.wireframe ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
         rasterizerDescription.CullMode = description.cullBackFaces ? D3D11_CULL_BACK : D3D11_CULL_FRONT;
-        rasterizerDescription.FrontCounterClockwise = FALSE;
+        rasterizerDescription.FrontCounterClockwise = TRUE;
         rasterizerDescription.DepthBias = 0;
         rasterizerDescription.DepthBiasClamp = 0.0f;
         rasterizerDescription.SlopeScaledDepthBias = 0.0f;
