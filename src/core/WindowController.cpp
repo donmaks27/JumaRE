@@ -345,7 +345,7 @@ namespace JumaRenderEngine
                 WindowData* windowData = getWindowData(windowID);
                 if (windowData != nullptr)
                 {
-                    JUTILS_LOG(info, JSTR("Window {} size changed - {}"), windowID, changedWindowSize.value.toString());
+                    JUTILS_LOG(info, JSTR("Window {} size changed - {}"), windowID, changedWindowSize.value);
                     windowData->size = changedWindowSize.value;
                     if ((windowID == getMainWindowID()) && (getMainWindowMode() != WindowMode::WindowedFullscreen))
                     {

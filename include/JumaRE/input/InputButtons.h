@@ -543,7 +543,7 @@ namespace JumaRenderEngine
     }
 }
 
-JUTILS_FMT_FORMATTER(JumaRenderEngine::InputDevice, JumaRenderEngine::InputDeviceToString);
-JUTILS_FMT_FORMATTER(JumaRenderEngine::InputButton, JumaRenderEngine::InputButtonToString);
-JUTILS_FMT_FORMATTER(JumaRenderEngine::InputButtonAction, JumaRenderEngine::InputButtonActionToString);
-JUTILS_FMT_FORMATTER(JumaRenderEngine::InputAxis, JumaRenderEngine::InputAxisToString);
+JUTILS_STRING_FORMATTER(JumaRenderEngine::InputDevice, JumaRenderEngine::InputDeviceToString);
+JUTILS_STRING_FORMATTER(JumaRenderEngine::InputButton, JumaRenderEngine::InputButtonToString);
+JUTILS_STRING_FORMATTER(JumaRenderEngine::InputButtonAction, JumaRenderEngine::InputButtonActionToString);
+JUTILS_STRING_FORMATTER(JumaRenderEngine::InputAxis, JumaRenderEngine::InputAxisToString);

@@ -28,4 +28,4 @@ namespace JumaRenderEngine
     }
 }
 
-JUTILS_FMT_FORMATTER(JumaRenderEngine::RenderAPI, JumaRenderEngine::RenderAPIToString);
+JUTILS_STRING_FORMATTER(JumaRenderEngine::RenderAPI, JumaRenderEngine::RenderAPIToString);
