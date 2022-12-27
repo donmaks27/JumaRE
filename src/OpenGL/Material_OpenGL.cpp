@@ -126,7 +126,7 @@ namespace JumaRenderEngine
                     }
                     else
                     {
-                        throw std::exception("Invalid default texture");
+                        throw std::logic_error("Invalid default texture");
                     }
                 }
             }

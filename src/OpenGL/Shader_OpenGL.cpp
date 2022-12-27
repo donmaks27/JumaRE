@@ -128,7 +128,7 @@ namespace JumaRenderEngine
     bool CompileOpenGLShader(uint32& outShaderIndex, const jmap<ShaderStageFlags, jstring>& fileNames, const ShaderStageFlags shaderStage, 
         const GLenum shaderStageOpenGL, const bool optionalShader = false)
     {
-        constexpr bool binary = true;
+        constexpr bool binary = false;
         const jstring* fileNamePtr = fileNames.find(shaderStage);
         if (fileNamePtr != nullptr)
         {
