@@ -12,19 +12,19 @@
 
 #include "WindowMode.h"
 #include "window_id.h"
+#include "../render_target_id.h"
 #include "../input/InputData.h"
 #include "../texture/TextureSamples.h"
 
 namespace JumaRenderEngine
 {
-    class RenderTarget;
     class WindowController;
 
     struct WindowData
     {
         window_id windowID = window_id_INVALID;
 
-        RenderTarget* windowRenderTarget = nullptr;
+        render_target_id windowRenderTargetID = render_target_id_INVALID;
         TextureSamples samples = TextureSamples::X1;
         jstringID pipelineStageName = jstringID_NONE;
 
@@ -186,9 +186,5 @@ namespace JumaRenderEngine
         void destroyRenderTarget(window_id windowID, WindowData* windowData);
         bool createRenderTargets();
         void destroyRenderTargets();
-
-        bool addPipelineStage(window_id windowID, const WindowData* windowData, bool rebuildPipeline = false);
-        bool removePipelineStage(window_id windowID, const WindowData* windowData, bool rebuildPipeline = false);
-        void addPipelineStages();
     };
 }

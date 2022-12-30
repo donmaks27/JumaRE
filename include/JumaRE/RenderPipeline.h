@@ -9,21 +9,12 @@
 #include <jutils/jset.h>
 #include <jutils/jstringID.h>
 
+#include "render_target_id.h"
+
 namespace JumaRenderEngine
 {
     struct RenderOptions;
     class RenderTarget;
-
-    struct RenderPipelineStage
-    {
-        RenderTarget* renderTarget = nullptr;
-        jset<jstringID> dependencies;
-    };
-    struct RenderPipelineStageQueueEntry
-    {
-        jstringID stage = jstringID_NONE;
-        jarray<jstringID> stagesForSynchronization;
-    };
 
     class RenderPipeline : public RenderEngineContextObjectBase
     {
@@ -33,17 +24,11 @@ namespace JumaRenderEngine
         RenderPipeline() = default;
         virtual ~RenderPipeline() override;
 
-        bool isPipelineQueueValid() const { return m_PipelineStagesQueueValid; }
-        const jarray<RenderPipelineStageQueueEntry>& getPipelineQueue() const { return m_PipelineStagesQueue; }
-        bool buildPipelineQueue();
+        bool addRenderTargetDependecy(render_target_id renderTargetID, render_target_id dependencyRenderTargetID);
+        bool removeRenderTargetDependecy(render_target_id renderTargetID, render_target_id dependencyRenderTargetID);
 
-        const jmap<jstringID, RenderPipelineStage>& getPipelineStages() const { return m_PipelineStages; }
-        const RenderPipelineStage* getPipelineStage(const jstringID& stageName) const { return m_PipelineStages.find(stageName); }
-
-        bool addPipelineStage(const jstringID& stageName, RenderTarget* renderTarget);
-        bool removePipelineStage(const jstringID& stageName);
-        bool addPipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
-        bool removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName);
+        bool isRenderTargetsQueueValid() const { return m_RenderTargetsQueueValid; }
+        bool buildRenderTargetsQueue();
 
         bool render();
         virtual void waitForRenderFinished() {}
@@ -67,14 +52,20 @@ namespace JumaRenderEngine
 
     private:
 
-        jmap<jstringID, RenderPipelineStage> m_PipelineStages;
+        struct RenderTargetsQueueEntry
+        {
+            render_target_id renderTargetID = render_target_id_INVALID;
+            jarray<render_target_id> syncRenderTargets;
+        };
 
-        bool m_PipelineStagesQueueValid = false;
-        jarray<RenderPipelineStageQueueEntry> m_PipelineStagesQueue;
+        jmap<render_target_id, jset<render_target_id>> m_RenderTargetsDependecies;
+        jarray<RenderTargetsQueueEntry> m_RenderTargetsQueue;
+        bool m_RenderTargetsQueueValid = false;
 
 
         bool init();
 
+        void onRenderTargetCreated(RenderTarget* renderTarget);
         void onRenderTargetStartDestroying(RenderTarget* renderTarget);
 
         void clearData();

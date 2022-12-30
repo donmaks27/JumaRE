@@ -181,7 +181,7 @@ namespace JumaRenderEngine
         if (m_SwapchainInvalid)
         {
             const WindowData_DirectX12* windowData = getRenderEngine()->getWindowController()->findWindowData<WindowData_DirectX12>(getWindowID());
-            RenderTarget_DirectX12* renderTarget = windowData != nullptr ? dynamic_cast<RenderTarget_DirectX12*>(windowData->windowRenderTarget) : nullptr;
+            RenderTarget_DirectX12* renderTarget = windowData != nullptr ? dynamic_cast<RenderTarget_DirectX12*>(getRenderEngine()->getRenderTarget(windowData->windowRenderTargetID)) : nullptr;
             if (renderTarget == nullptr)
             {
                 JUTILS_LOG(error, JSTR("Can't find render target of window {}"), getWindowID());

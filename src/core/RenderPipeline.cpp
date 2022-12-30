@@ -31,178 +31,138 @@ namespace JumaRenderEngine
 
     void RenderPipeline::clearData()
     {
-        m_PipelineStages.clear();
-        m_PipelineStagesQueueValid = false;
-        m_PipelineStagesQueue.clear();
+        m_RenderTargetsQueueValid = false;
+        m_RenderTargetsDependecies.clear();
+        m_RenderTargetsQueue.clear();
     }
 
-    bool RenderPipeline::buildPipelineQueue()
+    void RenderPipeline::onRenderTargetCreated(RenderTarget* renderTarget)
     {
-        if (m_PipelineStagesQueueValid)
+        renderTarget->OnStartDestroying.bind(this, &RenderPipeline::onRenderTargetStartDestroying);
+
+        m_RenderTargetsQueueValid = false;
+        m_RenderTargetsDependecies.add(renderTarget->getID());
+    }
+    void RenderPipeline::onRenderTargetStartDestroying(RenderTarget* renderTarget)
+    {
+        m_RenderTargetsQueueValid = false;
+
+        const render_target_id renderTargetID = renderTarget->getID();
+        m_RenderTargetsDependecies.remove(renderTargetID);
+        for (auto& renderTargetDependecies : m_RenderTargetsDependecies)
         {
-            return true;
+            renderTargetDependecies.value.remove(renderTargetID);
         }
-        if (m_PipelineStages.isEmpty())
+    }
+
+    bool RenderPipeline::addRenderTargetDependecy(const render_target_id renderTargetID, const render_target_id dependencyRenderTargetID)
+    {
+        if (!m_RenderTargetsDependecies.contains(dependencyRenderTargetID))
         {
             return false;
         }
+        if (getRenderEngine()->getRenderTarget(dependencyRenderTargetID)->isWindowRenderTarget())
+        {
+            JUTILS_LOG(error, JSTR("Window's render target can't be dependecy"));
+            return false;
+        }
 
-        m_PipelineStagesQueue.clear();
-        jmap<jstringID, RenderPipelineStage> cachedPipelineStages = m_PipelineStages;
-        jarray<jstringID> handledStages;
-        jarray<jstringID> stagesForSync;
-        while (!cachedPipelineStages.isEmpty())
+        jset<render_target_id>* dependencies = m_RenderTargetsDependecies.find(renderTargetID);
+        if (dependencies == nullptr)
+        {
+            return false;
+        }
+        if (dependencies->contains(dependencyRenderTargetID))
+        {
+            return true;
+        }
+
+        m_RenderTargetsQueueValid = false;
+        dependencies->add(dependencyRenderTargetID);
+        return true;
+    }
+    bool RenderPipeline::removeRenderTargetDependecy(const render_target_id renderTargetID, const render_target_id dependencyRenderTargetID)
+    {
+        jset<render_target_id>* dependencies = m_RenderTargetsDependecies.find(renderTargetID);
+        if (dependencies == nullptr)
+        {
+            return false;
+        }
+        if (!dependencies->contains(dependencyRenderTargetID))
+        {
+            return true;
+        }
+
+        m_RenderTargetsQueueValid = false;
+        dependencies->remove(dependencyRenderTargetID);
+        return true;
+    }
+
+    bool RenderPipeline::buildRenderTargetsQueue()
+    {
+        if (m_RenderTargetsQueueValid)
+        {
+            return true;
+        }
+        if (m_RenderTargetsDependecies.isEmpty())
+        {
+            return true;
+        }
+
+        m_RenderTargetsQueue.clear();
+        jmap<render_target_id, jset<render_target_id>> cachedDependencies = m_RenderTargetsDependecies;
+        jarray<render_target_id> handledStages;
+        jarray<render_target_id> stagesForSync;
+        while (!cachedDependencies.isEmpty())
         {
             // Get stages without synced dependencies
-            for (const auto& stage : cachedPipelineStages)
+            for (const auto& stage : cachedDependencies)
             {
-                if (stage.value.dependencies.isEmpty())
+                if (stage.value.isEmpty())
                 {
                     handledStages.add(stage.key);
                 }
             }
             if (handledStages.isEmpty())
             {
-                JUTILS_LOG(error, JSTR("Failed validate render pipeline queue"));
+                JUTILS_LOG(error, JSTR("Failed validate render targets queue"));
                 return false;
             }
 
             // Add them to queue
             for (const auto& stage : handledStages)
             {
-                cachedPipelineStages.remove(stage);
+                cachedDependencies.remove(stage);
                 if (!stagesForSync.isEmpty())
                 {
-                    m_PipelineStagesQueue.add({ stage, stagesForSync });
+                    m_RenderTargetsQueue.add({ stage, stagesForSync });
                     stagesForSync.clear();
                 }
                 else
                 {
-                    m_PipelineStagesQueue.add({ stage, {} });
+                    m_RenderTargetsQueue.add({ stage, {} });
                 }
             }
 
             // Remove them from dependencies and mark as needed to sync
-            for (auto& stage : cachedPipelineStages)
+            for (auto& stage : cachedDependencies)
             {
                 for (const auto& handledStage : handledStages)
                 {
-                    stage.value.dependencies.remove(handledStage);
+                    stage.value.remove(handledStage);
                 }
             }
             stagesForSync = handledStages;
             handledStages.clear();
         }
 
-        m_PipelineStagesQueueValid = true;
+        m_RenderTargetsQueueValid = true;
         return true;
-    }
-
-    bool RenderPipeline::addPipelineStage(const jstringID& stageName, RenderTarget* renderTarget)
-    {
-        if ((stageName == jstringID_NONE) || (renderTarget == nullptr))
-        {
-            JUTILS_LOG(error, JSTR("Invalid input params"));
-            return false;
-        }
-        if (m_PipelineStages.contains(stageName))
-        {
-            JUTILS_LOG(warning, JSTR("Stage already exists"));
-            return false;
-        }
-
-        RenderPipelineStage& newStage = m_PipelineStages.add(stageName);
-        newStage.renderTarget = renderTarget;
-        m_PipelineStagesQueueValid = false;
-
-        renderTarget->OnStartDestroying.bind(this, &RenderPipeline::onRenderTargetStartDestroying);
-        return true;
-    }
-    bool RenderPipeline::removePipelineStage(const jstringID& stageName)
-    {
-        const RenderPipelineStage* stage = m_PipelineStages.find(stageName);
-        if (stage != nullptr)
-        {
-            stage->renderTarget->OnStartDestroying.unbind(this, &RenderPipeline::onRenderTargetStartDestroying);
-            waitForRenderFinished();
-
-            m_PipelineStages.remove(stageName);
-            for (auto& pipelineStage : m_PipelineStages)
-            {
-                pipelineStage.value.dependencies.remove(stageName);
-            }
-
-            m_PipelineStagesQueueValid = false;
-            return true;
-        }
-        return false;
-    }
-    void RenderPipeline::onRenderTargetStartDestroying(RenderTarget* renderTarget)
-    {
-        jstringID stageName = jstringID_NONE;
-        for (const auto& pipelineStage : m_PipelineStages)
-        {
-            if (pipelineStage.value.renderTarget == renderTarget)
-            {
-                stageName = pipelineStage.key;
-                break;
-            }
-        }
-        if (stageName != jstringID_NONE)
-        {
-            removePipelineStage(stageName);
-        }
-    }
-
-    bool RenderPipeline::addPipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName)
-    {
-        if (dependencyStageName == jstringID_NONE)
-        {
-            JUTILS_LOG(error, JSTR("Invalid dependency name"));
-            return false;
-        }
-
-        RenderPipelineStage* stage = m_PipelineStages.find(stageName);
-        if (stage == nullptr)
-        {
-            JUTILS_LOG(error, JSTR("There is no stage {}"), stageName.toString());
-            return false;
-        }
-        if (stage->dependencies.contains(dependencyStageName))
-        {
-            return true;
-        }
-
-        const RenderPipelineStage* dependencyStage = m_PipelineStages.find(dependencyStageName);
-        if (dependencyStage == nullptr)
-        {
-            JUTILS_LOG(error, JSTR("There is no dependency stage {}"), dependencyStageName.toString());
-            return false;
-        }
-        if (dependencyStage->renderTarget->isWindowRenderTarget())
-        {
-            JUTILS_LOG(error, JSTR("You can't set window stage as dependency"));
-            return false;
-        }
-
-        stage->dependencies.add(dependencyStageName);
-        m_PipelineStagesQueueValid = false;
-        return true;
-    }
-    bool RenderPipeline::removePipelineStageDependency(const jstringID& stageName, const jstringID& dependencyStageName)
-    {
-        RenderPipelineStage* stage = m_PipelineStages.find(stageName);
-        if ((stage != nullptr) && stage->dependencies.remove(dependencyStageName))
-        {
-            m_PipelineStagesQueueValid = false;
-            return true;
-        }
-        return false;
     }
 
     bool RenderPipeline::render()
     {
-        if (!isPipelineQueueValid())
+        if (!isRenderTargetsQueueValid())
         {
             return false;
         }
@@ -218,21 +178,22 @@ namespace JumaRenderEngine
         renderOptions->renderPipeline = this;
         if (onStartRender(renderOptions))
         {
-            for (const auto& renderQueueEntry : getPipelineQueue())
+            const RenderEngine* renderEngine = getRenderEngine();
+            for (const auto& renderQueueEntry : m_RenderTargetsQueue)
             {
-                const RenderPipelineStage* pipelineStage = getPipelineStage(renderQueueEntry.stage);
-                if (!onStartRenderToRenderTarget(renderOptions, pipelineStage->renderTarget))
+                RenderTarget* renderTarget = renderEngine->getRenderTarget(renderQueueEntry.renderTargetID);
+                if (!onStartRenderToRenderTarget(renderOptions, renderTarget))
                 {
-                    JUTILS_LOG(warning, JSTR("Failed to start render to render target {}"), renderQueueEntry.stage.toString());
+                    JUTILS_LOG(warning, JSTR("Failed to start render to render target {}"), renderQueueEntry.renderTargetID);
                     break;
                 }
 
-                for (const auto& renderPrimitive : pipelineStage->renderTarget->getRenderPrimitives())
+                for (const auto& renderPrimitive : renderTarget->getRenderPrimitives())
                 {
                     renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
                 }
 
-                onFinishRenderToRenderTarget(renderOptions, pipelineStage->renderTarget);
+                onFinishRenderToRenderTarget(renderOptions, renderTarget);
             }
 
             onFinishRender(renderOptions);

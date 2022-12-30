@@ -11,7 +11,7 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool RenderTarget::init(const window_id windowID, const TextureSamples samples)
+    bool RenderTarget::init(const render_target_id renderTargetID, const window_id windowID, const TextureSamples samples)
     {
         WindowController* windowController = getRenderEngine()->getWindowController();
         const WindowData* windowData = windowController->findWindowData(windowID);
@@ -21,6 +21,7 @@ namespace JumaRenderEngine
             return false;
         }
 
+        m_RenderTargetID = renderTargetID;
         m_WindowID = windowID;
         m_TextureSamples = samples;
         m_Size = windowData->size;
@@ -35,7 +36,7 @@ namespace JumaRenderEngine
         windowController->OnWindowPropertiesChanged.bind(this, &RenderTarget::onWindowPropertiesChanged);
         return true;
     }
-    bool RenderTarget::init(const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
+    bool RenderTarget::init(const render_target_id renderTargetID, const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
     {
         if ((size.x == 0) || (size.y == 0))
         {
@@ -43,6 +44,7 @@ namespace JumaRenderEngine
             return false;
         }
 
+        m_RenderTargetID = renderTargetID;
         m_ColorFormat = format;
         m_Size = size;
         m_TextureSamples = samples;

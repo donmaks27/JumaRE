@@ -56,12 +56,6 @@ namespace JumaRenderEngine
 
     bool RenderEngine::createRenderAssets()
     {
-        if (!m_WindowController->createRenderTargets())
-        {
-            JUTILS_LOG(error, JSTR("Failed to create render targets for windows"));
-            return false;
-        }
-
         RenderPipeline* renderPipeline = createRenderPipelineInternal();
         if (!renderPipeline->init())
         {
@@ -70,7 +64,12 @@ namespace JumaRenderEngine
             return false;
         }
         m_RenderPipeline = renderPipeline;
-        m_WindowController->addPipelineStages();
+
+        if (!m_WindowController->createRenderTargets())
+        {
+            JUTILS_LOG(error, JSTR("Failed to create render targets for windows"));
+            return false;
+        }
 
         constexpr uint8 defaultTextureData[] = { 255, 0, 255, 255 };
         m_DefaultTexture = createTexture({ 1, 1 }, TextureFormat::RGBA8, defaultTextureData);
@@ -131,24 +130,35 @@ namespace JumaRenderEngine
         return createObject<RenderPipeline>();
     }
     
+    RenderTarget* RenderEngine::getRenderTarget(const render_target_id renderTargetID) const
+    {
+        RenderTarget* const* renderTarget = m_RenderTargets.find(renderTargetID);
+        return renderTarget != nullptr ? *renderTarget : nullptr;
+    }
     RenderTarget* RenderEngine::createWindowRenderTarget(const window_id windowID, const TextureSamples samples)
     {
         RenderTarget* renderTarget = allocateRenderTarget();
-        if (!renderTarget->init(windowID, samples))
+        const render_target_id renderTargetID = m_RenderTagetIDs.getNextUID();
+        if ((renderTargetID == render_target_id_INVALID) || !renderTarget->init(renderTargetID, windowID, samples) || (m_RenderTagetIDs.getUID() != renderTargetID))
         {
             destroyRenderTarget(renderTarget);
             return nullptr;
         }
+        m_RenderTargets.add(renderTargetID, renderTarget);
+        m_RenderPipeline->onRenderTargetCreated(renderTarget);
         return renderTarget;
     }
     RenderTarget* RenderEngine::createRenderTarget(const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
     {
         RenderTarget* renderTarget = allocateRenderTarget();
-        if (!renderTarget->init(format, size, samples))
+        const render_target_id renderTargetID = m_RenderTagetIDs.getNextUID();
+        if ((renderTargetID == render_target_id_INVALID) || !renderTarget->init(renderTargetID, format, size, samples) || (m_RenderTagetIDs.getUID() != renderTargetID))
         {
             destroyRenderTarget(renderTarget);
             return nullptr;
         }
+        m_RenderTargets.add(renderTargetID, renderTarget);
+        m_RenderPipeline->onRenderTargetCreated(renderTarget);
         return renderTarget;
     }
     void RenderEngine::destroyRenderTarget(RenderTarget* renderTarget)

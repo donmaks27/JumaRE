@@ -7,6 +7,7 @@
 
 #include <jutils/jdelegate_multicast.h>
 
+#include "render_target_id.h"
 #include "texture/TextureFormat.h"
 #include "texture/TextureSamples.h"
 #include "window/window_id.h"
@@ -38,6 +39,8 @@ namespace JumaRenderEngine
 
         OnRenderTargetEvent OnStartDestroying;
 
+
+        render_target_id getID() const { return m_RenderTargetID; }
 
         bool isWindowRenderTarget() const { return m_WindowID != window_id_INVALID; }
         window_id getWindowID() const { return m_WindowID; }
@@ -72,6 +75,8 @@ namespace JumaRenderEngine
 
     private:
 
+        render_target_id m_RenderTargetID = render_target_id_INVALID;
+
         window_id m_WindowID = window_id_INVALID;
         math::uvector2 m_Size = { 0, 0 };
 
@@ -84,8 +89,8 @@ namespace JumaRenderEngine
         jarray<RenderTargetPrimitive> m_RenderPrimitives;
 
 
-        bool init(window_id windowID, TextureSamples samples);
-        bool init(TextureFormat format, const math::uvector2& size, TextureSamples samples);
+        bool init(render_target_id renderTargetID, window_id windowID, TextureSamples samples);
+        bool init(render_target_id renderTargetID, TextureFormat format, const math::uvector2& size, TextureSamples samples);
 
         void clearData();
 

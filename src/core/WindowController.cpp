@@ -59,8 +59,6 @@ namespace JumaRenderEngine
             destroyWindow(windowID);
             return window_id_INVALID;
         }
-
-        addPipelineStage(windowID, windowData, true);
         return windowID;
     }
     void WindowController::destroyWindow(const window_id windowID)
@@ -84,7 +82,6 @@ namespace JumaRenderEngine
         {
             m_MinimizedWindowsCount--;
         }
-        removePipelineStage(windowID, windowData, true);
         destroyWindowInternal(windowID, windowData);
         m_CreatedWindowIDs.remove(windowID);
     }
@@ -107,7 +104,7 @@ namespace JumaRenderEngine
             return true;
         }
 
-        if (windowData->windowRenderTarget != nullptr)
+        if (windowData->windowRenderTargetID != render_target_id_INVALID)
         {
             return true;
         }
@@ -116,15 +113,17 @@ namespace JumaRenderEngine
         {
             return false;
         }
-        windowData->windowRenderTarget = renderTarget;
+        windowData->windowRenderTargetID = renderTarget->getID();
         return true;
     }
     void WindowController::destroyRenderTarget(const window_id windowID, WindowData* windowData)
     {
-        if (windowData->windowRenderTarget != nullptr)
+        if (windowData->windowRenderTargetID != render_target_id_INVALID)
         {
-            getRenderEngine()->destroyRenderTarget(windowData->windowRenderTarget);
-            windowData->windowRenderTarget = nullptr;
+            RenderEngine* renderEngine = getRenderEngine();
+            RenderTarget* renderTarget = renderEngine->getRenderTarget(windowData->windowRenderTargetID);
+            renderEngine->destroyRenderTarget(renderTarget);
+            windowData->windowRenderTargetID = render_target_id_INVALID;
         }
     }
     bool WindowController::createRenderTargets()
@@ -146,53 +145,8 @@ namespace JumaRenderEngine
             WindowData* windowData = getWindowData(windowID);
             if (windowData != nullptr)
             {
-                windowData->windowRenderTarget = nullptr;
+                windowData->windowRenderTargetID = render_target_id_INVALID;
             }
-        }
-    }
-
-    bool WindowController::addPipelineStage(const window_id windowID, const WindowData* windowData, 
-        const bool rebuildPipeline)
-    {
-        if (windowData->windowRenderTarget == nullptr)
-        {
-            return false;
-        }
-        RenderPipeline* pipeline = getRenderEngine()->getRenderPipeline();
-        if (pipeline == nullptr)
-        {
-            return false;
-        }
-        if (!pipeline->addPipelineStage(windowData->pipelineStageName, windowData->windowRenderTarget))
-        {
-            return false;
-        }
-        if (rebuildPipeline)
-        {
-            pipeline->buildPipelineQueue();
-        }
-        return true;
-    }
-    bool WindowController::removePipelineStage(const window_id windowID, const WindowData* windowData, 
-        const bool rebuildPipeline)
-    {
-        RenderPipeline* pipeline = getRenderEngine()->getRenderPipeline();
-        if ((pipeline == nullptr) || !pipeline->removePipelineStage(windowData->pipelineStageName))
-        {
-            return false;
-        }
-        if (rebuildPipeline)
-        {
-            pipeline->buildPipelineQueue();
-        }
-        return true;
-    }
-    void WindowController::addPipelineStages()
-    {
-        for (int32 index = 0; index < m_CreatedWindowIDs.getSize(); index++)
-        {
-            const window_id windowID = m_CreatedWindowIDs[index];
-            addPipelineStage(windowID, findWindowData(windowID), index == (m_CreatedWindowIDs.getSize() - 1));
         }
     }
 
@@ -249,7 +203,8 @@ namespace JumaRenderEngine
     {
         m_MainWindowMode = windowMode;
 
-        RenderTarget* renderTarget = findWindowData(getMainWindowID())->windowRenderTarget;
+        const render_target_id renderTargetID = findWindowData(getMainWindowID())->windowRenderTargetID;
+        RenderTarget* renderTarget = getRenderEngine()->getRenderTarget(renderTargetID);
         if (renderTarget != nullptr)
         {
             renderTarget->invalidate();

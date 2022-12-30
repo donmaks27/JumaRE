@@ -5,6 +5,7 @@
 #include "core.h"
 
 #include "RenderAPI.h"
+#include "render_target_id.h"
 #include "material/ShaderUniform.h"
 #include "texture/TextureFormat.h"
 #include "vertex/VertexBufferData.h"
@@ -15,6 +16,7 @@ namespace JumaRenderEngine
     class Material;
     class RenderEngine;
     class RenderPipeline;
+    class RenderTarget;
     class Shader;
     class Texture;
     class VertexBuffer;
@@ -58,8 +60,7 @@ namespace JumaRenderEngine
         }
 
         RenderPipeline* getRenderPipeline() const { return m_RenderPipeline; }
-        template<typename T, TEMPLATE_ENABLE(is_base<RenderPipeline, T>)>
-        T* getRenderPipeline() const { return dynamic_cast<T*>(getRenderPipeline()); }
+        RenderTarget* getRenderTarget(render_target_id renderTargetID) const;
 
         RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
         VertexBuffer* createVertexBuffer(const VertexBufferData& data);
@@ -109,6 +110,9 @@ namespace JumaRenderEngine
 
         WindowController* m_WindowController = nullptr;
         RenderPipeline* m_RenderPipeline = nullptr;
+
+        jmap<render_target_id, RenderTarget*> m_RenderTargets;
+        juid<render_target_id> m_RenderTagetIDs;
 
         jmap<jstringID, VertexComponentDescription> m_RegisteredVertexComponents;
         juid<vertex_id> m_VertexIDGenerator;

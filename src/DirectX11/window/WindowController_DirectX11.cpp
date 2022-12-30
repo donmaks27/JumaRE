@@ -115,7 +115,7 @@ namespace JumaRenderEngine
             return;
         }
 
-        RenderTarget_DirectX11* renderTarget = dynamic_cast<RenderTarget_DirectX11*>(windowData->windowRenderTarget);
+        RenderTarget_DirectX11* renderTarget = dynamic_cast<RenderTarget_DirectX11*>(getRenderEngine()->getRenderTarget(windowData->windowRenderTargetID));
         if (renderTarget != nullptr)
         {
             renderTarget->clearRenderTarget();
