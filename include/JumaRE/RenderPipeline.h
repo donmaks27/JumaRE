@@ -30,7 +30,6 @@ namespace JumaRenderEngine
         bool isRenderTargetsQueueValid() const { return m_RenderTargetsQueueValid; }
         bool buildRenderTargetsQueue();
 
-        bool render();
         virtual void waitForRenderFinished() {}
 
     protected:
@@ -70,6 +69,7 @@ namespace JumaRenderEngine
 
         void clearData();
         
+        bool render();
         void callRender(RenderOptions* renderOptions);
     };
 }

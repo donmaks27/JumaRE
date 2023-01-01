@@ -80,6 +80,9 @@ namespace JumaRenderEngine
 
         Texture* getDefaultTexture() const { return m_DefaultTexture; }
 
+        bool addPrimitiveToRenderList(RenderTarget* renderTarget, VertexBuffer* vertexBuffer, Material* material);
+        bool render();
+
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);

@@ -55,9 +55,7 @@ namespace JumaRenderEngine
         void setColorFormat(TextureFormat format);
         void setDepthEnabled(bool enabled);
 
-        bool addRenderPrimitive(const RenderTargetPrimitive& primitive);
-        void clearRenderPrimitives();
-        const jarray<RenderTargetPrimitive>& getRenderPrimitives() const { return m_RenderPrimitives; }
+        const jarray<RenderTargetPrimitive>& getRenderList() const { return m_RenderPrimitives; }
 
         virtual bool onStartRender(RenderOptions* renderOptions);
         virtual void onFinishRender(RenderOptions* renderOptions);
@@ -95,5 +93,8 @@ namespace JumaRenderEngine
         void clearData();
 
         void onWindowPropertiesChanged(WindowController* windowController, const WindowData* windowData);
+        
+        bool addPrimitiveToRenderList(const RenderTargetPrimitive& primitive);
+        void clearRenderList();
     };
 }

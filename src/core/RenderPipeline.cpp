@@ -188,7 +188,7 @@ namespace JumaRenderEngine
                     break;
                 }
 
-                for (const auto& renderPrimitive : renderTarget->getRenderPrimitives())
+                for (const auto& renderPrimitive : renderTarget->getRenderList())
                 {
                     renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
                 }

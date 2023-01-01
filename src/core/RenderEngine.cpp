@@ -292,4 +292,27 @@ namespace JumaRenderEngine
         onRegisteredVertex(vertexID, m_RegisteredVerticesData.add(vertexID, { description, vertexSize }));
         return vertexID;
     }
+
+    bool RenderEngine::addPrimitiveToRenderList(RenderTarget* renderTarget, VertexBuffer* vertexBuffer, Material* material)
+    {
+        if (renderTarget == nullptr)
+        {
+            return false;
+        }
+        return renderTarget->addPrimitiveToRenderList({ vertexBuffer, material });
+    }
+    bool RenderEngine::render()
+    {
+        if (!m_RenderPipeline->render())
+        {
+            JUTILS_LOG(error, JSTR("Render failed"));
+            return false;
+        }
+        for (const auto& renderTarget : m_RenderTargets)
+        {
+            renderTarget.value->clearRenderList();
+        }
+        m_WindowController->updateWindows();
+        return true;
+    }
 }
