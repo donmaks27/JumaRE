@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #include "../../include/JumaRE/RenderEngine.h"
 
@@ -303,6 +303,11 @@ namespace JumaRenderEngine
     }
     bool RenderEngine::render()
     {
+        if (!m_RenderPipeline->buildRenderTargetsQueue())
+        {
+            JUTILS_LOG(error, JSTR("Failed to build render targets queue"));
+            return false;
+        }
         if (!m_RenderPipeline->render())
         {
             JUTILS_LOG(error, JSTR("Render failed"));

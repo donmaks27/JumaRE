@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #include "../../include/JumaRE/RenderPipeline.h"
 
@@ -125,8 +125,12 @@ namespace JumaRenderEngine
             }
             if (handledStages.isEmpty())
             {
-                JUTILS_LOG(error, JSTR("Failed validate render targets queue"));
-                return false;
+                JUTILS_LOG(warning, JSTR("Failed validate render targets queue"));
+                //return false;
+                for (const auto& stage : cachedDependencies)
+                {
+                    handledStages.add(stage.key);
+                }
             }
 
             // Add them to queue
