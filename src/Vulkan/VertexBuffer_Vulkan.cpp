@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -9,7 +9,7 @@
 #include "RenderOptions_Vulkan.h"
 #include "vulkanObjects/VulkanBuffer.h"
 #include "vulkanObjects/VulkanCommandBuffer.h"
-#include "../../include/JumaRE/vertex/VertexBufferData.h"
+#include "JumaRE/vertex/VertexBufferData.h"
 
 namespace JumaRenderEngine
 {
@@ -89,7 +89,7 @@ namespace JumaRenderEngine
     void VertexBuffer_Vulkan::render(const RenderOptions* renderOptions, Material* material)
     {
         Material_Vulkan* materialVulan = dynamic_cast<Material_Vulkan*>(material);
-        if (!materialVulan->bindMaterial(renderOptions, this))
+        if ((materialVulan == nullptr) || !materialVulan->bindMaterial(renderOptions, this))
         {
             return;
         }

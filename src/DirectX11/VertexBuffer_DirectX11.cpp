@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX11)
 
@@ -8,7 +8,7 @@
 
 #include "Material_DirectX11.h"
 #include "RenderEngine_DirectX11.h"
-#include "../../include/JumaRE/vertex/VertexBufferData.h"
+#include "JumaRE/vertex/VertexBufferData.h"
 
 namespace JumaRenderEngine
 {
@@ -102,7 +102,7 @@ namespace JumaRenderEngine
     void VertexBuffer_DirectX11::render(const RenderOptions* renderOptions, Material* material)
     {
         Material_DirectX11* materialDirectX = dynamic_cast<Material_DirectX11*>(material);
-        if (!materialDirectX->bindMaterial(renderOptions, this))
+        if ((materialDirectX == nullptr) || !materialDirectX->bindMaterial(renderOptions, this))
         {
             return;
         }

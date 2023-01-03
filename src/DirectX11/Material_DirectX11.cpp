@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX11)
 
@@ -20,6 +20,11 @@ namespace JumaRenderEngine
 
     bool Material_DirectX11::initInternal()
     {
+        if (isTemplateMaterial())
+        {
+            return true;
+        }
+
         ID3D11Device* device = getRenderEngine<RenderEngine_DirectX11>()->getDevice();
 
         const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = getShader()->getUniformBufferDescriptions();
@@ -67,7 +72,7 @@ namespace JumaRenderEngine
 
     bool Material_DirectX11::bindMaterial(const RenderOptions* renderOptions, VertexBuffer_DirectX11* vertexBuffer)
     {
-        if (!getShader<Shader_DirectX11>()->bindShader(renderOptions, vertexBuffer))
+        if (isTemplateMaterial() || !getShader<Shader_DirectX11>()->bindShader(renderOptions, vertexBuffer))
         {
             return false;
         }
@@ -97,37 +102,40 @@ namespace JumaRenderEngine
     }
     void Material_DirectX11::unbindMaterial(const RenderOptions* renderOptions, VertexBuffer_DirectX11* vertexBuffer)
     {
-        ID3D11DeviceContext* deviceContext = getRenderEngine<RenderEngine_DirectX11>()->getDeviceContext();
-        ID3D11ShaderResourceView* emptyTextureView = nullptr;
-        for (const auto& uniform : getShader()->getUniforms())
+        if (!isTemplateMaterial())
         {
-            if (uniform.value.type != ShaderUniformType::Texture)
+            ID3D11DeviceContext* deviceContext = getRenderEngine<RenderEngine_DirectX11>()->getDeviceContext();
+            ID3D11ShaderResourceView* emptyTextureView = nullptr;
+            for (const auto& uniform : getShader()->getUniforms())
             {
-                continue;
+                if (uniform.value.type != ShaderUniformType::Texture)
+                {
+                    continue;
+                }
+                if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
+                {
+                    deviceContext->VSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+                }
+                if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
+                {
+                    deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+                }
             }
-            if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
+            ID3D11Buffer* emptyBuffer = nullptr;
+            for (const auto& uniformBuffer : m_UniformBuffers)
             {
-                deviceContext->VSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+                if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
+                {
+                    deviceContext->VSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
+                }
+                if (uniformBuffer.value.shaderStages & SHADER_STAGE_FRAGMENT)
+                {
+                    deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
+                }
             }
-            if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
-            {
-                deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
-            }
-        }
-        ID3D11Buffer* emptyBuffer = nullptr;
-        for (const auto& uniformBuffer : m_UniformBuffers)
-        {
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
-            {
-                deviceContext->VSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
-            }
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_FRAGMENT)
-            {
-                deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
-            }
-        }
 
-        getShader<Shader_DirectX11>()->unbindShader(renderOptions, vertexBuffer);
+            getShader<Shader_DirectX11>()->unbindShader(renderOptions, vertexBuffer);
+        }
     }
     
     void Material_DirectX11::bindUniforms(ID3D11DeviceContext* deviceContext)

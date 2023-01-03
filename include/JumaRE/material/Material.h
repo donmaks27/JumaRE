@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -25,13 +25,17 @@ namespace JumaRenderEngine
         Shader* getShader() const { return m_Shader; }
         const MaterialProperties& getMaterialProperties() const { return m_Properties; }
         const MaterialParamsStorage& getMaterialParams() const { return m_MaterialParams; }
+        bool isTemplateMaterial() const { return m_TemplateMaterial; }
 
         template<ShaderUniformType Type>
         bool setParamValue(const jstringID& name, const typename ShaderUniformInfo<Type>::value_type& value)
         {
             if (checkParamType(name, Type) && m_MaterialParams.setValue<Type>(name, value))
             {
-                m_MaterialParamsForUpdate.add(name);
+                if (!isTemplateMaterial())
+                {
+                    m_MaterialParamsForUpdate.add(name);
+                }
                 return true;
             }
             return false;
@@ -44,8 +48,6 @@ namespace JumaRenderEngine
         }
 
     protected:
-        
-        bool init(Shader* shader);
 
         virtual bool initInternal() = 0;
         virtual void clearAsset() override { clearData(); }
@@ -61,8 +63,13 @@ namespace JumaRenderEngine
         Shader* m_Shader = nullptr;
         MaterialProperties m_Properties;
         MaterialParamsStorage m_MaterialParams;
+
         jset<jstringID> m_MaterialParamsForUpdate;
 
+        bool m_TemplateMaterial = false;
+
+
+        bool init(Shader* shader, bool templateMaterial);
 
         void clearData();
 

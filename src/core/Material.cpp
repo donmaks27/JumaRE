@@ -1,8 +1,8 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/material/Material.h"
+#include "JumaRE/material/Material.h"
 
-#include "../../include/JumaRE/material/Shader.h"
+#include "JumaRE/material/Shader.h"
 
 namespace JumaRenderEngine
 {
@@ -11,7 +11,7 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool Material::init(Shader* shader)
+    bool Material::init(Shader* shader, const bool templateMaterial)
     {
         if (shader == nullptr)
         {
@@ -25,6 +25,7 @@ namespace JumaRenderEngine
             m_MaterialParams.setDefaultValue(uniform.key, uniform.value.type);
             m_MaterialParamsForUpdate.add(uniform.key);
         }
+        m_TemplateMaterial = templateMaterial;
 
         if (!initInternal())
         {

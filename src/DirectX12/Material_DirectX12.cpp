@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX12)
 
@@ -20,6 +20,11 @@ namespace JumaRenderEngine
 
     bool Material_DirectX12::initInternal()
     {
+        if (isTemplateMaterial())
+        {
+            return true;
+        }
+
         const Shader_DirectX12* shader = getShader<Shader_DirectX12>();
         const jmap<jstringID, uint32>& descriptorHeapOffsets = shader->getTextureDescriptorHeapOffsets();
 
@@ -100,7 +105,7 @@ namespace JumaRenderEngine
 
     bool Material_DirectX12::bindMaterial(const RenderOptions_DirectX12* renderOptions, VertexBuffer_DirectX12* vertexBuffer)
     {
-        if (!updateUniformData())
+        if (isTemplateMaterial() || !updateUniformData())
         {
             return false;
         }

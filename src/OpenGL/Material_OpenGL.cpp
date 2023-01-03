@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
@@ -9,7 +9,7 @@
 #include "RenderTarget_OpenGL.h"
 #include "Shader_OpenGL.h"
 #include "Texture_OpenGL.h"
-#include "../../include/JumaRE/RenderEngine.h"
+#include "JumaRE/RenderEngine.h"
 
 namespace JumaRenderEngine
 {
@@ -20,6 +20,11 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::initInternal()
     {
+        if (isTemplateMaterial())
+        {
+            return true;
+        }
+
         const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = getShader()->getUniformBufferDescriptions();
         if (!uniformBufferDescriptions.isEmpty())
         {
@@ -54,7 +59,7 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::bindMaterial()
     {
-        if (!getShader<Shader_OpenGL>()->activateShader())
+        if (isTemplateMaterial() || !getShader<Shader_OpenGL>()->activateShader())
         {
             return false;
         }
@@ -185,18 +190,21 @@ namespace JumaRenderEngine
 
     void Material_OpenGL::unbindMaterial()
     {
-        for (const auto& uniformBuffer : m_UniformBufferIndices)
+        if (!isTemplateMaterial())
         {
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, 0);
-        }
-        for (const auto& uniform : getShader()->getUniforms())
-        {
-            if (uniform.value.type == ShaderUniformType::Texture)
+            for (const auto& uniformBuffer : m_UniformBufferIndices)
             {
-                Texture_OpenGL::unbindTexture(uniform.value.shaderLocation);
+                glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, 0);
             }
+            for (const auto& uniform : getShader()->getUniforms())
+            {
+                if (uniform.value.type == ShaderUniformType::Texture)
+                {
+                    Texture_OpenGL::unbindTexture(uniform.value.shaderLocation);
+                }
+            }
+            Shader_OpenGL::deactivateAnyShader();
         }
-        Shader_OpenGL::deactivateAnyShader();
     }
 }
 

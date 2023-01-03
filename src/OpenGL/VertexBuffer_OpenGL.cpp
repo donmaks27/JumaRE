@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
@@ -6,10 +6,10 @@
 
 #include <GL/glew.h>
 
-#include "../../include/JumaRE/RenderEngine.h"
-#include "../../include/JumaRE/RenderOptions.h"
-#include "../../include/JumaRE/RenderTarget.h"
-#include "../../include/JumaRE/vertex/VertexBufferData.h"
+#include "JumaRE/RenderEngine.h"
+#include "JumaRE/RenderOptions.h"
+#include "JumaRE/RenderTarget.h"
+#include "JumaRE/vertex/VertexBufferData.h"
 
 #include "Material_OpenGL.h"
 #include "window/WindowController_OpenGL.h"
@@ -87,12 +87,16 @@ namespace JumaRenderEngine
 
     void VertexBuffer_OpenGL::render(const RenderOptions* renderOptions, Material* material)
     {
-        if ((renderOptions == nullptr) || (material == nullptr))
+        if (renderOptions == nullptr)
         {
             return;
         }
 
         Material_OpenGL* materialOpenGL = dynamic_cast<Material_OpenGL*>(material);
+        if (materialOpenGL == nullptr)
+        {
+            return;
+        }
 
         const window_id windowID = renderOptions->renderTarget->getWindowID();
         const uint32 VAO = getVerticesVAO(windowID);

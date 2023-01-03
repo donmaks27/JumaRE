@@ -1,11 +1,12 @@
 ﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/RenderPipeline.h"
+#include "JumaRE/RenderPipeline.h"
 
-#include "../../include/JumaRE/RenderEngine.h"
-#include "../../include/JumaRE/RenderOptions.h"
-#include "../../include/JumaRE/RenderTarget.h"
-#include "../../include/JumaRE/vertex/VertexBuffer.h"
+#include "JumaRE/RenderEngine.h"
+#include "JumaRE/RenderOptions.h"
+#include "JumaRE/RenderTarget.h"
+#include "JumaRE/material/Material.h"
+#include "JumaRE/vertex/VertexBuffer.h"
 
 namespace JumaRenderEngine
 {
@@ -194,7 +195,10 @@ namespace JumaRenderEngine
 
                 for (const auto& renderPrimitive : renderTarget->getRenderList())
                 {
-                    renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
+                    if ((renderPrimitive.material != nullptr) && !renderPrimitive.material->isTemplateMaterial())
+                    {
+                        renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
+                    }
                 }
 
                 onFinishRenderToRenderTarget(renderOptions, renderTarget);

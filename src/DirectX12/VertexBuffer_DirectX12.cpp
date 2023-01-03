@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX12)
 
@@ -7,7 +7,7 @@
 #include "Material_DirectX12.h"
 #include "RenderEngine_DirectX12.h"
 #include "RenderOptions_DirectX12.h"
-#include "../../include/JumaRE/vertex/VertexBufferData.h"
+#include "JumaRE/vertex/VertexBufferData.h"
 
 namespace JumaRenderEngine
 {
@@ -76,7 +76,7 @@ namespace JumaRenderEngine
     {
         const RenderOptions_DirectX12* renderOptionsDirectX = reinterpret_cast<const RenderOptions_DirectX12*>(renderOptions);
         Material_DirectX12* materialDirectX = dynamic_cast<Material_DirectX12*>(material);
-        if (!materialDirectX->bindMaterial(renderOptionsDirectX, this))
+        if ((materialDirectX == nullptr) || !materialDirectX->bindMaterial(renderOptionsDirectX, this))
         {
             return;
         }

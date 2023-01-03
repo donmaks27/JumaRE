@@ -1,14 +1,14 @@
 ﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/RenderEngine.h"
+#include "JumaRE/RenderEngine.h"
 
-#include "../../include/JumaRE/RenderPipeline.h"
-#include "../../include/JumaRE/RenderTarget.h"
-#include "../../include/JumaRE/material/Material.h"
-#include "../../include/JumaRE/material/Shader.h"
-#include "../../include/JumaRE/texture/Texture.h"
-#include "../../include/JumaRE/vertex/VertexBuffer.h"
-#include "../../include/JumaRE/vertex/VertexBufferData.h"
+#include "JumaRE/RenderPipeline.h"
+#include "JumaRE/RenderTarget.h"
+#include "JumaRE/material/Material.h"
+#include "JumaRE/material/Shader.h"
+#include "JumaRE/texture/Texture.h"
+#include "JumaRE/vertex/VertexBuffer.h"
+#include "JumaRE/vertex/VertexBufferData.h"
 
 namespace JumaRenderEngine
 {
@@ -215,10 +215,10 @@ namespace JumaRenderEngine
         }
     }
 
-    Material* RenderEngine::createMaterial(Shader* shader)
+    Material* RenderEngine::createMaterial(Shader* shader, const bool templateMaterial)
     {
         Material* material = allocateMaterial();
-        if (!material->init(shader))
+        if (!material->init(shader, templateMaterial))
         {
             destroyMaterial(material);
             return nullptr;

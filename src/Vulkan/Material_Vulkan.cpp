@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -23,7 +23,7 @@ namespace JumaRenderEngine
 
     bool Material_Vulkan::initInternal()
     {
-        if (!createDescriptorSet())
+        if (!isTemplateMaterial() && !createDescriptorSet())
         {
             JUTILS_LOG(error, JSTR("Failed to create vulkan descriptor set"));
             clearVulkan();
@@ -338,6 +338,11 @@ namespace JumaRenderEngine
 
     bool Material_Vulkan::bindMaterial(const RenderOptions* renderOptions, VertexBuffer_Vulkan* vertexBuffer)
     {
+        if (isTemplateMaterial())
+        {
+            return false;
+        }
+
         const RenderOptions_Vulkan* options = reinterpret_cast<const RenderOptions_Vulkan*>(renderOptions);
         VkCommandBuffer commandBuffer = options->commandBuffer->get();
         return getShader<Shader_Vulkan>()->bindRenderPipeline(commandBuffer, vertexBuffer->getVertexID(), options->renderPass, getMaterialProperties())

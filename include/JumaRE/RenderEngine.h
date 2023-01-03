@@ -65,7 +65,7 @@ namespace JumaRenderEngine
         RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
         VertexBuffer* createVertexBuffer(const VertexBufferData& data);
         Shader* createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
-        Material* createMaterial(Shader* shader);
+        Material* createMaterial(Shader* shader, bool templateMaterial = false);
         Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
 
         void destroyRenderTarget(RenderTarget* renderTarget);
