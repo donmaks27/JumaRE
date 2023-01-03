@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(GLFW_ENABLED)
 
-#include "../../include/JumaRE/window/WindowController.h"
+#include "JumaRE/window/WindowController.h"
 
 #include <GLFW/glfw3.h>
 
-#include "../../include/JumaRE/RenderAPI.h"
+#include "JumaRE/RenderAPI.h"
 
 namespace JumaRenderEngine
 {
@@ -21,7 +21,7 @@ namespace JumaRenderEngine
         math::ivector2 originalMonitorSize;
         int32 originalMonitorRedreshRate = 0;
 
-        math::ivector2 cachedCursorPosotion = { 0, 0 };
+        math::ivector2 cachedCursorPosition = { 0, 0 };
     };
 
     template<typename BaseWindowController, TEMPLATE_ENABLE(is_base_and_not_same<WindowController, BaseWindowController>)>
@@ -45,12 +45,12 @@ namespace JumaRenderEngine
 
         bool createWindowGLFW(window_id windowID, WindowDataType* windowData, const math::uvector2& size, const jstring& title, 
             GLFWwindow* sharedWindow = nullptr);
-        virtual void markWindowShouldClose(window_id windowID, WindowData* windowData) override;
-        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
+        virtual void markWindowShouldClose(WindowData* windowData) override;
+        virtual void clearWindowDataInternal(WindowData* windowData) override;
 
         virtual bool setMainWindowModeInternal(WindowMode windowMode) override;
 
-        virtual bool setCursorLockedToMainWindowInternal(bool locked) override;
+        virtual void onWindowCursorModeChanged(WindowData* windowData) override;
 
     private:
 
@@ -155,10 +155,6 @@ namespace JumaRenderEngine
         windowData->windowGLFW = window;
         glfwSetWindowUserPointer(window, windowData);
 
-        double x = 0, y = 0;
-        glfwGetCursorPos(window, &x, &y);
-        windowData->cachedCursorPosotion = { math::roundDown(static_cast<float>(x)), math::roundDown(static_cast<float>(y)) };
-
         for (gamepad_index_type gamepadIndex = GLFW_JOYSTICK_1; gamepadIndex <= GLFW_JOYSTICK_16; gamepadIndex++)
         {
             if (glfwJoystickIsGamepad(gamepadIndex) == GLFW_TRUE)
@@ -180,7 +176,7 @@ namespace JumaRenderEngine
         return true;
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::markWindowShouldClose(const window_id windowID, WindowData* windowData)
+    void WindowController_GLFW<BaseWindowController, Condition>::markWindowShouldClose(WindowData* windowData)
     {
         WindowDataType* windowDataGLFW = reinterpret_cast<WindowDataType*>(windowData);
         if (windowDataGLFW->windowGLFW != nullptr)
@@ -189,9 +185,9 @@ namespace JumaRenderEngine
         }
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_GLFW<BaseWindowController, Condition>::clearWindowDataInternal(WindowData* windowData)
     {
-        Super::clearWindowDataInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowData);
 
         WindowDataType* windowDataGLFW = reinterpret_cast<WindowDataType*>(windowData);
         if (windowDataGLFW->windowGLFW != nullptr)
@@ -306,15 +302,27 @@ namespace JumaRenderEngine
     }
 
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    bool WindowController_GLFW<BaseWindowController, Condition>::setCursorLockedToMainWindowInternal(const bool locked)
+    void WindowController_GLFW<BaseWindowController, Condition>::onWindowCursorModeChanged(WindowData* windowData)
     {
-        WindowDataType* windowData = this->template getWindowData<WindowDataType>(this->getMainWindowID());
-        if (windowData == nullptr)
+        int cursorMode = 0;
+        switch (windowData->cursorMode)
         {
-            return false;
+        case WindowCursorMode::Normal:   cursorMode = GLFW_CURSOR_NORMAL; break;
+        case WindowCursorMode::Hidden:   cursorMode = GLFW_CURSOR_HIDDEN;  break;
+        case WindowCursorMode::Locked:   
+        case WindowCursorMode::Disabled: cursorMode = GLFW_CURSOR_DISABLED;  break;
+        default: return;
         }
-        glfwSetInputMode(windowData->windowGLFW, GLFW_CURSOR, locked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-        return true;
+
+        WindowDataType* windowDataGLFW = reinterpret_cast<WindowDataType*>(windowData);
+        glfwSetInputMode(windowDataGLFW->windowGLFW, GLFW_CURSOR, cursorMode);
+
+        if (windowData->cursorMode == WindowCursorMode::Locked)
+        {
+            double x = 0, y = 0;
+            glfwGetCursorPos(windowDataGLFW->windowGLFW, &x, &y);
+            windowDataGLFW->cachedCursorPosition = { math::roundDown(static_cast<float>(x)), math::roundDown(static_cast<float>(y)) };
+        }
     }
 
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
@@ -495,7 +503,7 @@ namespace JumaRenderEngine
         const int action, const int mods)
     {
         const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
-        if (windowData == nullptr)
+        if ((windowData == nullptr) || (windowData->cursorMode == WindowCursorMode::Disabled))
         {
             return;
         }
@@ -543,10 +551,24 @@ namespace JumaRenderEngine
             return;
         }
 
-        const math::ivector2 position = { math::roundDown(static_cast<float>(xpos)), math::roundDown(static_cast<float>(ypos)) };
-        const math::ivector2 offset = position - windowData->cachedCursorPosotion;
-        windowData->cachedCursorPosotion = position;
-        GlobalWindowController->updateWindowCursorPosition(windowData->windowID, position, offset);
+        switch (windowData->cursorMode)
+        {
+        case WindowCursorMode::Normal:
+        case WindowCursorMode::Hidden:
+            {
+                windowData->cursorPosition = { math::roundDown<uint32>(static_cast<float>(xpos)), math::roundDown<uint32>(static_cast<float>(ypos)) };
+            }
+            break;
+        case WindowCursorMode::Locked:
+            {
+                const math::ivector2 position = { math::roundDown(static_cast<float>(xpos)), math::roundDown(static_cast<float>(ypos)) };
+                const math::ivector2 offset = position - windowData->cachedCursorPosition;
+                windowData->cachedCursorPosition = position;
+                GlobalWindowController->updateWindowInputAxisState(windowData->windowID, InputDevice::Mouse, InputAxis::Mouse2D, offset, 0);
+            }
+            break;
+        default: break;
+        }
     }
     template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
     void WindowController_GLFW<BaseWindowController, Condition>::GLFW_TextInputCallback(GLFWwindow* window, const unsigned int codepoint)

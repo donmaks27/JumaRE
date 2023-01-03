@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -18,12 +18,12 @@ namespace JumaRenderEngine
     {
     }
 
-    void WindowController_Vulkan::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_Vulkan::clearWindowDataInternal(WindowData* windowData)
     {
-        Super::clearWindowDataInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowData);
 
         WindowData_Vulkan* windowDataVulkan = reinterpret_cast<WindowData_Vulkan*>(windowData);
-        destroyWindowSwapchain(windowID, windowDataVulkan);
+        destroyWindowSwapchain(windowDataVulkan);
 
         vkDestroySurfaceKHR(getRenderEngine<RenderEngine_Vulkan>()->getVulkanInstance(), windowDataVulkan->vulkanSurface, nullptr);
         windowDataVulkan->vulkanSurface = nullptr;
@@ -51,7 +51,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    void WindowController_Vulkan::destroyWindowSwapchain(const window_id windowID, WindowData_Vulkan* windowData)
+    void WindowController_Vulkan::destroyWindowSwapchain(WindowData_Vulkan* windowData)
     {
         if (windowData->vulkanSwapchain != nullptr)
         {
@@ -76,13 +76,13 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            destroyWindowSwapchain(windowID, getWindowData<WindowData_Vulkan>(windowID));
+            destroyWindowSwapchain(getWindowData<WindowData_Vulkan>(windowID));
         }
     }
 
-    void WindowController_Vulkan::onWindowMinimizationChanged(const window_id windowID, WindowData* windowData)
+    void WindowController_Vulkan::onWindowMinimizationChanged(WindowData* windowData)
     {
-        Super::onWindowMinimizationChanged(windowID, windowData);
+        Super::onWindowMinimizationChanged(windowData);
 
         if (windowData->minimized)
         {

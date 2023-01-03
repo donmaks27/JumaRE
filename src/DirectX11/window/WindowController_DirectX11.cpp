@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX11)
 
@@ -23,12 +23,12 @@ namespace JumaRenderEngine
     {
     }
 
-    void WindowController_DirectX11::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_DirectX11::clearWindowDataInternal(WindowData* windowData)
     {
-        Super::clearWindowDataInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowData);
 
         WindowData_DirectX11* windowDataDirectX11 = reinterpret_cast<WindowData_DirectX11*>(windowData);
-        destroyWindowSwapchain(windowID, windowDataDirectX11);
+        destroyWindowSwapchain(windowDataDirectX11);
         windowDataDirectX11->windowHandler = nullptr;
     }
 
@@ -77,7 +77,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    void WindowController_DirectX11::destroyWindowSwapchain(const window_id windowID, WindowData_DirectX11* windowData)
+    void WindowController_DirectX11::destroyWindowSwapchain(WindowData_DirectX11* windowData)
     {
         if (windowData->swapchain != nullptr)
         {
@@ -102,13 +102,13 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            destroyWindowSwapchain(windowID, getWindowData<WindowData_DirectX11>(windowID));
+            destroyWindowSwapchain(getWindowData<WindowData_DirectX11>(windowID));
         }
     }
 
-    void WindowController_DirectX11::onWindowResized(const window_id windowID, WindowData* windowData)
+    void WindowController_DirectX11::onWindowResized(WindowData* windowData)
     {
-        WindowController::onWindowResized(windowID, windowData);
+        WindowController::onWindowResized(windowData);
 
         if (windowData->minimized)
         {

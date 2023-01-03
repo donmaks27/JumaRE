@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX12)
 
-#include "../../../include/JumaRE/window/WindowController.h"
+#include "JumaRE/window/WindowController.h"
 
 #include <Windows.h>
 
-#include "../../../include/JumaRE/RenderAPI.h"
+#include "JumaRE/RenderAPI.h"
 
 namespace JumaRenderEngine
 {
@@ -39,7 +39,7 @@ namespace JumaRenderEngine
         static constexpr RenderAPI API = RenderAPI::DirectX12;
 
 
-        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
+        virtual void clearWindowDataInternal(WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
 
@@ -47,7 +47,7 @@ namespace JumaRenderEngine
 
         void clearData_DirectX12();
 
-        void destroyWindowSwapchain(window_id windowID, WindowData_DirectX12* windowData);
+        void destroyWindowSwapchain(WindowData_DirectX12* windowData);
         bool createWindowSwapchains();
         void destroyWindowSwapchains();
     };

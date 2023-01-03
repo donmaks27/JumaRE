@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -10,7 +10,7 @@
 #include <jutils/jstringID.h>
 #include <jutils/math/vector2.h>
 
-#include "WindowMode.h"
+#include "window_state_enums.h"
 #include "window_id.h"
 #include "../render_target_id.h"
 #include "../input/InputData.h"
@@ -33,6 +33,8 @@ namespace JumaRenderEngine
         bool minimized = false;
 
         math::uvector2 cursorPosition;
+        WindowCursorMode cursorMode = WindowCursorMode::Normal;
+
         InputData inputData;
     };
     
@@ -88,8 +90,8 @@ namespace JumaRenderEngine
 
         window_id getFocusedWindowID() const { return m_FocusedWindowID; }
 
-        void setCursorLocked(bool locked);
-        bool isCursorLocked() const { return m_CursorLockedToMainWindow; }
+        void setCursorMode(window_id windowID, WindowCursorMode mode);
+        WindowCursorMode getCursorMode(window_id windowID) const;
 
         const jset<gamepad_index_type>& getConnectedGamepads() const { return m_ConnectedGamepads; }
 
@@ -104,26 +106,26 @@ namespace JumaRenderEngine
         virtual bool initWindowController() { return true; }
 
         virtual WindowData* createWindowInternal(window_id windowID, const WindowCreateInfo& createInfo) = 0;
-        virtual void markWindowShouldClose(window_id windowID, WindowData* windowData) = 0;
+        virtual void markWindowShouldClose(WindowData* windowData) = 0;
         virtual void destroyWindowInternal(window_id windowID, WindowData* windowData) = 0;
-        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData);
+        virtual void clearWindowDataInternal(WindowData* windowData);
 
         virtual WindowData* getWindowData(window_id windowID) = 0;
         template<typename T, TEMPLATE_ENABLE(is_base<WindowData, T>)>
         T* getWindowData(const window_id windowID) { return reinterpret_cast<T*>(getWindowData(windowID)); }
 
         void updateWindowSize(window_id windowID, const math::uvector2& size);
-        virtual void onWindowResized(window_id windowID, WindowData* windowData) {}
+        virtual void onWindowResized(WindowData* windowData) {}
 
         void updateWindowMinimization(window_id windowID, bool minimized);
-        virtual void onWindowMinimizationChanged(window_id windowID, WindowData* windowData);
+        virtual void onWindowMinimizationChanged(WindowData* windowData);
 
         virtual bool setMainWindowModeInternal(WindowMode windowMode) = 0;
         void updateMainWindowMode(WindowMode windowMode);
 
         void updateWindowFocused(window_id focusedWindowID, bool focused);
-        void updateWindowCursorPosition(window_id windowID, const math::ivector2& position, const math::ivector2& offset);
-        virtual bool setCursorLockedToMainWindowInternal(bool locked) = 0;
+
+        virtual void onWindowCursorModeChanged(WindowData* windowData) {}
 
         void updateGamepadConnected(gamepad_index_type gamepadIndex, bool connected);
 
@@ -175,15 +177,14 @@ namespace JumaRenderEngine
         uint8 m_MinimizedWindowsCount = 0;
         WindowMode m_MainWindowMode = WindowMode::Normal;
         window_id m_FocusedWindowID = window_id_INVALID;
-        bool m_CursorLockedToMainWindow = false;
 
 
         void clearData();
 
         bool createMainWindow(const WindowCreateInfo& windowInfo);
 
-        bool createRenderTarget(window_id windowID, WindowData* windowData);
-        void destroyRenderTarget(window_id windowID, WindowData* windowData);
+        bool createRenderTarget(WindowData* windowData);
+        void destroyRenderTarget(WindowData* windowData);
         bool createRenderTargets();
         void destroyRenderTargets();
     };

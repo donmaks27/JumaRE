@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX12)
 
@@ -18,12 +18,12 @@ namespace JumaRenderEngine
     {
     }
 
-    void WindowController_DirectX12::clearWindowDataInternal(const window_id windowID, WindowData* windowData)
+    void WindowController_DirectX12::clearWindowDataInternal(WindowData* windowData)
     {
-        Super::clearWindowDataInternal(windowID, windowData);
+        Super::clearWindowDataInternal(windowData);
 
         WindowData_DirectX12* windowDataDirectX12 = reinterpret_cast<WindowData_DirectX12*>(windowData);
-        destroyWindowSwapchain(windowID, windowDataDirectX12);
+        destroyWindowSwapchain(windowDataDirectX12);
         windowDataDirectX12->windowHandler = nullptr;
     }
 
@@ -50,7 +50,7 @@ namespace JumaRenderEngine
         windowData->swapchain = swapchain;
         return true;
     }
-    void WindowController_DirectX12::destroyWindowSwapchain(const window_id windowID, WindowData_DirectX12* windowData)
+    void WindowController_DirectX12::destroyWindowSwapchain(WindowData_DirectX12* windowData)
     {
         if (windowData->swapchain != nullptr)
         {
@@ -75,7 +75,7 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            destroyWindowSwapchain(windowID, getWindowData<WindowData_DirectX12>(windowID));
+            destroyWindowSwapchain(getWindowData<WindowData_DirectX12>(windowID));
         }
     }
 }

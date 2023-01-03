@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
-#include "../../../include/JumaRE/window/WindowController.h"
+#include "JumaRE/window/WindowController.h"
 
 #include <vulkan/vulkan_core.h>
 
-#include "../../../include/JumaRE/RenderAPI.h"
+#include "JumaRE/RenderAPI.h"
 
 namespace JumaRenderEngine
 {
@@ -41,17 +41,17 @@ namespace JumaRenderEngine
         static constexpr RenderAPI API = RenderAPI::Vulkan;
 
 
-        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
+        virtual void clearWindowDataInternal(WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_Vulkan* windowData);
 
-        virtual void onWindowMinimizationChanged(window_id windowID, WindowData* windowData) override;
+        virtual void onWindowMinimizationChanged(WindowData* windowData) override;
 
     private:
 
         void clearData_Vulkan();
 
-        void destroyWindowSwapchain(window_id windowID, WindowData_Vulkan* windowData);
+        void destroyWindowSwapchain(WindowData_Vulkan* windowData);
         bool createWindowSwapchains();
         void destroyWindowSwapchains();
     };

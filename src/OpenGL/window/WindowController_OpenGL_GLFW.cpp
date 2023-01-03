@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL) && defined(GLFW_ENABLED)
 
@@ -17,7 +17,7 @@ namespace JumaRenderEngine
         {
             for (auto& window : m_Windows)
             {
-                clearWindowDataInternal(window.key, &window.value);
+                clearWindowDataInternal(&window.value);
             }
             m_Windows.clear();
         }
@@ -63,7 +63,7 @@ namespace JumaRenderEngine
     }
     void WindowController_OpenGL_GLFW::destroyWindowInternal(const window_id windowID, WindowData* windowData)
     {
-        clearWindowDataInternal(windowID, windowData);
+        clearWindowDataInternal(windowData);
 
         m_Windows.remove(windowID);
     }

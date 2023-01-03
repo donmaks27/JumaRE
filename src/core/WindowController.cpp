@@ -1,10 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/window/WindowController.h"
+#include "JumaRE/window/WindowController.h"
 
-#include "../../include/JumaRE/RenderEngine.h"
-#include "../../include/JumaRE/RenderPipeline.h"
-#include "../../include/JumaRE/RenderTarget.h"
+#include "JumaRE/RenderEngine.h"
+#include "JumaRE/RenderPipeline.h"
+#include "JumaRE/RenderTarget.h"
 
 namespace JumaRenderEngine
 {
@@ -54,7 +54,7 @@ namespace JumaRenderEngine
 
         updateWindowFocused(windowID, true);
 
-        if (!createRenderTarget(windowID, windowData))
+        if (!createRenderTarget(windowData))
         {
             destroyWindow(windowID);
             return window_id_INVALID;
@@ -74,7 +74,7 @@ namespace JumaRenderEngine
         }
         if (windowID == getMainWindowID())
         {
-            markWindowShouldClose(windowID, windowData);
+            markWindowShouldClose(windowData);
             return;
         }
 
@@ -85,9 +85,9 @@ namespace JumaRenderEngine
         destroyWindowInternal(windowID, windowData);
         m_CreatedWindowIDs.remove(windowID);
     }
-    void WindowController::clearWindowDataInternal(window_id windowID, WindowData* windowData)
+    void WindowController::clearWindowDataInternal(WindowData* windowData)
     {
-        destroyRenderTarget(windowID, windowData);
+        destroyRenderTarget(windowData);
 
         windowData->windowID = window_id_INVALID;
         windowData->desiredSize = { 0, 0 };
@@ -96,7 +96,7 @@ namespace JumaRenderEngine
         windowData->minimized = false;
     }
 
-    bool WindowController::createRenderTarget(const window_id windowID, WindowData* windowData)
+    bool WindowController::createRenderTarget(WindowData* windowData)
     {
         RenderEngine* renderEngine = getRenderEngine();
         if (!renderEngine->isValid())
@@ -108,7 +108,7 @@ namespace JumaRenderEngine
         {
             return true;
         }
-        RenderTarget* renderTarget = renderEngine->createWindowRenderTarget(windowID, windowData->samples);
+        RenderTarget* renderTarget = renderEngine->createWindowRenderTarget(windowData->windowID, windowData->samples);
         if (renderTarget == nullptr)
         {
             return false;
@@ -116,7 +116,7 @@ namespace JumaRenderEngine
         windowData->windowRenderTargetID = renderTarget->getID();
         return true;
     }
-    void WindowController::destroyRenderTarget(const window_id windowID, WindowData* windowData)
+    void WindowController::destroyRenderTarget(WindowData* windowData)
     {
         if (windowData->windowRenderTargetID != render_target_id_INVALID)
         {
@@ -130,7 +130,7 @@ namespace JumaRenderEngine
     {
         for (const auto& windowID : getWindowIDs())
         {
-            if (!createRenderTarget(windowID, getWindowData(windowID)))
+            if (!createRenderTarget(getWindowData(windowID)))
             {
                 JUTILS_LOG(error, JSTR("Failed to create DirectX11 render target for window {}"), windowID);
                 return false;
@@ -161,10 +161,10 @@ namespace JumaRenderEngine
         if (windowData->minimized != minimized)
         {
             windowData->minimized = minimized;
-            onWindowMinimizationChanged(windowID, windowData);
+            onWindowMinimizationChanged(windowData);
         }
     }
-    void WindowController::onWindowMinimizationChanged(const window_id windowID, WindowData* windowData)
+    void WindowController::onWindowMinimizationChanged(WindowData* windowData)
     {
         if (windowData->minimized)
         {
@@ -225,33 +225,20 @@ namespace JumaRenderEngine
             m_FocusedWindowID = window_id_INVALID;
         }
     }
-    void WindowController::updateWindowCursorPosition(const window_id windowID, const math::ivector2& position, const math::ivector2& offset)
-    {
-        if (m_CursorLockedToMainWindow && ((windowID != m_MainWindowID) || (m_FocusedWindowID != m_MainWindowID)))
-        {
-            return;
-        }
 
+    void WindowController::setCursorMode(const window_id windowID, const WindowCursorMode mode)
+    {
         WindowData* windowData = getWindowData(windowID);
-        if (!m_CursorLockedToMainWindow)
+        if ((windowData != nullptr) && (windowData->cursorMode != mode))
         {
-            windowData->cursorPosition = position;
-        }
-        else
-        {
-            /*const math::ivector2 newPosition = offset + windowData->cursorPosition;
-            windowData->cursorPosition.x = static_cast<uint32>(math::clamp(newPosition.x, 0, windowData->size.x));
-            windowData->cursorPosition.y = static_cast<uint32>(math::clamp(newPosition.y, 0, windowData->size.y));*/
-            updateWindowInputAxisState(windowID, InputDevice::Mouse, InputAxis::Mouse2D, offset, 0);
+            windowData->cursorMode = mode;
+            onWindowCursorModeChanged(windowData);
         }
     }
-    void WindowController::setCursorLocked(const bool locked)
+    WindowCursorMode WindowController::getCursorMode(window_id windowID) const
     {
-        if ((m_CursorLockedToMainWindow != locked) && setCursorLockedToMainWindowInternal(locked))
-        {
-            m_CursorLockedToMainWindow = locked;
-            OnCursorLockedFlagChanged.call(this);
-        }
+        const WindowData* windowData = findWindowData(windowID);
+        return windowData != nullptr ? windowData->cursorMode : WindowCursorMode::None;
     }
 
     void WindowController::updateGamepadConnected(const gamepad_index_type gamepadIndex, const bool connected)
@@ -306,7 +293,7 @@ namespace JumaRenderEngine
                     {
                         windowData->desiredSize = windowData->size;
                     }
-                    onWindowResized(windowID, windowData);
+                    onWindowResized(windowData);
                     OnWindowPropertiesChanged.call(this, windowData);
                 }
             }

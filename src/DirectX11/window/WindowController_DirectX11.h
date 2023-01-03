@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX11)
 
-#include "../../../include/JumaRE/window/WindowController.h"
+#include "JumaRE/window/WindowController.h"
 
 #include <Windows.h>
 
-#include "../../../include/JumaRE/RenderAPI.h"
+#include "JumaRE/RenderAPI.h"
 
 struct IDXGISwapChain1;
 
@@ -42,17 +42,17 @@ namespace JumaRenderEngine
         static constexpr RenderAPI API = RenderAPI::DirectX11;
 
 
-        virtual void clearWindowDataInternal(window_id windowID, WindowData* windowData) override;
+        virtual void clearWindowDataInternal(WindowData* windowData) override;
 
         bool createWindowSwapchain(window_id windowID, WindowData_DirectX11* windowData);
 
-        virtual void onWindowResized(window_id windowID, WindowData* windowData) override;
+        virtual void onWindowResized(WindowData* windowData) override;
 
     private:
 
         void clearData_DirectX11();
 
-        void destroyWindowSwapchain(window_id windowID, WindowData_DirectX11* windowData);
+        void destroyWindowSwapchain(WindowData_DirectX11* windowData);
         bool createWindowSwapchains();
         void destroyWindowSwapchains();
     };
