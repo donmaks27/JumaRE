@@ -233,6 +233,7 @@ namespace JumaRenderEngine
         {
             windowData->cursorMode = mode;
             onWindowCursorModeChanged(windowData);
+            OnWindowPropertiesChanged.call(this, windowData);
         }
     }
     WindowCursorMode WindowController::getCursorMode(window_id windowID) const

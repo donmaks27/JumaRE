@@ -63,7 +63,6 @@ namespace JumaRenderEngine
         using WindowDataType = WindowData;
 
         OnWindowControllerWindowEvent OnWindowPropertiesChanged;
-        OnWindowControllerEvent OnCursorLockedFlagChanged;
 
         OnWindowControllerInputButtonEvent OnInputButton;
         OnWindowControllerInputAxisEvent OnInputAxis;
