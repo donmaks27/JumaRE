@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -34,7 +34,7 @@ namespace JumaRenderEngine
             return false;
         }
 
-        getRenderEngine()->getWindowController()->OnWindowPropertiesChanged.bind(this, &VulkanSwapchain::onWindowPropertiesChanged);
+        getRenderEngine()->getWindowController()->onWindowPropertiesChanged.bind(this, &VulkanSwapchain::onWindowPropertiesChanged);
         return true;
     }
     bool VulkanSwapchain::createSwapchain(VkSwapchainKHR oldSwapchain)
@@ -145,7 +145,7 @@ namespace JumaRenderEngine
     {
         const RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
         WindowController* windowController = renderEngine->getWindowController();
-        windowController->OnWindowPropertiesChanged.unbind(this, &VulkanSwapchain::onWindowPropertiesChanged);
+        windowController->onWindowPropertiesChanged.unbind(this, &VulkanSwapchain::onWindowPropertiesChanged);
 
         VkDevice device = renderEngine->getDevice();
 

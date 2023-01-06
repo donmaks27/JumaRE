@@ -47,11 +47,8 @@ namespace JumaRenderEngine
 
     JUTILS_CREATE_MULTICAST_DELEGATE1(OnWindowControllerEvent, WindowController*, windowController);
     JUTILS_CREATE_MULTICAST_DELEGATE2(OnWindowControllerWindowEvent, WindowController*, windowController, const WindowData*, windowData);
-
-    JUTILS_CREATE_MULTICAST_DELEGATE5(OnWindowControllerInputButtonEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputButton, button, InputButtonAction, action);
-    JUTILS_CREATE_MULTICAST_DELEGATE5(OnWindowControllerInputAxisEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, float, value);
-    JUTILS_CREATE_MULTICAST_DELEGATE5(OnWindowControllerInputAxis2DEvent, WindowController*, windowController, const WindowData*, windowData, InputDevice, device, InputAxis, axis, const math::vector2&, value);
-
+    JUTILS_CREATE_MULTICAST_DELEGATE3(OnWindowControllerInput, WindowController*, windowController, const WindowData*, windowData, const InputActionData&, input);
+    
     class WindowController : public RenderEngineContextObjectBase
     {
         friend RenderEngine;
@@ -62,11 +59,8 @@ namespace JumaRenderEngine
 
         using WindowDataType = WindowData;
 
-        OnWindowControllerWindowEvent OnWindowPropertiesChanged;
-
-        OnWindowControllerInputButtonEvent OnInputButton;
-        OnWindowControllerInputAxisEvent OnInputAxis;
-        OnWindowControllerInputAxis2DEvent OnInputAxis2D;
+        OnWindowControllerWindowEvent onWindowPropertiesChanged;
+        OnWindowControllerInput onWindowInput;
 
 
         window_id createWindow(const WindowCreateInfo& createInfo);

@@ -1,8 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #include "../core.h"
+
+#include <jutils/math/vector2.h>
 
 namespace JumaRenderEngine
 {
@@ -29,8 +31,7 @@ namespace JumaRenderEngine
         Gamepad16
     };
 
-    using input_button_type = uint8;
-    enum class InputButton : input_button_type
+    enum class InputButton : uint8
     {
         NONE,
         A,
@@ -187,6 +188,15 @@ namespace JumaRenderEngine
         INPUT_MOD_FLAG_SUPER = 8,
         INPUT_MOD_FLAG_CAPS_LOCK = 16,
         INPUT_MOD_FLAG_NUM_LOCK = 32
+    };
+
+    struct InputActionData
+    {
+        InputDevice device = InputDevice::NONE;
+        InputButton button = InputButton::NONE;
+        InputButtonAction buttonAction = InputButtonAction::Press;
+        InputAxis axis = InputAxis::NONE;
+        math::vector2 axisValue = { 0.0f, 0.0f };
     };
 
     constexpr bool IsInputDeviceContainsInputButton(const InputDevice device, const InputButton button)

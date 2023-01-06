@@ -233,7 +233,7 @@ namespace JumaRenderEngine
         {
             windowData->cursorMode = mode;
             onWindowCursorModeChanged(windowData);
-            OnWindowPropertiesChanged.call(this, windowData);
+            onWindowPropertiesChanged.call(this, windowData);
         }
     }
     WindowCursorMode WindowController::getCursorMode(window_id windowID) const
@@ -295,7 +295,7 @@ namespace JumaRenderEngine
                         windowData->desiredSize = windowData->size;
                     }
                     onWindowResized(windowData);
-                    OnWindowPropertiesChanged.call(this, windowData);
+                    onWindowPropertiesChanged.call(this, windowData);
                 }
             }
             m_ChangedWindowSizes.clear();
@@ -308,7 +308,11 @@ namespace JumaRenderEngine
                 const WindowData* windowData = findWindowData(input.key.windowID);
                 if (windowData != nullptr)
                 {
-                    OnInputButton.call(this, windowData, input.key.device, input.key.button, input.value);
+                    InputActionData inputData{};
+                    inputData.device = input.key.device;
+                    inputData.button = input.key.button;
+                    inputData.buttonAction = input.value;
+                    onWindowInput.call(this, windowData, inputData);
                 }
             }
             m_ReceivedButtonInput.clear();
@@ -320,14 +324,11 @@ namespace JumaRenderEngine
                 const WindowData* windowData = findWindowData(input.key.windowID);
                 if (windowData != nullptr)
                 {
-                    if (IsInputAxis2D(input.key.axis))
-                    {
-                        OnInputAxis2D.call(this, windowData, input.key.device, input.key.axis, input.value);
-                    }
-                    else
-                    {
-                        OnInputAxis.call(this, windowData, input.key.device, input.key.axis, input.value.x);
-                    }
+                    InputActionData inputData{};
+                    inputData.device = input.key.device;
+                    inputData.axis = input.key.axis;
+                    inputData.axisValue = input.value;
+                    onWindowInput.call(this, windowData, inputData);
                 }
             }
             m_ReceivedAxisInput.clear();

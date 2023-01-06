@@ -1,8 +1,8 @@
 ﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/RenderTarget.h"
+#include "JumaRE/RenderTarget.h"
 
-#include "../../include/JumaRE/RenderEngine.h"
+#include "JumaRE/RenderEngine.h"
 
 namespace JumaRenderEngine
 {
@@ -33,7 +33,7 @@ namespace JumaRenderEngine
         }
 
         m_Invalid = false;
-        windowController->OnWindowPropertiesChanged.bind(this, &RenderTarget::onWindowPropertiesChanged);
+        windowController->onWindowPropertiesChanged.bind(this, &RenderTarget::onWindowPropertiesChanged);
         return true;
     }
     bool RenderTarget::init(const render_target_id renderTargetID, const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
@@ -63,7 +63,7 @@ namespace JumaRenderEngine
     {
         if (isWindowRenderTarget())
         {
-            getRenderEngine()->getWindowController()->OnWindowPropertiesChanged.unbind(this, &RenderTarget::onWindowPropertiesChanged);
+            getRenderEngine()->getWindowController()->onWindowPropertiesChanged.unbind(this, &RenderTarget::onWindowPropertiesChanged);
         }
 
         m_WindowID = window_id_INVALID;

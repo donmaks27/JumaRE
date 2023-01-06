@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX12)
 
@@ -94,7 +94,7 @@ namespace JumaRenderEngine
 
         m_SwapchainInvalid = false;
 
-        windowController->OnWindowPropertiesChanged.bind(this, &DirectX12Swapchain::onWindowPropertiesChanged);
+        windowController->onWindowPropertiesChanged.bind(this, &DirectX12Swapchain::onWindowPropertiesChanged);
         return true;
     }
     bool DirectX12Swapchain::getSwapchainBuffers(const uint8 buffersCount)
@@ -120,7 +120,7 @@ namespace JumaRenderEngine
 
     void DirectX12Swapchain::clearDirectX()
     {
-        getRenderEngine()->getWindowController()->OnWindowPropertiesChanged.unbind(this, &DirectX12Swapchain::onWindowPropertiesChanged);
+        getRenderEngine()->getWindowController()->onWindowPropertiesChanged.unbind(this, &DirectX12Swapchain::onWindowPropertiesChanged);
 
         clearSwapchainBuffers();
 
