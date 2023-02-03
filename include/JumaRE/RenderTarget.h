@@ -45,7 +45,6 @@ namespace JumaRenderEngine
         bool isWindowRenderTarget() const { return m_WindowID != window_id_INVALID; }
         window_id getWindowID() const { return m_WindowID; }
 
-        math::uvector2 getSize() const { return m_Size; }
         TextureSamples getSampleCount() const { return m_TextureSamples; }
         TextureFormat getColorFormat() const { return m_ColorFormat; }
         bool isDepthEnabled() const { return m_DepthEnabled; }
@@ -76,7 +75,6 @@ namespace JumaRenderEngine
         render_target_id m_RenderTargetID = render_target_id_INVALID;
 
         window_id m_WindowID = window_id_INVALID;
-        math::uvector2 m_Size = { 0, 0 };
 
         TextureSamples m_TextureSamples = TextureSamples::X1;
         TextureFormat m_ColorFormat = TextureFormat::RGBA8;

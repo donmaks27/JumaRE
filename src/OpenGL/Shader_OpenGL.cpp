@@ -24,10 +24,10 @@ namespace JumaRenderEngine
         jarray<jstring> result;
         while (!file.eof())
         {
-            jstring line;
-            readStreamLine(file, line);
+            std::string line;
+            std::getline(file, line);
             line += '\n';
-            result.add(line);
+            result.add(jstring(line));
         }
         file.close();
         return result;

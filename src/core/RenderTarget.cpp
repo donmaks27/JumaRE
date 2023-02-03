@@ -24,7 +24,7 @@ namespace JumaRenderEngine
         m_RenderTargetID = renderTargetID;
         m_WindowID = windowID;
         m_TextureSamples = samples;
-        m_Size = windowData->size;
+        m_TextureSize = windowData->size;
         if (!initInternal())
         {
             JUTILS_LOG(error, JSTR("Failed to initialize window render target"));
@@ -46,7 +46,7 @@ namespace JumaRenderEngine
 
         m_RenderTargetID = renderTargetID;
         m_ColorFormat = format;
-        m_Size = size;
+        m_TextureSize = size;
         m_TextureSamples = samples;
         if (!initInternal())
         {
@@ -68,7 +68,7 @@ namespace JumaRenderEngine
 
         m_WindowID = window_id_INVALID;
         m_TextureSamples = TextureSamples::X1;
-        m_Size = { 0, 0 };
+        m_TextureSize = { 0, 0 };
         m_ColorFormat = TextureFormat::RGBA8;
     }
 
@@ -96,9 +96,9 @@ namespace JumaRenderEngine
     {
         if (windowData->windowID == getWindowID())
         {
-            if ((windowData->size != m_Size) || (windowData->samples != m_TextureSamples))
+            if ((windowData->size != m_TextureSize) || (windowData->samples != m_TextureSamples))
             {
-                m_Size = windowData->size;
+                m_TextureSize = windowData->size;
                 m_TextureSamples = windowData->samples;
                 invalidate();
             }
@@ -107,9 +107,9 @@ namespace JumaRenderEngine
 
     void RenderTarget::setSize(const math::uvector2& size)
     {
-        if (!isWindowRenderTarget() && (m_Size != size))
+        if (!isWindowRenderTarget() && (m_TextureSize != size))
         {
-            m_Size = size;
+            m_TextureSize = size;
             invalidate();
         }
     }

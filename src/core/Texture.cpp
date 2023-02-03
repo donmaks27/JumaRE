@@ -12,6 +12,7 @@ namespace JumaRenderEngine
             return false;
         }
 
+        m_TextureSize = size;
         if (!initInternal(size, format, data))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize texture"));
