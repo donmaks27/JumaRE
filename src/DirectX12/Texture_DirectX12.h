@@ -1,10 +1,11 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX12)
 
 #include "../../include/JumaRE/texture/Texture.h"
+#include "DirectX12Objects/DirectX12MipGeneratorTarget.h"
 
 struct ID3D12DescriptorHeap;
 
@@ -12,7 +13,7 @@ namespace JumaRenderEngine
 {
     class DirectX12Texture;
 
-    class Texture_DirectX12 final : public Texture
+    class Texture_DirectX12 final : public Texture, public DirectX12MipGeneratorTarget
     {
         using Super = Texture;
 
@@ -27,6 +28,8 @@ namespace JumaRenderEngine
 
         virtual bool initInternal(const math::uvector2& size, TextureFormat format, const uint8* data) override;
         virtual void clearAsset() override;
+
+        virtual DirectX12Texture* getMipGeneratorTargetTexture() const override { return m_Texture; }
 
     private:
 

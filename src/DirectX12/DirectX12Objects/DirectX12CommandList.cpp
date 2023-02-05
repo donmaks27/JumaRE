@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX12)
 
@@ -227,6 +227,36 @@ namespace JumaRenderEngine
             }
         }
     }
+    void DirectX12CommandList::updateTextureState(DirectX12Texture* texture, const D3D12_RESOURCE_STATES state)
+    {
+        if (m_Executed || (texture == nullptr) || !texture->isValid())
+        {
+            return;
+        }
+
+        jarray<D3D12_RESOURCE_STATES>& states = m_TextureStates[texture];
+        states.resize(texture->getMipLevelsCount(), state);
+        for (auto& mipmapState : states)
+        {
+	        mipmapState = state;
+        }
+    }
+    void DirectX12CommandList::updateTextureState(DirectX12Texture* texture, const D3D12_RESOURCE_STATES state, const uint8 firstMipLevelIndex, 
+        const uint8 mipLevelsCount)
+    {
+        if (m_Executed || (texture == nullptr) || !texture->isValid())
+        {
+            return;
+        }
+
+        jarray<D3D12_RESOURCE_STATES>& states = m_TextureStates[texture];
+        states.resize(texture->getMipLevelsCount());
+        for (int32 index = firstMipLevelIndex; (index < states.getSize()) && (index < (firstMipLevelIndex + mipLevelsCount)); index++)
+        {
+	        states[index] = state;
+        }
+    }
+
     void DirectX12CommandList::changeBufferState(DirectX12Buffer* buffer, const D3D12_RESOURCE_STATES state)
     {
         if (m_Executed || (buffer == nullptr) || !buffer->isValid())
@@ -248,6 +278,7 @@ namespace JumaRenderEngine
             m_BufferStates[buffer] = state;
         }
     }
+
     void DirectX12CommandList::applyStateChanges()
     {
         if (!m_Executed && !m_ResourceBarriers.isEmpty())

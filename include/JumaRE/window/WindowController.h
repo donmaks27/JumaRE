@@ -26,7 +26,6 @@ namespace JumaRenderEngine
 
         render_target_id windowRenderTargetID = render_target_id_INVALID;
         TextureSamples samples = TextureSamples::X1;
-        jstringID pipelineStageName = jstringID_NONE;
 
         math::uvector2 desiredSize = { 0, 0 };
         math::uvector2 size = { 0, 0 };
@@ -59,11 +58,14 @@ namespace JumaRenderEngine
 
         using WindowDataType = WindowData;
 
+        OnWindowControllerWindowEvent onWindowCreated;
+        OnWindowControllerWindowEvent onWindowDestroying;
+
         OnWindowControllerWindowEvent onWindowPropertiesChanged;
         OnWindowControllerInput onWindowInput;
 
 
-        window_id createWindow(const WindowCreateInfo& createInfo);
+        window_id createWindow(const WindowCreateInfo& createInfo) { return createWindow(createInfo, true); }
         void destroyWindow(window_id windowID);
 
         const jarray<window_id>& getWindowIDs() const { return m_CreatedWindowIDs; }
@@ -175,6 +177,7 @@ namespace JumaRenderEngine
         void clearData();
 
         bool createMainWindow(const WindowCreateInfo& windowInfo);
+        window_id createWindow(const WindowCreateInfo& createInfo, bool callEvent);
 
         bool createRenderTarget(WindowData* windowData);
         void destroyRenderTarget(WindowData* windowData);

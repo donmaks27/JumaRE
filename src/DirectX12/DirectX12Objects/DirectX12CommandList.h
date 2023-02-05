@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -35,8 +35,12 @@ namespace JumaRenderEngine
 
         void changeTextureState(DirectX12Texture* texture, D3D12_RESOURCE_STATES state);
         void changeTextureState(DirectX12Texture* texture, D3D12_RESOURCE_STATES state, uint8 firstMipLevelIndex, uint8 mipLevelsCount = 1);
-        void changeBufferState(DirectX12Buffer* buffer, D3D12_RESOURCE_STATES state);
-        void applyStateChanges();
+        void updateTextureState(DirectX12Texture* texture, D3D12_RESOURCE_STATES state);
+        void updateTextureState(DirectX12Texture* texture, D3D12_RESOURCE_STATES state, uint8 firstMipLevelIndex, uint8 mipLevelsCount = 1);
+
+    	void changeBufferState(DirectX12Buffer* buffer, D3D12_RESOURCE_STATES state);
+
+    	void applyStateChanges();
 
     private:
 

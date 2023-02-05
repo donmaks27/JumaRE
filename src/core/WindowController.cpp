@@ -22,16 +22,18 @@ namespace JumaRenderEngine
 
     bool WindowController::createMainWindow(const WindowCreateInfo& windowInfo)
     {
-        const window_id windowID = createWindow(windowInfo);
+        const window_id windowID = createWindow(windowInfo, false);
         if (windowID == window_id_INVALID)
         {
             return false;
         }
         m_MainWindowID = windowID;
         m_FocusedWindowID = m_MainWindowID;
+
+        onWindowCreated.call(this, findWindowData(windowID));
         return true;
     }
-    window_id WindowController::createWindow(const WindowCreateInfo& createInfo)
+    window_id WindowController::createWindow(const WindowCreateInfo& createInfo, const bool callEvent)
     {
         if ((createInfo.size.x == 0) || (createInfo.size.y == 0))
         {
@@ -50,7 +52,6 @@ namespace JumaRenderEngine
         windowData->size = createInfo.size;
         windowData->samples = createInfo.samples;
         windowData->minimized = false;
-        windowData->pipelineStageName = JSTR("window") + TO_JSTR(windowID);
 
         updateWindowFocused(windowID, true);
 
@@ -58,6 +59,10 @@ namespace JumaRenderEngine
         {
             destroyWindow(windowID);
             return window_id_INVALID;
+        }
+        if (callEvent)
+        {
+	        onWindowCreated.call(this, windowData);
         }
         return windowID;
     }
@@ -77,6 +82,8 @@ namespace JumaRenderEngine
             markWindowShouldClose(windowData);
             return;
         }
+
+        onWindowDestroying.call(this, windowData);
 
         if (windowData->minimized)
         {
