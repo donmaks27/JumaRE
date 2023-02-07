@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX11)
 
@@ -129,7 +129,7 @@ namespace JumaRenderEngine
 
         D3D11_DEPTH_STENCIL_DESC depthStateDescription{};
         depthStateDescription.DepthEnable = description.depthEnabled ? TRUE : FALSE;
-        depthStateDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        depthStateDescription.DepthWriteMask = description.depthEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
         depthStateDescription.DepthFunc = D3D11_COMPARISON_LESS;
         depthStateDescription.StencilEnable = description.stencilEnabled ? TRUE : FALSE;
         depthStateDescription.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;

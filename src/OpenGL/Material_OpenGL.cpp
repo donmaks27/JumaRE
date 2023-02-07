@@ -10,6 +10,7 @@
 #include "Shader_OpenGL.h"
 #include "Texture_OpenGL.h"
 #include "JumaRE/RenderEngine.h"
+#include "JumaRE/RenderOptions.h"
 
 namespace JumaRenderEngine
 {
@@ -57,7 +58,7 @@ namespace JumaRenderEngine
         m_UniformBufferIndices.clear();
     }
 
-    bool Material_OpenGL::bindMaterial()
+    bool Material_OpenGL::bindMaterial(const RenderOptions* renderOptions)
     {
         if (isTemplateMaterial() || !getShader<Shader_OpenGL>()->activateShader())
         {
@@ -70,14 +71,17 @@ namespace JumaRenderEngine
             glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, uniformBuffer.value);
         }
 
-        const MaterialProperties& properties = getMaterialProperties();
+        MaterialProperties properties = getMaterialProperties();
+        properties.depthEnabled &= renderOptions->renderStageProperties.depthEnabled;
         if (properties.depthEnabled)
         {
             glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
         }
         else
         {
             glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
         }
         if (properties.stencilEnabled)
         {

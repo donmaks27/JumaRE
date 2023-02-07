@@ -100,7 +100,7 @@ namespace JumaRenderEngine
 
         const window_id windowID = renderOptions->renderTarget->getWindowID();
         const uint32 VAO = getVerticesVAO(windowID);
-        if ((VAO != 0) && materialOpenGL->bindMaterial())
+        if ((VAO != 0) && materialOpenGL->bindMaterial(renderOptions))
         {
             glBindVertexArray(VAO);
             if (m_IndicesBufferIndex != 0)

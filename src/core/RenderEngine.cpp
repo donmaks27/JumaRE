@@ -292,15 +292,7 @@ namespace JumaRenderEngine
         onRegisteredVertex(vertexID, m_RegisteredVerticesData.add(vertexID, { description, vertexSize }));
         return vertexID;
     }
-
-    bool RenderEngine::addPrimitiveToRenderList(RenderTarget* renderTarget, VertexBuffer* vertexBuffer, Material* material)
-    {
-        if (renderTarget == nullptr)
-        {
-            return false;
-        }
-        return renderTarget->addPrimitiveToRenderList({ vertexBuffer, material });
-    }
+    
     bool RenderEngine::render()
     {
         if (!m_RenderPipeline->buildRenderTargetsQueue())

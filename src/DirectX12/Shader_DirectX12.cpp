@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #include "VertexBuffer_DirectX12.h"
 #if defined(JUMARE_ENABLE_DX12)
@@ -422,7 +422,7 @@ namespace JumaRenderEngine
         pipelineStateStream.primitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         // Depth data
         pipelineStateStream.depthStencil.data.DepthEnable = pipelineStateID.properties.depthEnabled ? TRUE : FALSE;
-        pipelineStateStream.depthStencil.data.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        pipelineStateStream.depthStencil.data.DepthWriteMask = pipelineStateID.properties.depthEnabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
         pipelineStateStream.depthStencil.data.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
         // Stencil data
         pipelineStateStream.depthStencil.data.StencilEnable = pipelineStateID.properties.stencilEnabled ? TRUE : FALSE;

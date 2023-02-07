@@ -193,11 +193,20 @@ namespace JumaRenderEngine
                     break;
                 }
 
-                for (const auto& renderPrimitive : renderTarget->getRenderList())
+                const int32 stagesCount = renderTarget->getRenderStagesCount();
+                for (int32 index = 0; index < stagesCount; index++)
                 {
-                    if ((renderPrimitive.material != nullptr) && !renderPrimitive.material->isTemplateMaterial())
+	                const RenderStage* renderStage = renderTarget->getRenderStage(index);
+                    if (renderStage != nullptr)
                     {
-                        renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
+                        renderOptions->renderStageProperties = renderStage->properties;
+	                    for (const auto& renderPrimitive : renderStage->primitivesList)
+	                    {
+		                    if ((renderPrimitive.material != nullptr) && !renderPrimitive.material->isTemplateMaterial())
+		                    {
+		                        renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
+		                    }
+	                    }
                     }
                 }
 

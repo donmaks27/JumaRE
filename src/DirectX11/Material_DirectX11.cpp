@@ -10,6 +10,7 @@
 #include "RenderTarget_DirectX11.h"
 #include "Shader_DirectX11.h"
 #include "Texture_DirectX11.h"
+#include "JumaRE/RenderOptions.h"
 
 namespace JumaRenderEngine
 {
@@ -82,7 +83,9 @@ namespace JumaRenderEngine
         
         bindUniforms(deviceContext);
 
-        const MaterialProperties& properties = getMaterialProperties();
+        MaterialProperties properties = getMaterialProperties();
+        properties.depthEnabled &= renderOptions->renderStageProperties.depthEnabled;
+
         ID3D11RasterizerState* rasterizerState = renderEngine->getRasterizerState({ properties.cullBackFaces, properties.wireframe });
         if (rasterizerState != nullptr)
         {

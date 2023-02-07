@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -8,7 +8,9 @@
 
 namespace JumaRenderEngine
 {
-    class Material_OpenGL final : public Material
+	struct RenderOptions;
+
+	class Material_OpenGL final : public Material
     {
         using Super = Material;
 
@@ -16,7 +18,7 @@ namespace JumaRenderEngine
         Material_OpenGL() = default;
         virtual ~Material_OpenGL() override;
 
-        bool bindMaterial();
+        bool bindMaterial(const RenderOptions* renderOptions);
         void unbindMaterial();
 
     protected:

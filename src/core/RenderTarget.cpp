@@ -61,6 +61,9 @@ namespace JumaRenderEngine
 
     void RenderTarget::clearData()
     {
+        m_RenderStages.clear();
+        m_RenderStagesCount = 0;
+
         if (isWindowRenderTarget())
         {
             getRenderEngine()->getWindowController()->onWindowPropertiesChanged.unbind(this, &RenderTarget::onWindowPropertiesChanged);
@@ -138,18 +141,33 @@ namespace JumaRenderEngine
         }
     }
 
-    bool RenderTarget::addPrimitiveToRenderList(const RenderTargetPrimitive& primitive)
+    void RenderTarget::startRenderStage(const RenderStageProperties& properties)
+    {
+        m_RenderStagesCount++;
+        if (m_RenderStages.getSize() < m_RenderStagesCount)
+        {
+	        m_RenderStages.resize(m_RenderStagesCount);
+        }
+        RenderStage& stage = m_RenderStages[m_RenderStagesCount - 1];
+        stage.primitivesList.clear();
+        stage.properties = properties;
+    }
+    bool RenderTarget::addPrimitiveToRenderList(const RenderPrimitive& primitive)
     {
         if ((primitive.vertexBuffer == nullptr) || (primitive.material == nullptr))
         {
             return false;
         }
-        m_RenderPrimitives.add(primitive);
+        if (m_RenderStagesCount == 0)
+        {
+	        startRenderStage({});
+        }
+        m_RenderStages[m_RenderStagesCount - 1].primitivesList.add(primitive);
         return true;
     }
     void RenderTarget::clearRenderList()
     {
-        m_RenderPrimitives.clear();
+        m_RenderStagesCount = 0;
     }
 
     bool RenderTarget::onStartRender(RenderOptions* renderOptions)

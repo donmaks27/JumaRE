@@ -344,8 +344,11 @@ namespace JumaRenderEngine
         }
 
         const RenderOptions_Vulkan* options = reinterpret_cast<const RenderOptions_Vulkan*>(renderOptions);
+        MaterialProperties materialProperties = getMaterialProperties();
+        materialProperties.depthEnabled &= renderOptions->renderStageProperties.depthEnabled;
+
         VkCommandBuffer commandBuffer = options->commandBuffer->get();
-        return getShader<Shader_Vulkan>()->bindRenderPipeline(commandBuffer, vertexBuffer->getVertexID(), options->renderPass, getMaterialProperties())
+        return getShader<Shader_Vulkan>()->bindRenderPipeline(commandBuffer, vertexBuffer->getVertexID(), options->renderPass, materialProperties)
             && bindDescriptorSet(commandBuffer);
     }
 

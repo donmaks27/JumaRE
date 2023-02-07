@@ -5,6 +5,7 @@
 #include "core.h"
 
 #include "RenderAPI.h"
+#include "RenderPrimitivesList.h"
 #include "render_target_id.h"
 #include "material/ShaderUniform.h"
 #include "texture/TextureFormat.h"
@@ -80,7 +81,6 @@ namespace JumaRenderEngine
 
         Texture* getDefaultTexture() const { return m_DefaultTexture; }
 
-        bool addPrimitiveToRenderList(RenderTarget* renderTarget, VertexBuffer* vertexBuffer, Material* material);
         bool render();
 
     protected:

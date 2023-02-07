@@ -7,6 +7,7 @@
 
 #include <jutils/jdelegate_multicast.h>
 
+#include "RenderPrimitivesList.h"
 #include "render_target_id.h"
 #include "texture/TextureFormat.h"
 #include "texture/TextureSamples.h"
@@ -14,21 +15,13 @@
 
 namespace JumaRenderEngine
 {
-    class VertexBuffer;
-    class Material;
     class RenderTarget;
     class WindowController;
     struct WindowData;
     struct RenderOptions;
 
     JUTILS_CREATE_MULTICAST_DELEGATE1(OnRenderTargetEvent, RenderTarget*, renderTarget);
-
-    struct RenderTargetPrimitive
-    {
-        VertexBuffer* vertexBuffer = nullptr;
-        Material* material = nullptr;
-    };
-
+    
     class RenderTarget : public TextureBase
     {
         friend RenderEngine;
@@ -54,7 +47,12 @@ namespace JumaRenderEngine
         void setColorFormat(TextureFormat format);
         void setDepthEnabled(bool enabled);
 
-        const jarray<RenderTargetPrimitive>& getRenderList() const { return m_RenderPrimitives; }
+        int32 getRenderStagesCount() const { return m_RenderStagesCount; }
+        const RenderStage* getRenderStage(const int32 index) const { return math::isWithin(index, 0, getRenderStagesCount() - 1) ? &m_RenderStages[index] : nullptr; }
+        
+        void startRenderStage(const RenderStageProperties& properties);
+        bool addPrimitiveToRenderList(const RenderPrimitive& primitive);
+        void clearRenderList();
 
         virtual bool onStartRender(RenderOptions* renderOptions);
         virtual void onFinishRender(RenderOptions* renderOptions);
@@ -79,10 +77,10 @@ namespace JumaRenderEngine
         TextureSamples m_TextureSamples = TextureSamples::X1;
         TextureFormat m_ColorFormat = TextureFormat::RGBA8;
         bool m_DepthEnabled = true;
-
         bool m_Invalid = true;
-
-        jarray<RenderTargetPrimitive> m_RenderPrimitives;
+        
+        jarray<RenderStage> m_RenderStages;
+        int32 m_RenderStagesCount = 0;
 
 
         bool init(render_target_id renderTargetID, window_id windowID, TextureSamples samples);
@@ -91,8 +89,5 @@ namespace JumaRenderEngine
         void clearData();
 
         void onWindowPropertiesChanged(WindowController* windowController, const WindowData* windowData);
-        
-        bool addPrimitiveToRenderList(const RenderTargetPrimitive& primitive);
-        void clearRenderList();
     };
 }
