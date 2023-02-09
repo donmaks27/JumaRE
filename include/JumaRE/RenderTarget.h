@@ -47,12 +47,13 @@ namespace JumaRenderEngine
         void setColorFormat(TextureFormat format);
         void setDepthEnabled(bool enabled);
 
-        int32 getRenderStagesCount() const { return m_RenderStagesCount; }
-        const RenderStage* getRenderStage(const int32 index) const { return math::isWithin(index, 0, getRenderStagesCount() - 1) ? &m_RenderStages[index] : nullptr; }
-        
-        void startRenderStage(const RenderStageProperties& properties);
-        bool addPrimitiveToRenderList(const RenderPrimitive& primitive);
-        void clearRenderList();
+        int32 getRenderStagesCount() const { return m_RenderStages.getSize(); }
+        bool isRenderStageIndexValid(const int32 renderStageIndex) const { return m_RenderStages.isValidIndex(renderStageIndex); }
+        const RenderStage* getRenderStage(const int32 index) const { return m_RenderStages.findByIndex(index); }
+
+        void setupRenderStages(const jarray<RenderStageProperties>& stages);
+        bool addPrimitiveToRenderStage(int32 renderStageIndex, const RenderPrimitive& primitive);
+        void clearPrimitivesList();
 
         virtual bool onStartRender(RenderOptions* renderOptions);
         virtual void onFinishRender(RenderOptions* renderOptions);
@@ -80,7 +81,6 @@ namespace JumaRenderEngine
         bool m_Invalid = true;
         
         jarray<RenderStage> m_RenderStages;
-        int32 m_RenderStagesCount = 0;
 
 
         bool init(render_target_id renderTargetID, window_id windowID, TextureSamples samples);

@@ -307,7 +307,7 @@ namespace JumaRenderEngine
         }
         for (const auto& renderTarget : m_RenderTargets)
         {
-            renderTarget.value->clearRenderList();
+            renderTarget.value->clearPrimitivesList();
         }
         m_WindowController->updateWindows();
         return true;

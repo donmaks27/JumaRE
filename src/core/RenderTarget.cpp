@@ -34,6 +34,7 @@ namespace JumaRenderEngine
 
         m_Invalid = false;
         windowController->onWindowPropertiesChanged.bind(this, &RenderTarget::onWindowPropertiesChanged);
+        setupRenderStages({ {} });
         return true;
     }
     bool RenderTarget::init(const render_target_id renderTargetID, const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
@@ -56,13 +57,13 @@ namespace JumaRenderEngine
         }
 
         m_Invalid = false;
+        setupRenderStages({ {} });
         return true;
     }
 
     void RenderTarget::clearData()
     {
         m_RenderStages.clear();
-        m_RenderStagesCount = 0;
 
         if (isWindowRenderTarget())
         {
@@ -141,33 +142,36 @@ namespace JumaRenderEngine
         }
     }
 
-    void RenderTarget::startRenderStage(const RenderStageProperties& properties)
+    void RenderTarget::setupRenderStages(const jarray<RenderStageProperties>& stages)
     {
-        m_RenderStagesCount++;
-        if (m_RenderStages.getSize() < m_RenderStagesCount)
+        m_RenderStages.resize(stages.getSize());
+        for (int32 index = 0; index < m_RenderStages.getSize(); index++)
         {
-	        m_RenderStages.resize(m_RenderStagesCount);
+	        m_RenderStages[index].properties = stages[index];
+	        m_RenderStages[index].primitivesList.clear();
         }
-        RenderStage& stage = m_RenderStages[m_RenderStagesCount - 1];
-        stage.primitivesList.clear();
-        stage.properties = properties;
     }
-    bool RenderTarget::addPrimitiveToRenderList(const RenderPrimitive& primitive)
+    bool RenderTarget::addPrimitiveToRenderStage(const int32 renderStageIndex, const RenderPrimitive& primitive)
     {
-        if ((primitive.vertexBuffer == nullptr) || (primitive.material == nullptr))
+        if (!m_RenderStages.isValidIndex(renderStageIndex))
         {
+	        JUTILS_LOG(warning, JSTR("Invalid render stage index {}"), renderStageIndex);
             return false;
         }
-        if (m_RenderStagesCount == 0)
+        if ((primitive.vertexBuffer == nullptr) || (primitive.material == nullptr))
         {
-	        startRenderStage({});
+            JUTILS_LOG(warning, JSTR("Invalid primitive"));
+            return false;
         }
-        m_RenderStages[m_RenderStagesCount - 1].primitivesList.add(primitive);
+        m_RenderStages[renderStageIndex].primitivesList.add(primitive);
         return true;
     }
-    void RenderTarget::clearRenderList()
+    void RenderTarget::clearPrimitivesList()
     {
-        m_RenderStagesCount = 0;
+        for (auto& stage : m_RenderStages)
+        {
+	        stage.primitivesList.clear();
+        }
     }
 
     bool RenderTarget::onStartRender(RenderOptions* renderOptions)
