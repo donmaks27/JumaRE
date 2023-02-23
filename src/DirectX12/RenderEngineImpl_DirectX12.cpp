@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #include "../../include/JumaRE/RenderEngineImpl_DirectX12.h"
 
@@ -6,6 +6,15 @@
 
 namespace JumaRenderEngine
 {
+	bool IsSupportRenderAPI_DirectX12()
+	{
+#if defined(JUMARE_ENABLE_DX12)
+        return true;
+#else
+        return false;
+#endif
+	}
+
     RenderEngine* CreateRenderEngine_DirectX12()
     {
 #if defined(JUMARE_ENABLE_DX12)
