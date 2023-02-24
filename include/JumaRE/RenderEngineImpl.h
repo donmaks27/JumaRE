@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -9,6 +9,19 @@
 
 namespace JumaRenderEngine
 {
+    inline bool IsSupportRenderAPI(const RenderAPI api)
+    {
+	    switch (api)
+	    {
+	    case RenderAPI::Vulkan: return IsSupportRenderAPI<RenderAPI::Vulkan>();
+	    case RenderAPI::OpenGL: return IsSupportRenderAPI<RenderAPI::OpenGL>();
+	    case RenderAPI::DirectX11: return IsSupportRenderAPI<RenderAPI::DirectX11>();
+	    case RenderAPI::DirectX12: return IsSupportRenderAPI<RenderAPI::DirectX12>();
+	    default: ;
+	    }
+        return false;
+    }
+
     inline RenderEngine* CreateRenderEngine(const RenderAPI api)
     {
         switch (api)

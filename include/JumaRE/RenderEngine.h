@@ -133,7 +133,9 @@ namespace JumaRenderEngine
         
         vertex_id registerVertex(const VertexDescription& description);
     };
-
+    
+    template<RenderAPI API>
+    bool IsSupportRenderAPI() { return false; }
     template<RenderAPI API>
     RenderEngine* CreateRenderEngine() { return nullptr; }
 }
