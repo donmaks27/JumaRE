@@ -60,6 +60,8 @@ namespace JumaRenderEngine
             destroyWindow(windowID);
             return window_id_INVALID;
         }
+
+        m_WindowIDs.generateUID();
         if (callEvent)
         {
 	        onWindowCreated.call(this, windowData);

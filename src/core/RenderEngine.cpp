@@ -138,12 +138,13 @@ namespace JumaRenderEngine
     RenderTarget* RenderEngine::createWindowRenderTarget(const window_id windowID, const TextureSamples samples)
     {
         RenderTarget* renderTarget = allocateRenderTarget();
-        const render_target_id renderTargetID = m_RenderTagetIDs.getNextUID();
-        if ((renderTargetID == render_target_id_INVALID) || !renderTarget->init(renderTargetID, windowID, samples) || (m_RenderTagetIDs.getUID() != renderTargetID))
+        const render_target_id renderTargetID = m_RenderTagetIDs.getUID();
+        if ((renderTargetID == render_target_id_INVALID) || !renderTarget->init(renderTargetID, windowID, samples))
         {
             destroyRenderTarget(renderTarget);
             return nullptr;
         }
+        m_RenderTagetIDs.generateUID();
         m_RenderTargets.add(renderTargetID, renderTarget);
         m_RenderPipeline->onRenderTargetCreated(renderTarget);
         return renderTarget;
@@ -151,12 +152,13 @@ namespace JumaRenderEngine
     RenderTarget* RenderEngine::createRenderTarget(const TextureFormat format, const math::uvector2& size, const TextureSamples samples)
     {
         RenderTarget* renderTarget = allocateRenderTarget();
-        const render_target_id renderTargetID = m_RenderTagetIDs.getNextUID();
-        if ((renderTargetID == render_target_id_INVALID) || !renderTarget->init(renderTargetID, format, size, samples) || (m_RenderTagetIDs.getUID() != renderTargetID))
+        const render_target_id renderTargetID = m_RenderTagetIDs.getUID();
+        if ((renderTargetID == render_target_id_INVALID) || !renderTarget->init(renderTargetID, format, size, samples))
         {
             destroyRenderTarget(renderTarget);
             return nullptr;
         }
+        m_RenderTagetIDs.generateUID();
         m_RenderTargets.add(renderTargetID, renderTarget);
         m_RenderPipeline->onRenderTargetCreated(renderTarget);
         return renderTarget;
@@ -289,6 +291,7 @@ namespace JumaRenderEngine
         {
             return vertex_id_NONE;
         }
+        m_VertexIDGenerator.generateUID();
         onRegisteredVertex(vertexID, m_RegisteredVerticesData.add(vertexID, { description, vertexSize }));
         return vertexID;
     }
