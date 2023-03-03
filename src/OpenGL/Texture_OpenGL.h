@@ -1,10 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
-#include "../../include/JumaRE/texture/Texture.h"
+#include "JumaRE/texture/Texture.h"
 
 namespace JumaRenderEngine
 {
@@ -23,7 +23,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const math::uvector2& size, TextureFormat format, const uint8* data) override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
 

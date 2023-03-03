@@ -1,6 +1,6 @@
 ﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/RenderEngineImpl_OpenGL.h"
+#include "JumaRE/RenderEngineImpl_OpenGL.h"
 
 #include "RenderEngine_OpenGL.h"
 

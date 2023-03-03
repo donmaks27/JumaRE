@@ -1,10 +1,10 @@
-﻿// Copyright a Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
-#include "../../include/JumaRE/texture/TextureFormat.h"
+#include "JumaRE/texture/TextureFormat.h"
 
 #include <GL/glew.h>
 

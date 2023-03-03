@@ -1,16 +1,16 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX12)
 
-#include "../../include/JumaRE/material/Shader.h"
+#include "JumaRE/material/Shader.h"
 
 #include <d3dcommon.h>
 
-#include "../../include/JumaRE/material/MaterialProperties.h"
-#include "../../include/JumaRE/texture/TextureFormat.h"
-#include "../../include/JumaRE/texture/TextureSamples.h"
+#include "JumaRE/material/MaterialProperties.h"
+#include "JumaRE/texture/TextureFormat.h"
+#include "JumaRE/texture/TextureSamples.h"
 
 struct ID3D12PipelineState;
 struct ID3D12RootSignature;
@@ -37,7 +37,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
         

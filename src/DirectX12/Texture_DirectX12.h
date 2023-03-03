@@ -4,7 +4,7 @@
 
 #if defined(JUMARE_ENABLE_DX12)
 
-#include "../../include/JumaRE/texture/Texture.h"
+#include "JumaRE/texture/Texture.h"
 #include "DirectX12Objects/DirectX12MipGeneratorTarget.h"
 
 struct ID3D12DescriptorHeap;
@@ -27,7 +27,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const math::uvector2& size, TextureFormat format, const uint8* data) override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
         virtual DirectX12Texture* getMipGeneratorTargetTexture() const override { return m_Texture; }
 

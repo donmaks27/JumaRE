@@ -39,13 +39,16 @@ namespace JumaRenderEngine
 
     void RenderPipeline::onRenderTargetCreated(RenderTarget* renderTarget)
     {
-        renderTarget->OnStartDestroying.bind(this, &RenderPipeline::onRenderTargetStartDestroying);
+        renderTarget->onDestroying.bind(this, &RenderPipeline::onRenderTargetDestroying);
 
         m_RenderTargetsQueueValid = false;
         m_RenderTargetsDependecies.add(renderTarget->getID());
     }
-    void RenderPipeline::onRenderTargetStartDestroying(RenderTarget* renderTarget)
+    void RenderPipeline::onRenderTargetDestroying(RenderEngineAsset* renderTargetAsset)
     {
+        renderTargetAsset->onDestroying.unbind(this, &RenderPipeline::onRenderTargetDestroying);
+        const RenderTarget* renderTarget = dynamic_cast<RenderTarget*>(renderTargetAsset);
+
         m_RenderTargetsQueueValid = false;
 
         const render_target_id renderTargetID = renderTarget->getID();

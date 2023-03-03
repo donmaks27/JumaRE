@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
@@ -30,10 +30,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Texture_OpenGL::clearAsset()
+    void Texture_OpenGL::onClearAsset()
     {
         clearOpenGL();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Texture_OpenGL::clearOpenGL()
     {

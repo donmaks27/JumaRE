@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #include "../../include/JumaRE/material/Shader.h"
 
@@ -38,6 +38,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Shader::onClearAsset()
+    {
+	    clearData();
+        Super::onClearAsset();
+    }
     void Shader::clearData()
     {
         m_CachedUniformBufferDescriptions.clear();

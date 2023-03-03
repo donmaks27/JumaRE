@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #include "../../include/JumaRE/vertex/VertexBuffer.h"
 
@@ -22,7 +22,12 @@ namespace JumaRenderEngine
         }
         return true;
     }
-
+    
+    void VertexBuffer::onClearAsset()
+    {
+	    clearData();
+        Super::onClearAsset();
+    }
     void VertexBuffer::clearData()
     {
         m_VertexID = vertex_id_NONE;

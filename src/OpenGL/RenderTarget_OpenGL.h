@@ -1,10 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
-#include "../../include/JumaRE/RenderTarget.h"
+#include "JumaRE/RenderTarget.h"
 
 namespace JumaRenderEngine
 {

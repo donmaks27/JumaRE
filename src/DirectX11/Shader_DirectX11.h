@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX11)
 
-#include "../../include/JumaRE/material/Shader.h"
+#include "JumaRE/material/Shader.h"
 
 #include <d3dcompiler.h>
 
-#include "../../include/JumaRE/vertex/VertexDescription.h"
+#include "JumaRE/vertex/VertexDescription.h"
 
 struct ID3D11VertexShader;
 struct ID3D11PixelShader;
@@ -33,7 +33,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
 

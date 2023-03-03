@@ -67,10 +67,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void VertexBuffer_Vulkan::clearAsset()
+    void VertexBuffer_Vulkan::onClearAsset()
     {
         clearVulkan();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void VertexBuffer_Vulkan::clearVulkan()
     {

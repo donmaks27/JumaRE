@@ -1,10 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX11)
 
-#include "../../include/JumaRE/RenderEngine.h"
+#include "JumaRE/RenderEngine.h"
 
 #include "Material_DirectX11.h"
 #include "RenderTarget_DirectX11.h"

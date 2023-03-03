@@ -299,10 +299,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Shader_DirectX12::clearAsset()
+    void Shader_DirectX12::onClearAsset()
     {
         clearDirectX();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Shader_DirectX12::clearDirectX()
     {

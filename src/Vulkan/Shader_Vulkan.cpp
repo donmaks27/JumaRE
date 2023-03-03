@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "RenderEngine_Vulkan.h"
-#include "../../include/JumaRE/material/ShaderUniformInfo.h"
+#include "JumaRE/material/ShaderUniformInfo.h"
 
 namespace JumaRenderEngine
 {
@@ -203,10 +203,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Shader_Vulkan::clearAsset()
+    void Shader_Vulkan::onClearAsset()
     {
         clearVulkan();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Shader_Vulkan::clearVulkan()
     {

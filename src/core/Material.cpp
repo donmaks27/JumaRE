@@ -36,6 +36,11 @@ namespace JumaRenderEngine
         return true;
     }
 
+    void Material::onClearAsset()
+    {
+	    clearData();
+        Super::onClearAsset();
+    }
     void Material::clearData()
     {
         m_MaterialParams.clear();

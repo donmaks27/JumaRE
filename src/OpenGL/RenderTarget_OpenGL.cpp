@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
@@ -6,7 +6,7 @@
 
 #include <GL/glew.h>
 
-#include "../../include/JumaRE/RenderEngine.h"
+#include "JumaRE/RenderEngine.h"
 
 #include "TextureFormat_OpenGL.h"
 #include "Texture_OpenGL.h"

@@ -44,10 +44,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Material_OpenGL::clearAsset()
+    void Material_OpenGL::onClearAsset()
     {
         clearOpenGL();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Material_OpenGL::clearOpenGL()
     {

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX11)
 
@@ -65,10 +65,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Texture_DirectX11::clearAsset()
+    void Texture_DirectX11::onClearAsset()
     {
         clearDirectX();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Texture_DirectX11::clearDirectX()
     {

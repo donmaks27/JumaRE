@@ -13,7 +13,8 @@
 
 namespace JumaRenderEngine
 {
-    struct RenderOptions;
+	class RenderEngineAsset;
+	struct RenderOptions;
     class RenderTarget;
 
     class RenderPipeline : public RenderEngineContextObjectBase
@@ -65,7 +66,7 @@ namespace JumaRenderEngine
         bool init();
 
         void onRenderTargetCreated(RenderTarget* renderTarget);
-        void onRenderTargetStartDestroying(RenderTarget* renderTarget);
+        void onRenderTargetDestroying(RenderEngineAsset* renderTargetAsset);
 
         void clearData();
         

@@ -1,6 +1,6 @@
 ﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/RenderEngineImpl_DirectX12.h"
+#include "JumaRE/RenderEngineImpl_DirectX12.h"
 
 #include "RenderEngine_DirectX12.h"
 

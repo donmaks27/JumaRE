@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -23,6 +23,8 @@ namespace JumaRenderEngine
     {
         friend RenderEngine;
 
+        using Super = RenderEngineAsset;
+
     public:
         Shader() = default;
         virtual ~Shader() override;
@@ -37,7 +39,7 @@ namespace JumaRenderEngine
         bool init(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) = 0;
-        virtual void clearAsset() override { clearData(); }
+        virtual void onClearAsset() override;
 
     private:
 

@@ -207,10 +207,10 @@ namespace JumaRenderEngine
         return success;
     }
 
-    void Shader_OpenGL::clearAsset()
+    void Shader_OpenGL::onClearAsset()
     {
         clearOpenGL();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Shader_OpenGL::clearOpenGL()
     {

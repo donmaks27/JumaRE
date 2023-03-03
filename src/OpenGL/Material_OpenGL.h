@@ -4,7 +4,7 @@
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
-#include "../../include/JumaRE/material/Material.h"
+#include "JumaRE/material/Material.h"
 
 namespace JumaRenderEngine
 {
@@ -24,7 +24,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
 

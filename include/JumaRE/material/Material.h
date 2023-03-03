@@ -18,6 +18,8 @@ namespace JumaRenderEngine
     {
         friend RenderEngine;
 
+        using Super = RenderEngineAsset;
+
     public:
         Material() = default;
         virtual ~Material() override;
@@ -30,15 +32,15 @@ namespace JumaRenderEngine
         template<ShaderUniformType Type>
         bool setParamValue(const jstringID& name, const typename ShaderUniformInfo<Type>::value_type& value)
         {
-            if (checkParamType(name, Type) && m_MaterialParams.setValue<Type>(name, value))
+            if (!checkParamType(name, Type) || !m_MaterialParams.setValue<Type>(name, value))
             {
-                if (!isTemplateMaterial())
-                {
-                    m_MaterialParamsForUpdate.add(name);
-                }
-                return true;
+	            return false;
             }
-            return false;
+            if (!isTemplateMaterial())
+            {
+                m_MaterialParamsForUpdate.add(name);
+            }
+            return true;
         }
         bool resetParamValue(const jstringID& name);
         template<ShaderUniformType Type>
@@ -50,7 +52,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() = 0;
-        virtual void clearAsset() override { clearData(); }
+        virtual void onClearAsset() override;
 
         template<typename T, TEMPLATE_ENABLE(is_base<Shader, T>)>
         T* getShader() const { return dynamic_cast<T*>(getShader()); }

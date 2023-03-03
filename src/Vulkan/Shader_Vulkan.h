@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
-#include "../../include/JumaRE/material/Shader.h"
+#include "JumaRE/material/Shader.h"
 
 #include "vulkanObjects/VulkanRenderPassDescription.h"
-#include "../../include/JumaRE/material/MaterialProperties.h"
-#include "../../include/JumaRE/vertex/VertexDescription.h"
+#include "JumaRE/material/MaterialProperties.h"
+#include "JumaRE/vertex/VertexDescription.h"
 
 namespace JumaRenderEngine
 {
@@ -31,7 +31,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
 

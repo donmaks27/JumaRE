@@ -74,10 +74,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Material_DirectX12::clearAsset()
+    void Material_DirectX12::onClearAsset()
     {
         clearDirectX();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Material_DirectX12::clearDirectX()
     {

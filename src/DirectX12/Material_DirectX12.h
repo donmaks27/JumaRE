@@ -1,10 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX12)
 
-#include "../../include/JumaRE/material/Material.h"
+#include "JumaRE/material/Material.h"
 
 struct ID3D12DescriptorHeap;
 
@@ -28,7 +28,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal() override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
 

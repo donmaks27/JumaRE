@@ -310,10 +310,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void Material_Vulkan::clearAsset()
+    void Material_Vulkan::onClearAsset()
     {
         clearVulkan();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void Material_Vulkan::clearVulkan()
     {

@@ -90,10 +90,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void RenderTarget::clearAsset()
+    void RenderTarget::onClearAsset()
     {
-        OnStartDestroying.call(this);
         clearAssetInternal();
+        Super::onClearAsset();
     }
 
     void RenderTarget::onWindowPropertiesChanged(WindowController* windowController, const WindowData* windowData)

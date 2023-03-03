@@ -78,10 +78,10 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void VertexBuffer_DirectX11::clearAsset()
+    void VertexBuffer_DirectX11::onClearAsset()
     {
         clearDirectX();
-        Super::clearAsset();
+        Super::onClearAsset();
     }
     void VertexBuffer_DirectX11::clearDirectX()
     {

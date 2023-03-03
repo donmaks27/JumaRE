@@ -1,14 +1,14 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
-#include "../../include/JumaRE/vertex/VertexBuffer.h"
+#include "JumaRE/vertex/VertexBuffer.h"
 
 #include <jutils/jmap.h>
 
-#include "../../include/JumaRE/window/window_id.h"
+#include "JumaRE/window/window_id.h"
 
 namespace JumaRenderEngine
 {
@@ -25,7 +25,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const VertexBufferData& data) override;
-        virtual void clearAsset() override;
+        virtual void onClearAsset() override;
 
     private:
 
