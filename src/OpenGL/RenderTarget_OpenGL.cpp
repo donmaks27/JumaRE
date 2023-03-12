@@ -172,6 +172,7 @@ namespace JumaRenderEngine
         getRenderEngine()->getWindowController<WindowController_OpenGL>()->setActiveWindowID(getWindowID());
         glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
 
+        glDepthMask(GL_TRUE);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glFrontFace(GL_CW);
