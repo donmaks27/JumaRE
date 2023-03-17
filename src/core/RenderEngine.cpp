@@ -17,7 +17,7 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool RenderEngine::init(const WindowCreateInfo& mainWindowInfo)
+    bool RenderEngine::init(const RenderEngineCreateInfo& createInfo)
     {
         if (isValid())
         {
@@ -33,7 +33,7 @@ namespace JumaRenderEngine
             return false;
         }
         m_WindowController = windowController;
-        if (!initInternal(mainWindowInfo))
+        if (!initInternal(createInfo.mainWindowInfo))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize render engine"));
             clearInternal();
@@ -44,6 +44,17 @@ namespace JumaRenderEngine
         if (!createRenderAssets())
         {
             JUTILS_LOG(error, JSTR("Failed to initialize render assets"));
+            clear();
+            return false;
+        }
+        const bool success = m_AssetLoadingTaskQueue.start(math::max(1, createInfo.assetsLoadingWorkers), [this](const int32 workerIndex){ 
+            return initAssetLoadingWorker(workerIndex); 
+        }, [this](const int32 workerIndex){
+            clearAssetLoadingWorker(workerIndex);
+        });
+        if (!success)
+        {
+            JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
             clear();
             return false;
         }
@@ -100,7 +111,10 @@ namespace JumaRenderEngine
         if (m_Initialized)
         {
             onDestroying.call(this);
+
+            m_AssetLoadingTaskQueue.stop();
             clearInternal();
+
             m_Initialized = false;
         }
     }
@@ -197,11 +211,10 @@ namespace JumaRenderEngine
         }
     }
 
-    Shader* RenderEngine::createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, 
-        jmap<jstringID, ShaderUniform> uniforms)
+    Shader* RenderEngine::createShaderSync(const ShaderCreateInfo& createInfo)
     {
         Shader* shader = allocateShader();
-        if (!shader->init(fileNames, std::move(vertexComponents), std::move(uniforms)))
+        if (!shader->init(createInfo.fileNames, createInfo.vertexComponents, createInfo.uniforms))
         {
             destroyShader(shader);
             return nullptr;
@@ -217,10 +230,10 @@ namespace JumaRenderEngine
         }
     }
 
-    Material* RenderEngine::createMaterial(Shader* shader, const bool templateMaterial)
+    Material* RenderEngine::createMaterialSync(Shader* shader)
     {
         Material* material = allocateMaterial();
-        if (!material->init(shader, templateMaterial))
+        if (!material->init(shader))
         {
             destroyMaterial(material);
             return nullptr;
@@ -253,6 +266,19 @@ namespace JumaRenderEngine
             texture->clearAsset();
             deallocateTexture(texture);
         }
+    }
+
+    bool RenderEngine::createShader(const ShaderCreateInfo& createInfo, std::function<void(Shader*)> callback)
+    {
+        return callback && m_AssetLoadingTaskQueue.addTask([this, createInfo, resultCallback = std::move(callback)](){
+            resultCallback(createShaderSync(createInfo));
+        });
+    }
+    bool RenderEngine::createMaterial(Shader* shader, std::function<void(Material*)> callback)
+    {
+        return callback && m_AssetLoadingTaskQueue.addTask([this, shader, resultCallback = std::move(callback)](){
+            resultCallback(createMaterialSync(shader));
+        });
     }
     
     void RenderEngine::registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description)

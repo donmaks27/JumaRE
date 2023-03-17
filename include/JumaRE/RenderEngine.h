@@ -4,6 +4,8 @@
 
 #include "core.h"
 
+#include <jutils/jtask_queue.h>
+
 #include "RenderAPI.h"
 #include "RenderPrimitivesList.h"
 #include "render_target_id.h"
@@ -28,6 +30,12 @@ namespace JumaRenderEngine
         uint32 vertexSize = 0;
     };
 
+    struct RenderEngineCreateInfo
+    {
+        WindowCreateInfo mainWindowInfo;
+        int32 assetsLoadingWorkers = 1;
+    };
+
     JUTILS_CREATE_MULTICAST_DELEGATE1(OnRenderEngineEvent, RenderEngine*, renderEngine);
 
     class RenderEngine
@@ -38,12 +46,19 @@ namespace JumaRenderEngine
         RenderEngine() = default;
         virtual ~RenderEngine();
 
+        struct ShaderCreateInfo
+        {
+            jmap<ShaderStageFlags, jstring> fileNames;
+            jset<jstringID> vertexComponents;
+            jmap<jstringID, ShaderUniform> uniforms;
+        };
+
         OnRenderEngineEvent onDestroying;
 
 
         virtual RenderAPI getRenderAPI() const = 0;
 
-        bool init(const WindowCreateInfo& mainWindowInfo);
+        bool init(const RenderEngineCreateInfo& createInfo);
         bool isValid() const { return m_Initialized; }
         void clear();
 
@@ -65,9 +80,12 @@ namespace JumaRenderEngine
 
         RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
         VertexBuffer* createVertexBuffer(const VertexBufferData& data);
-        Shader* createShader(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
-        Material* createMaterial(Shader* shader, bool templateMaterial = false);
+        Shader* createShaderSync(const ShaderCreateInfo& createInfo);
+        Material* createMaterialSync(Shader* shader);
         Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
+
+        bool createShader(const ShaderCreateInfo& createInfo, std::function<void(Shader*)> callback);
+        bool createMaterial(Shader* shader, std::function<void(Material*)> callback);
 
         void destroyRenderTarget(RenderTarget* renderTarget);
         void destroyVertexBuffer(VertexBuffer* vertexBuffer);
@@ -86,6 +104,8 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);
+        virtual bool initAssetLoadingWorker(int32 workerIndex) { return true; }
+        virtual void clearAssetLoadingWorker(int32 workerIndex) {}
         virtual void clearInternal() { clearData(); }
 
         void clearAssets();
@@ -121,6 +141,8 @@ namespace JumaRenderEngine
         juid<vertex_id> m_VertexIDGenerator;
         jmap<VertexDescription, vertex_id> m_RegisteredVertices;
         jmap<vertex_id, RegisteredVertexDescription> m_RegisteredVerticesData;
+
+        jtask_queue<> m_AssetLoadingTaskQueue;
 
         Texture* m_DefaultTexture = nullptr;
 

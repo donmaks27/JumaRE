@@ -71,7 +71,7 @@ namespace JumaRenderEngine
         bool m_TemplateMaterial = false;
 
 
-        bool init(Shader* shader, bool templateMaterial);
+        bool init(Shader* shader);
 
         void clearData();
 
