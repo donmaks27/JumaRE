@@ -7,6 +7,8 @@
 #include "WindowController_OpenGL.h"
 #include "../../GLFW/WindowController_GLFW.h"
 
+#include <mutex>
+#include <thread>
 #include <jutils/jmap.h>
 
 namespace JumaRenderEngine
@@ -37,10 +39,18 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
 
+        virtual bool createAssetLoadingContexts(int32 count) override;
+        virtual bool initAssetLoadingThread() override;
+        virtual void clearAssetLoadingThread() override;
+
     private:
 
         GLFWwindow* m_DefaultWindow = nullptr;
         jmap<window_id, WindowData_OpenGL_GLFW> m_Windows;
+
+        jarray<GLFWwindow*> m_AssetLoadingWindows;
+        std::mutex m_AssetLoadingThreadsMutex;
+        jmap<std::thread::id, int32> m_AssetLoadingThreads;
 
 
         void clearData_OpenGL_GLFW();

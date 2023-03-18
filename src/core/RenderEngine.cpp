@@ -47,14 +47,9 @@ namespace JumaRenderEngine
             clear();
             return false;
         }
-        const bool success = m_AssetLoadingTaskQueue.start(math::max(1, createInfo.assetsLoadingWorkers), [this](const int32 workerIndex){ 
-            return initAssetLoadingWorker(workerIndex); 
-        }, [this](const int32 workerIndex){
-            clearAssetLoadingWorker(workerIndex);
-        });
-        if (!success)
+        if (!initAssetLoadingTaskQueue(createInfo.assetsLoadingWorkers))
         {
-            JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
+	        JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
             clear();
             return false;
         }
@@ -104,6 +99,21 @@ namespace JumaRenderEngine
         {
             m_WindowController->destroyRenderTargets();
         }
+    }
+
+    bool RenderEngine::initAssetLoadingTaskQueue(const int32 workersCount)
+    {
+        const bool success = m_AssetLoadingTaskQueue.start(math::max(1, workersCount), [this](const int32 workerIndex){ 
+            return initAssetLoadingWorker(workerIndex); 
+        }, [this](const int32 workerIndex){
+            clearAssetLoadingWorker(workerIndex);
+        });
+        if (!success)
+        {
+            JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
+            return false;
+        }
+        return true;
     }
 
     void RenderEngine::clear()

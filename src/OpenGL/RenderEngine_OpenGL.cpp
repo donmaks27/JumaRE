@@ -15,6 +15,30 @@ namespace JumaRenderEngine
         clearOpenGL();
     }
 
+    bool RenderEngine_OpenGL::initAssetLoadingTaskQueue(const int32 workersCount)
+    {
+        WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
+        if ((windowController == nullptr) || !windowController->createAssetLoadingContexts(workersCount))
+        {
+            JUTILS_LOG(error, JSTR("Failed to initialize assets loading OpenGL contexts"));
+	        return false;
+        }
+	    return Super::initAssetLoadingTaskQueue(workersCount);
+    }
+    bool RenderEngine_OpenGL::initAssetLoadingWorker(const int32 workerIndex)
+    {
+        WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
+        return windowController != nullptr && windowController->initAssetLoadingThread();
+    }
+	void RenderEngine_OpenGL::clearAssetLoadingWorker(const int32 workerIndex)
+	{
+		WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
+		if (windowController != nullptr)
+		{
+			windowController->clearAssetLoadingThread();
+		}
+	}
+
     void RenderEngine_OpenGL::clearInternal()
     {
         clearOpenGL();

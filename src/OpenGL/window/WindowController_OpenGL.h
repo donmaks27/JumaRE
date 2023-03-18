@@ -10,6 +10,8 @@
 
 namespace JumaRenderEngine
 {
+    class RenderEngine_OpenGL;
+
     struct WindowData_OpenGL : WindowData
     {
     };
@@ -17,6 +19,8 @@ namespace JumaRenderEngine
     class WindowController_OpenGL : public WindowController
     {
         using Super = WindowController;
+
+        friend RenderEngine_OpenGL;
 
     public:
         WindowController_OpenGL() = default;
@@ -36,6 +40,10 @@ namespace JumaRenderEngine
         bool initOpenGL();
 
         virtual bool setActiveWindowInternal(window_id windowID) = 0;
+
+        virtual bool createAssetLoadingContexts(int32 count) = 0;
+        virtual bool initAssetLoadingThread() = 0;
+        virtual void clearAssetLoadingThread() = 0;
 
     private:
 

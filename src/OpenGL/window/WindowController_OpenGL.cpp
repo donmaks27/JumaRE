@@ -29,8 +29,12 @@ namespace JumaRenderEngine
         return true;
     }
 
-    void WindowController_OpenGL::setActiveWindowID(const window_id windowID)
+    void WindowController_OpenGL::setActiveWindowID(window_id windowID)
     {
+    	if (windowID == window_id_INVALID)
+        {
+            windowID = getMainWindowID();
+        }
         if (windowID != m_ActiveWindowID)
         {
             if (setActiveWindowInternal(windowID))

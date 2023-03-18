@@ -104,6 +104,7 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);
+        virtual bool initAssetLoadingTaskQueue(int32 workersCount);
         virtual bool initAssetLoadingWorker(int32 workerIndex) { return true; }
         virtual void clearAssetLoadingWorker(int32 workerIndex) {}
         virtual void clearInternal() { clearData(); }
