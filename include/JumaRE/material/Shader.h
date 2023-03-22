@@ -9,6 +9,7 @@
 #include <jutils/jset.h>
 #include <jutils/jstringID.h>
 
+#include "ShaderCreateInfo.h"
 #include "ShaderUniform.h"
 
 namespace JumaRenderEngine
@@ -26,7 +27,7 @@ namespace JumaRenderEngine
         using Super = RenderEngineAsset;
 
     public:
-        Shader() = default;
+        Shader() : Super(RenderEngineAssetType::Shader) {}
         virtual ~Shader() override;
 
         const jset<jstringID>& getRequiredVertexComponents() const { return m_VertexComponents; }
@@ -36,7 +37,7 @@ namespace JumaRenderEngine
 
     protected:
 
-        bool init(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
+        bool init(const ShaderCreateInfo& createInfo);
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) = 0;
         virtual void onClearAsset() override;

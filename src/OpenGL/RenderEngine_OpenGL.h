@@ -29,9 +29,9 @@ namespace JumaRenderEngine
 
     protected:
 
-        virtual bool initAssetLoadingTaskQueue(int32 workersCount) override;
-        virtual bool initAssetLoadingWorker(int32 workerIndex) override;
-        virtual void clearAssetLoadingWorker(int32 workerIndex) override;
+        virtual bool initAsyncTaskQueue(int32 workersCount) override;
+        virtual bool initAsyncWorkerThread(int32 workerIndex) override;
+        virtual void clearAsyncWorkerThread(int32 workerIndex) override;
         virtual void clearInternal() override;
 
         virtual WindowController* createWindowController() override;

@@ -47,7 +47,7 @@ namespace JumaRenderEngine
             clear();
             return false;
         }
-        if (!initAssetLoadingTaskQueue(createInfo.assetsLoadingWorkers))
+        if (!initAsyncTaskQueue(createInfo.assetsLoadingWorkers))
         {
 	        JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
             clear();
@@ -101,12 +101,12 @@ namespace JumaRenderEngine
         }
     }
 
-    bool RenderEngine::initAssetLoadingTaskQueue(const int32 workersCount)
+    bool RenderEngine::initAsyncTaskQueue(const int32 workersCount)
     {
-        const bool success = m_AssetLoadingTaskQueue.start(math::max(1, workersCount), [this](const int32 workerIndex){ 
-            return initAssetLoadingWorker(workerIndex); 
+        const bool success = m_AsyncTaskQueue.start(math::max(1, workersCount), [this](const int32 workerIndex){ 
+            return initAsyncWorkerThread(workerIndex); 
         }, [this](const int32 workerIndex){
-            clearAssetLoadingWorker(workerIndex);
+            clearAsyncWorkerThread(workerIndex);
         });
         if (!success)
         {
@@ -122,7 +122,7 @@ namespace JumaRenderEngine
         {
             onDestroying.call(this);
 
-            m_AssetLoadingTaskQueue.stop();
+            m_AsyncTaskQueue.stop();
             clearInternal();
 
             m_Initialized = false;
@@ -221,10 +221,10 @@ namespace JumaRenderEngine
         }
     }
 
-    Shader* RenderEngine::createShaderSync(const ShaderCreateInfo& createInfo)
+    Shader* RenderEngine::createShader(const ShaderCreateInfo& createInfo)
     {
         Shader* shader = allocateShader();
-        if (!shader->init(createInfo.fileNames, createInfo.vertexComponents, createInfo.uniforms))
+        if (!shader->init(createInfo))
         {
             destroyShader(shader);
             return nullptr;
@@ -240,7 +240,35 @@ namespace JumaRenderEngine
         }
     }
 
-    Material* RenderEngine::createMaterialSync(Shader* shader)
+    bool RenderEngine::createShaderAsync(const ShaderCreateInfo& createInfo, const std::function<void(Shader*)>& callback)
+    {
+        Shader* shader = allocateShader();
+        if (shader == nullptr)
+        {
+            JUTILS_LOG(error, JSTR("Failed to allocate shader"));
+	        return false;
+        }
+        const bool taskStarted = m_AsyncTaskQueue.addTask([this, shader, createInfo = createInfo, callback = callback]()
+        {
+	        if (!shader->init(createInfo))
+	        {
+                destroyAsset(shader);
+	        }
+            else
+            {
+	            callback(shader);
+            }
+        });
+        if (!taskStarted)
+        {
+            JUTILS_LOG(error, JSTR("Failed to start async shader creation"));
+	        deallocateShader(shader);
+            return false;
+        }
+        return true;
+    }
+
+    Material* RenderEngine::createMaterial(Shader* shader)
     {
         Material* material = allocateMaterial();
         if (!material->init(shader))
@@ -277,18 +305,27 @@ namespace JumaRenderEngine
             deallocateTexture(texture);
         }
     }
+    void RenderEngine::destroyAsset(RenderEngineAsset* asset)
+    {
+        if ((asset == nullptr) || (asset->getType() != RenderEngineAssetType::Shader))
+        {
+	        return;
+        }
 
-    bool RenderEngine::createShader(const ShaderCreateInfo& createInfo, std::function<void(Shader*)> callback)
-    {
-        return callback && m_AssetLoadingTaskQueue.addTask([this, createInfo, resultCallback = std::move(callback)](){
-            resultCallback(createShaderSync(createInfo));
+        m_DeletingAssetsMutex.lock();
+        auto& pair = m_DeletingAssets.put(asset, false);
+        m_DeletingAssetsMutex.unlock();
+
+        const bool taskStarted = m_AsyncTaskQueue.addTask([&pair]()
+        {
+            pair.first->clearAsset();
+            pair.second = true;
         });
-    }
-    bool RenderEngine::createMaterial(Shader* shader, std::function<void(Material*)> callback)
-    {
-        return callback && m_AssetLoadingTaskQueue.addTask([this, shader, resultCallback = std::move(callback)](){
-            resultCallback(createMaterialSync(shader));
-        });
+        if (!taskStarted)
+        {
+            JUTILS_LOG(error, JSTR("Failed to start async clear of asset"));
+	        pair.second = true;
+        }
     }
     
     void RenderEngine::registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description)

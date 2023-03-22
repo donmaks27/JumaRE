@@ -96,7 +96,7 @@ namespace JumaRenderEngine
         return true;
     }
 
-    bool WindowController_OpenGL_GLFW::createAssetLoadingContexts(const int32 count)
+    bool WindowController_OpenGL_GLFW::createContextsForAsyncTaskThreads(const int32 count)
     {
         if (count <= 0)
         {
@@ -122,7 +122,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    bool WindowController_OpenGL_GLFW::initAssetLoadingThread()
+    bool WindowController_OpenGL_GLFW::initAsyncTaskThread()
     {
         if (m_DefaultWindow == nullptr)
         {
@@ -173,7 +173,7 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    void WindowController_OpenGL_GLFW::clearAssetLoadingThread()
+    void WindowController_OpenGL_GLFW::clearAsyncTaskThread()
     {
         const std::thread::id threadID = std::this_thread::get_id();
         std::lock_guard lock(m_AssetLoadingThreadsMutex);

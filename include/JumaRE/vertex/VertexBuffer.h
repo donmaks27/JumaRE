@@ -19,7 +19,7 @@ namespace JumaRenderEngine
         using Super = RenderEngineAsset;
 
     public:
-        VertexBuffer() = default;
+        VertexBuffer() : Super(RenderEngineAssetType::VertexBuffer) {}
         virtual ~VertexBuffer() override;
 
         vertex_id getVertexID() const { return m_VertexID; }

@@ -15,27 +15,27 @@ namespace JumaRenderEngine
         clearOpenGL();
     }
 
-    bool RenderEngine_OpenGL::initAssetLoadingTaskQueue(const int32 workersCount)
+    bool RenderEngine_OpenGL::initAsyncTaskQueue(const int32 workersCount)
     {
         WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
-        if ((windowController == nullptr) || !windowController->createAssetLoadingContexts(workersCount))
+        if ((windowController == nullptr) || !windowController->createContextsForAsyncTaskThreads(workersCount))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize assets loading OpenGL contexts"));
 	        return false;
         }
-	    return Super::initAssetLoadingTaskQueue(workersCount);
+	    return Super::initAsyncTaskQueue(workersCount);
     }
-    bool RenderEngine_OpenGL::initAssetLoadingWorker(const int32 workerIndex)
+    bool RenderEngine_OpenGL::initAsyncWorkerThread(const int32 workerIndex)
     {
         WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
-        return windowController != nullptr && windowController->initAssetLoadingThread();
+        return windowController != nullptr && windowController->initAsyncTaskThread();
     }
-	void RenderEngine_OpenGL::clearAssetLoadingWorker(const int32 workerIndex)
+	void RenderEngine_OpenGL::clearAsyncWorkerThread(const int32 workerIndex)
 	{
 		WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
 		if (windowController != nullptr)
 		{
-			windowController->clearAssetLoadingThread();
+			windowController->clearAsyncTaskThread();
 		}
 	}
 

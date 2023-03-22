@@ -21,7 +21,7 @@ namespace JumaRenderEngine
         using Super = RenderEngineAsset;
 
     public:
-        Material() = default;
+        Material() : Super(RenderEngineAssetType::Material) {}
         virtual ~Material() override;
 
         Shader* getShader() const { return m_Shader; }

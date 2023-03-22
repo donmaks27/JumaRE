@@ -9,15 +9,16 @@
 #include "RenderAPI.h"
 #include "RenderPrimitivesList.h"
 #include "render_target_id.h"
-#include "material/ShaderUniform.h"
+#include "material/ShaderCreateInfo.h"
 #include "texture/TextureFormat.h"
 #include "vertex/VertexBufferData.h"
 #include "window/WindowController.h"
 
 namespace JumaRenderEngine
 {
-    class Material;
+	class Material;
     class RenderEngine;
+	class RenderEngineAsset;
     class RenderPipeline;
     class RenderTarget;
     class Shader;
@@ -46,13 +47,6 @@ namespace JumaRenderEngine
         RenderEngine() = default;
         virtual ~RenderEngine();
 
-        struct ShaderCreateInfo
-        {
-            jmap<ShaderStageFlags, jstring> fileNames;
-            jset<jstringID> vertexComponents;
-            jmap<jstringID, ShaderUniform> uniforms;
-        };
-
         OnRenderEngineEvent onDestroying;
 
 
@@ -80,18 +74,18 @@ namespace JumaRenderEngine
 
         RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
         VertexBuffer* createVertexBuffer(const VertexBufferData& data);
-        Shader* createShaderSync(const ShaderCreateInfo& createInfo);
-        Material* createMaterialSync(Shader* shader);
+        Shader* createShader(const ShaderCreateInfo& createInfo);
+        Material* createMaterial(Shader* shader);
         Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
 
-        bool createShader(const ShaderCreateInfo& createInfo, std::function<void(Shader*)> callback);
-        bool createMaterial(Shader* shader, std::function<void(Material*)> callback);
+        bool createShaderAsync(const ShaderCreateInfo& createInfo, const std::function<void(Shader*)>& callback);
 
         void destroyRenderTarget(RenderTarget* renderTarget);
         void destroyVertexBuffer(VertexBuffer* vertexBuffer);
         void destroyShader(Shader* shader);
         void destroyMaterial(Material* material);
         void destroyTexture(Texture* texture);
+        void destroyAsset(RenderEngineAsset* asset);
 
         void registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description);
         const VertexComponentDescription* findVertexComponent(const jstringID& componentID) const { return m_RegisteredVertexComponents.find(componentID); }
@@ -104,9 +98,9 @@ namespace JumaRenderEngine
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);
-        virtual bool initAssetLoadingTaskQueue(int32 workersCount);
-        virtual bool initAssetLoadingWorker(int32 workerIndex) { return true; }
-        virtual void clearAssetLoadingWorker(int32 workerIndex) {}
+        virtual bool initAsyncTaskQueue(int32 workersCount);
+        virtual bool initAsyncWorkerThread(int32 workerIndex) { return true; }
+        virtual void clearAsyncWorkerThread(int32 workerIndex) {}
         virtual void clearInternal() { clearData(); }
 
         void clearAssets();
@@ -135,6 +129,8 @@ namespace JumaRenderEngine
         WindowController* m_WindowController = nullptr;
         RenderPipeline* m_RenderPipeline = nullptr;
 
+        jtask_queue<> m_AsyncTaskQueue;
+
         jmap<render_target_id, RenderTarget*> m_RenderTargets;
         juid<render_target_id> m_RenderTagetIDs;
 
@@ -143,7 +139,8 @@ namespace JumaRenderEngine
         jmap<VertexDescription, vertex_id> m_RegisteredVertices;
         jmap<vertex_id, RegisteredVertexDescription> m_RegisteredVerticesData;
 
-        jtask_queue<> m_AssetLoadingTaskQueue;
+        jlist<std::pair<RenderEngineAsset*, std::atomic_bool>> m_DeletingAssets;
+        std::mutex m_DeletingAssetsMutex;
 
         Texture* m_DefaultTexture = nullptr;
 

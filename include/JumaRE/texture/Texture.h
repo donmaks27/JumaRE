@@ -13,8 +13,10 @@ namespace JumaRenderEngine
     {
         friend RenderEngine;
 
+        using Super = TextureBase;
+
     public:
-        Texture() = default;
+        Texture() : Super(RenderEngineAssetType::Texture) {}
         virtual ~Texture() override = default;
 
     protected:

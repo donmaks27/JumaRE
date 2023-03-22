@@ -39,9 +39,9 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
 
-        virtual bool createAssetLoadingContexts(int32 count) override;
-        virtual bool initAssetLoadingThread() override;
-        virtual void clearAssetLoadingThread() override;
+        virtual bool createContextsForAsyncTaskThreads(int32 count) override;
+        virtual bool initAsyncTaskThread() override;
+        virtual void clearAsyncTaskThread() override;
 
     private:
 

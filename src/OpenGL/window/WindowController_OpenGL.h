@@ -41,9 +41,9 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) = 0;
 
-        virtual bool createAssetLoadingContexts(int32 count) = 0;
-        virtual bool initAssetLoadingThread() = 0;
-        virtual void clearAssetLoadingThread() = 0;
+        virtual bool createContextsForAsyncTaskThreads(int32 count) = 0;
+        virtual bool initAsyncTaskThread() = 0;
+        virtual void clearAsyncTaskThread() = 0;
 
     private:
 

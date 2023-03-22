@@ -11,11 +11,11 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool Shader::init(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms)
+    bool Shader::init(const ShaderCreateInfo& createInfo)
     {
-        m_VertexComponents = std::move(vertexComponents);
+        m_VertexComponents = createInfo.vertexComponents;
 
-        m_ShaderUniforms = std::move(uniforms);
+        m_ShaderUniforms = createInfo.uniforms;
         for (const auto& uniform : m_ShaderUniforms)
         {
             const uint32 size = GetShaderUniformValueSize(uniform.value.type);
@@ -29,7 +29,7 @@ namespace JumaRenderEngine
             uniformBuffer.shaderStages |= uniform.value.shaderStages;
         }
 
-        if (!initInternal(fileNames))
+        if (!initInternal(createInfo.fileNames))
         {
             JUTILS_LOG(error, JSTR("Failed to initialize shader"));
             clearData();
