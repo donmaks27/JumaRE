@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
@@ -15,29 +15,22 @@ namespace JumaRenderEngine
         clearOpenGL();
     }
 
-    bool RenderEngine_OpenGL::initAsyncTaskQueue(const int32 workersCount)
+    bool RenderEngine_OpenGL::initAsyncAssetTaskQueueWorker(const int32 workerIndex)
     {
-        WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
-        if ((windowController == nullptr) || !windowController->createContextsForAsyncTaskThreads(workersCount))
-        {
-            JUTILS_LOG(error, JSTR("Failed to initialize assets loading OpenGL contexts"));
-	        return false;
-        }
-	    return Super::initAsyncTaskQueue(workersCount);
+        return getWindowController<WindowController_OpenGL>()->createContextForAsyncAssetTaskQueueWorker(workerIndex);
     }
-    bool RenderEngine_OpenGL::initAsyncWorkerThread(const int32 workerIndex)
+    bool RenderEngine_OpenGL::initAsyncAssetTaskQueueWorkerThread(const int32 workerIndex)
     {
-        WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
-        return windowController != nullptr && windowController->initAsyncTaskThread();
+        return getWindowController<WindowController_OpenGL>()->initAsyncAssetTaskQueueWorkerThread(workerIndex);
     }
-	void RenderEngine_OpenGL::clearAsyncWorkerThread(const int32 workerIndex)
-	{
-		WindowController_OpenGL* windowController = getWindowController<WindowController_OpenGL>();
-		if (windowController != nullptr)
-		{
-			windowController->clearAsyncTaskThread();
-		}
-	}
+    void RenderEngine_OpenGL::clearAsyncAssetTaskQueueWorkerThread(const int32 workerIndex)
+    {
+        getWindowController<WindowController_OpenGL>()->clearAsyncAssetTaskQueueWorkerThread(workerIndex);
+    }
+    void RenderEngine_OpenGL::clearAsyncAssetTaskQueueWorker(const int32 workerIndex)
+    {
+        getWindowController<WindowController_OpenGL>()->destroyContextForAsyncAssetTaskQueueWorker(workerIndex);
+    }
 
     void RenderEngine_OpenGL::clearInternal()
     {

@@ -47,9 +47,9 @@ namespace JumaRenderEngine
             clear();
             return false;
         }
-        if (!initAsyncTaskQueue(createInfo.assetsLoadingWorkers))
+        if (!m_AsyncAssetTaskQueue.init(math::max(1, createInfo.assetTaskWorkerCount), this))
         {
-	        JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
+            JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
             clear();
             return false;
         }
@@ -101,28 +101,13 @@ namespace JumaRenderEngine
         }
     }
 
-    bool RenderEngine::initAsyncTaskQueue(const int32 workersCount)
-    {
-        const bool success = m_AsyncTaskQueue.start(math::max(1, workersCount), [this](const int32 workerIndex){ 
-            return initAsyncWorkerThread(workerIndex); 
-        }, [this](const int32 workerIndex){
-            clearAsyncWorkerThread(workerIndex);
-        });
-        if (!success)
-        {
-            JUTILS_LOG(error, JSTR("Failed to initialize assets loading task queue"));
-            return false;
-        }
-        return true;
-    }
-
     void RenderEngine::clear()
     {
         if (m_Initialized)
         {
             onDestroying.call(this);
 
-            m_AsyncTaskQueue.stop();
+            m_AsyncAssetTaskQueue.stop();
             clearInternal();
 
             m_Initialized = false;
@@ -152,6 +137,156 @@ namespace JumaRenderEngine
     RenderPipeline* RenderEngine::createRenderPipelineInternal()
     {
         return createObject<RenderPipeline>();
+    }
+
+    bool RenderEngine::createShaderAsync(const ShaderCreateInfo& createInfo, const std::function<void(Shader*)>& callback)
+    {
+        Shader* shader = allocateShader();
+        if (shader == nullptr)
+        {
+            JUTILS_LOG(error, JSTR("Failed to allocate shader"));
+	        return false;
+        }
+        const jasync_task::id_type taskID = m_AsyncAssetTaskQueue.createTask<jasync_task_default>([this, shader, createInfo = createInfo, callback = callback]()
+        {
+	        if (!shader->init(createInfo))
+	        {
+                destroyAsset(shader);
+	        }
+            else
+            {
+	            callback(shader);
+            }
+        });
+        if (taskID == jasync_task::invalidID)
+        {
+            JUTILS_LOG(error, JSTR("Failed to start async shader creation"));
+	        deallocateShader(shader);
+            return false;
+        }
+        return true;
+    }
+    Shader* RenderEngine::createShader(const ShaderCreateInfo& createInfo)
+    {
+        Shader* shader = allocateShader();
+        if (!shader->init(createInfo))
+        {
+            destroyShader(shader);
+            return nullptr;
+        }
+        return shader;
+    }
+    void RenderEngine::destroyShader(Shader* shader)
+    {
+        if (shader != nullptr)
+        {
+            shader->clearAsset();
+            deallocateShader(shader);
+        }
+    }
+
+    Material* RenderEngine::createMaterial(Shader* shader)
+    {
+        Material* material = allocateMaterial();
+        if (!material->init(shader))
+        {
+            destroyMaterial(material);
+            return nullptr;
+        }
+        return material;
+    }
+    void RenderEngine::destroyMaterial(Material* material)
+    {
+        if (material != nullptr)
+        {
+            material->clearAsset();
+            deallocateMaterial(material);
+        }
+    }
+    
+    void RenderEngine::registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description)
+    {
+        if (vertexComponentID != jstringID_NONE)
+        {
+            m_RegisteredVertexComponents.add(vertexComponentID, description);
+        }
+    }
+    vertex_id RenderEngine::registerVertex(const VertexDescription& description)
+    {
+        if (description.components.isEmpty())
+        {
+            return vertex_id_NONE;
+        }
+        const vertex_id* vertexIDPtr = m_RegisteredVertices.find(description);
+        if (vertexIDPtr != nullptr)
+        {
+            return *vertexIDPtr;
+        }
+
+        uint32 vertexSize = 0;
+        for (const auto& componentID : description.components)
+        {
+            const VertexComponentDescription* componentDescription = findVertexComponent(componentID);
+            if (componentDescription == nullptr)
+            {
+                JUTILS_LOG(error, JSTR("Invalid vertex component {}"), componentID.toString());
+                return vertex_id_NONE;
+            }
+            vertexSize += GetVertexComponentSize(componentDescription->type);
+        }
+
+        const vertex_id vertexID = m_VertexIDGenerator.getUID();
+        if (vertexID == vertex_id_NONE)
+        {
+            return vertex_id_NONE;
+        }
+        m_VertexIDGenerator.generateUID();
+        onRegisteredVertex(vertexID, m_RegisteredVerticesData.add(vertexID, { description, vertexSize }));
+        return vertexID;
+    }
+
+    VertexBuffer* RenderEngine::createVertexBuffer(const VertexBufferData& data)
+    {
+        const vertex_id vertexID = registerVertex(data.vertexDescription);
+        if (vertexID == vertex_id_NONE)
+        {
+            return nullptr;
+        }
+
+        VertexBuffer* vertexBuffer = allocateVertexBuffer();
+        if (!vertexBuffer->init(vertexID, data))
+        {
+            destroyVertexBuffer(vertexBuffer);
+            return nullptr;
+        }
+        return vertexBuffer;
+    }
+    void RenderEngine::destroyVertexBuffer(VertexBuffer* vertexBuffer)
+    {
+        if (vertexBuffer != nullptr)
+        {
+            vertexBuffer->clearAsset();
+            deallocateVertexBuffer(vertexBuffer);
+        }
+    }
+
+    Texture* RenderEngine::createTexture(const math::uvector2& size, const TextureFormat format, const uint8* data)
+    {
+        Texture* texture = allocateTexture();
+        if (!texture->init(size, format, data))
+        {
+            destroyTexture(texture);
+            return nullptr;
+        }
+        return texture;
+    }
+    void RenderEngine::destroyTexture(Texture* texture)
+    {
+        if (texture != nullptr)
+        {
+            texture->clearAsset();
+            deallocateTexture(texture);
+        }
     }
     
     RenderTarget* RenderEngine::getRenderTarget(const render_target_id renderTargetID) const
@@ -196,115 +331,6 @@ namespace JumaRenderEngine
         }
     }
 
-    VertexBuffer* RenderEngine::createVertexBuffer(const VertexBufferData& data)
-    {
-        const vertex_id vertexID = registerVertex(data.vertexDescription);
-        if (vertexID == vertex_id_NONE)
-        {
-            return nullptr;
-        }
-
-        VertexBuffer* vertexBuffer = allocateVertexBuffer();
-        if (!vertexBuffer->init(vertexID, data))
-        {
-            destroyVertexBuffer(vertexBuffer);
-            return nullptr;
-        }
-        return vertexBuffer;
-    }
-    void RenderEngine::destroyVertexBuffer(VertexBuffer* vertexBuffer)
-    {
-        if (vertexBuffer != nullptr)
-        {
-            vertexBuffer->clearAsset();
-            deallocateVertexBuffer(vertexBuffer);
-        }
-    }
-
-    Shader* RenderEngine::createShader(const ShaderCreateInfo& createInfo)
-    {
-        Shader* shader = allocateShader();
-        if (!shader->init(createInfo))
-        {
-            destroyShader(shader);
-            return nullptr;
-        }
-        return shader;
-    }
-    void RenderEngine::destroyShader(Shader* shader)
-    {
-        if (shader != nullptr)
-        {
-            shader->clearAsset();
-            deallocateShader(shader);
-        }
-    }
-
-    bool RenderEngine::createShaderAsync(const ShaderCreateInfo& createInfo, const std::function<void(Shader*)>& callback)
-    {
-        Shader* shader = allocateShader();
-        if (shader == nullptr)
-        {
-            JUTILS_LOG(error, JSTR("Failed to allocate shader"));
-	        return false;
-        }
-        const bool taskStarted = m_AsyncTaskQueue.addTask([this, shader, createInfo = createInfo, callback = callback]()
-        {
-	        if (!shader->init(createInfo))
-	        {
-                destroyAsset(shader);
-	        }
-            else
-            {
-	            callback(shader);
-            }
-        });
-        if (!taskStarted)
-        {
-            JUTILS_LOG(error, JSTR("Failed to start async shader creation"));
-	        deallocateShader(shader);
-            return false;
-        }
-        return true;
-    }
-
-    Material* RenderEngine::createMaterial(Shader* shader)
-    {
-        Material* material = allocateMaterial();
-        if (!material->init(shader))
-        {
-            destroyMaterial(material);
-            return nullptr;
-        }
-        return material;
-    }
-    void RenderEngine::destroyMaterial(Material* material)
-    {
-        if (material != nullptr)
-        {
-            material->clearAsset();
-            deallocateMaterial(material);
-        }
-    }
-
-    Texture* RenderEngine::createTexture(const math::uvector2& size, const TextureFormat format, const uint8* data)
-    {
-        Texture* texture = allocateTexture();
-        if (!texture->init(size, format, data))
-        {
-            destroyTexture(texture);
-            return nullptr;
-        }
-        return texture;
-    }
-    void RenderEngine::destroyTexture(Texture* texture)
-    {
-        if (texture != nullptr)
-        {
-            texture->clearAsset();
-            deallocateTexture(texture);
-        }
-    }
     void RenderEngine::destroyAsset(RenderEngineAsset* asset)
     {
         if ((asset == nullptr) || (asset->getType() != RenderEngineAssetType::Shader))
@@ -316,57 +342,16 @@ namespace JumaRenderEngine
         auto& pair = m_DeletingAssets.put(asset, false);
         m_DeletingAssetsMutex.unlock();
 
-        const bool taskStarted = m_AsyncTaskQueue.addTask([&pair]()
+        const jasync_task::id_type taskID = m_AsyncAssetTaskQueue.createTask<jasync_task_default>([&pair]()
         {
             pair.first->clearAsset();
             pair.second = true;
         });
-        if (!taskStarted)
+        if (taskID == jasync_task::invalidID)
         {
             JUTILS_LOG(error, JSTR("Failed to start async clear of asset"));
 	        pair.second = true;
         }
-    }
-    
-    void RenderEngine::registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description)
-    {
-        if (vertexComponentID != jstringID_NONE)
-        {
-            m_RegisteredVertexComponents.add(vertexComponentID, description);
-        }
-    }
-    vertex_id RenderEngine::registerVertex(const VertexDescription& description)
-    {
-        if (description.components.isEmpty())
-        {
-            return vertex_id_NONE;
-        }
-        const vertex_id* vertexIDPtr = m_RegisteredVertices.find(description);
-        if (vertexIDPtr != nullptr)
-        {
-            return *vertexIDPtr;
-        }
-
-        uint32 vertexSize = 0;
-        for (const auto& componentID : description.components)
-        {
-            const VertexComponentDescription* componentDescription = findVertexComponent(componentID);
-            if (componentDescription == nullptr)
-            {
-                JUTILS_LOG(error, JSTR("Invalid vertex component {}"), componentID.toString());
-                return vertex_id_NONE;
-            }
-            vertexSize += GetVertexComponentSize(componentDescription->type);
-        }
-
-        const vertex_id vertexID = m_VertexIDGenerator.getUID();
-        if (vertexID == vertex_id_NONE)
-        {
-            return vertex_id_NONE;
-        }
-        m_VertexIDGenerator.generateUID();
-        onRegisteredVertex(vertexID, m_RegisteredVerticesData.add(vertexID, { description, vertexSize }));
-        return vertexID;
     }
     
     bool RenderEngine::render()

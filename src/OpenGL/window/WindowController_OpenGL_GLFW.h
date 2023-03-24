@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -39,18 +39,17 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
 
-        virtual bool createContextsForAsyncTaskThreads(int32 count) override;
-        virtual bool initAsyncTaskThread() override;
-        virtual void clearAsyncTaskThread() override;
+        virtual bool createContextForAsyncAssetTaskQueueWorker(int32 workerIndex) override;
+        virtual bool initAsyncAssetTaskQueueWorkerThread(int32 workerIndex) override;
+        virtual void clearAsyncAssetTaskQueueWorkerThread(int32 workerIndex) override;
+        virtual void destroyContextForAsyncAssetTaskQueueWorker(int32 workerIndex) override;
 
     private:
 
         GLFWwindow* m_DefaultWindow = nullptr;
         jmap<window_id, WindowData_OpenGL_GLFW> m_Windows;
 
-        jarray<GLFWwindow*> m_AssetLoadingWindows;
-        std::mutex m_AssetLoadingThreadsMutex;
-        jmap<std::thread::id, int32> m_AssetLoadingThreads;
+        jarray<GLFWwindow*> m_AsyncAssetTaskQueueWorkerContexts;
 
 
         void clearData_OpenGL_GLFW();

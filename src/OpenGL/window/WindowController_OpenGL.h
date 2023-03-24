@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -41,9 +41,10 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) = 0;
 
-        virtual bool createContextsForAsyncTaskThreads(int32 count) = 0;
-        virtual bool initAsyncTaskThread() = 0;
-        virtual void clearAsyncTaskThread() = 0;
+        virtual bool createContextForAsyncAssetTaskQueueWorker(int32 workerIndex) = 0;
+        virtual bool initAsyncAssetTaskQueueWorkerThread(int32 workerIndex) = 0;
+        virtual void clearAsyncAssetTaskQueueWorkerThread(int32 workerIndex) = 0;
+        virtual void destroyContextForAsyncAssetTaskQueueWorker(int32 workerIndex) = 0;
 
     private:
 

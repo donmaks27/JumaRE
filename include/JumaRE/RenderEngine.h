@@ -4,7 +4,7 @@
 
 #include "core.h"
 
-#include <jutils/jtask_queue.h>
+#include <jutils/jasync_task_queue.h>
 
 #include "RenderAPI.h"
 #include "RenderPrimitivesList.h"
@@ -34,7 +34,7 @@ namespace JumaRenderEngine
     struct RenderEngineCreateInfo
     {
         WindowCreateInfo mainWindowInfo;
-        int32 assetsLoadingWorkers = 1;
+        int32 assetTaskWorkerCount = 2;
     };
 
     JUTILS_CREATE_MULTICAST_DELEGATE1(OnRenderEngineEvent, RenderEngine*, renderEngine);
@@ -69,38 +69,43 @@ namespace JumaRenderEngine
             return object;
         }
 
+        jasync_task_queue_base& getAsyncAssetTaksQueue() { return m_AsyncAssetTaskQueue; }
         RenderPipeline* getRenderPipeline() const { return m_RenderPipeline; }
-        RenderTarget* getRenderTarget(render_target_id renderTargetID) const;
 
-        RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
-        VertexBuffer* createVertexBuffer(const VertexBufferData& data);
-        Shader* createShader(const ShaderCreateInfo& createInfo);
-        Material* createMaterial(Shader* shader);
-        Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
+        // Create/destroy functions should be called only from main thread
 
         bool createShaderAsync(const ShaderCreateInfo& createInfo, const std::function<void(Shader*)>& callback);
-
-        void destroyRenderTarget(RenderTarget* renderTarget);
-        void destroyVertexBuffer(VertexBuffer* vertexBuffer);
+        Shader* createShader(const ShaderCreateInfo& createInfo);
         void destroyShader(Shader* shader);
+
+        Material* createMaterial(Shader* shader);
         void destroyMaterial(Material* material);
-        void destroyTexture(Texture* texture);
-        void destroyAsset(RenderEngineAsset* asset);
 
         void registerVertexComponent(const jstringID& vertexComponentID, const VertexComponentDescription& description);
         const VertexComponentDescription* findVertexComponent(const jstringID& componentID) const { return m_RegisteredVertexComponents.find(componentID); }
         const RegisteredVertexDescription* findVertex(const vertex_id vertexID) const { return m_RegisteredVerticesData.find(vertexID); }
+        VertexBuffer* createVertexBuffer(const VertexBufferData& data);
+        void destroyVertexBuffer(VertexBuffer* vertexBuffer);
 
+        Texture* createTexture(const math::uvector2& size, TextureFormat format, const uint8* data);
+        void destroyTexture(Texture* texture);
         Texture* getDefaultTexture() const { return m_DefaultTexture; }
+
+        RenderTarget* getRenderTarget(render_target_id renderTargetID) const;
+        RenderTarget* createRenderTarget(TextureFormat format, const math::uvector2& size, TextureSamples samples);
+        void destroyRenderTarget(RenderTarget* renderTarget);
+
+        void destroyAsset(RenderEngineAsset* asset);
 
         bool render();
 
     protected:
 
         virtual bool initInternal(const WindowCreateInfo& mainWindowInfo);
-        virtual bool initAsyncTaskQueue(int32 workersCount);
-        virtual bool initAsyncWorkerThread(int32 workerIndex) { return true; }
-        virtual void clearAsyncWorkerThread(int32 workerIndex) {}
+        virtual bool initAsyncAssetTaskQueueWorker(int32 workerIndex) { return true; }
+        virtual bool initAsyncAssetTaskQueueWorkerThread(int32 workerIndex) { return true; }
+        virtual void clearAsyncAssetTaskQueueWorkerThread(int32 workerIndex) {}
+        virtual void clearAsyncAssetTaskQueueWorker(int32 workerIndex) {}
         virtual void clearInternal() { clearData(); }
 
         void clearAssets();
@@ -124,25 +129,40 @@ namespace JumaRenderEngine
 
     private:
 
-        bool m_Initialized = false;
+        class AsyncAssetWorker : public jasync_worker
+        {
+        public:
+            AsyncAssetWorker() = delete;
+            AsyncAssetWorker(RenderEngine* renderEngine) : m_RenderEngine(renderEngine) {}
 
-        WindowController* m_WindowController = nullptr;
-        RenderPipeline* m_RenderPipeline = nullptr;
+            bool onStart_MainThread() const { return m_RenderEngine->initAsyncAssetTaskQueueWorker(getWorkerIndex()); }
+            bool onStart_WorkerThread() const { return m_RenderEngine->initAsyncAssetTaskQueueWorkerThread(getWorkerIndex()); }
+            void onStop_WorkerThread() const { m_RenderEngine->clearAsyncAssetTaskQueueWorkerThread(getWorkerIndex()); }
+            void onStop_MainThread() const { m_RenderEngine->clearAsyncAssetTaskQueueWorker(getWorkerIndex()); }
 
-        jtask_queue<> m_AsyncTaskQueue;
+        private:
+
+            RenderEngine* m_RenderEngine = nullptr;
+        };
+
+        jasync_task_queue<AsyncAssetWorker> m_AsyncAssetTaskQueue;
+
+        std::mutex m_DeletingAssetsMutex;
+        jlist<std::pair<RenderEngineAsset*, std::atomic_bool>> m_DeletingAssets;
 
         jmap<render_target_id, RenderTarget*> m_RenderTargets;
-        juid<render_target_id> m_RenderTagetIDs;
-
         jmap<jstringID, VertexComponentDescription> m_RegisteredVertexComponents;
-        juid<vertex_id> m_VertexIDGenerator;
         jmap<VertexDescription, vertex_id> m_RegisteredVertices;
         jmap<vertex_id, RegisteredVertexDescription> m_RegisteredVerticesData;
-
-        jlist<std::pair<RenderEngineAsset*, std::atomic_bool>> m_DeletingAssets;
-        std::mutex m_DeletingAssetsMutex;
-
+        
+        WindowController* m_WindowController = nullptr;
+        RenderPipeline* m_RenderPipeline = nullptr;
         Texture* m_DefaultTexture = nullptr;
+        
+        juid<render_target_id> m_RenderTagetIDs;
+        juid<vertex_id> m_VertexIDGenerator;
+        
+        bool m_Initialized = false;
 
 
         bool createRenderAssets();

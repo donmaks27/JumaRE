@@ -1,4 +1,4 @@
-// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
+// Copyright Â© 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -29,9 +29,10 @@ namespace JumaRenderEngine
 
     protected:
 
-        virtual bool initAsyncTaskQueue(int32 workersCount) override;
-        virtual bool initAsyncWorkerThread(int32 workerIndex) override;
-        virtual void clearAsyncWorkerThread(int32 workerIndex) override;
+        virtual bool initAsyncAssetTaskQueueWorker(int32 workerIndex) override;
+        virtual bool initAsyncAssetTaskQueueWorkerThread(int32 workerIndex) override;
+        virtual void clearAsyncAssetTaskQueueWorkerThread(int32 workerIndex) override;
+        virtual void clearAsyncAssetTaskQueueWorker(int32 workerIndex) override;
         virtual void clearInternal() override;
 
         virtual WindowController* createWindowController() override;
