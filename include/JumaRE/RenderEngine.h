@@ -144,11 +144,26 @@ namespace JumaRenderEngine
 
             RenderEngine* m_RenderEngine = nullptr;
         };
+        class AsyncAssetDestroyTask : public jasync_task
+        {
+            friend RenderEngine;
+
+        public:
+            AsyncAssetDestroyTask() = delete;
+            AsyncAssetDestroyTask(RenderEngineAsset* asset) : m_Asset(asset) {}
+
+            virtual void run() override;
+
+        private:
+
+            RenderEngineAsset* m_Asset = nullptr;
+            std::atomic_bool m_TaskFinished = false;
+        };
 
         jasync_task_queue<AsyncAssetWorker> m_AsyncAssetTaskQueue;
-
-        std::mutex m_DeletingAssetsMutex;
-        jlist<std::pair<RenderEngineAsset*, std::atomic_bool>> m_DeletingAssets;
+        jlist<std::pair<RenderEngineAsset*, uint8>> m_RenderAssets_MarkedForDestroy;
+        jlist<AsyncAssetDestroyTask> m_RenderAssets_DestroyTasks;
+        jarray<jasync_task*> m_RenderAssets_DestroyTasksTemp;
 
         jmap<render_target_id, RenderTarget*> m_RenderTargets;
         jmap<jstringID, VertexComponentDescription> m_RegisteredVertexComponents;
@@ -172,6 +187,9 @@ namespace JumaRenderEngine
         RenderTarget* createWindowRenderTarget(window_id windowID, TextureSamples samples);
         
         vertex_id registerVertex(const VertexDescription& description);
+
+        void processMarkedForDestroyAssets();
+        void processFinishedDestroyAssetTasks();
     };
     
     template<RenderAPI API>

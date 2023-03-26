@@ -108,6 +108,23 @@ namespace JumaRenderEngine
             onDestroying.call(this);
 
             m_AsyncAssetTaskQueue.stop();
+            for (const auto& task : m_RenderAssets_DestroyTasks)
+            {
+                if (!task.m_TaskFinished)
+                {
+                    task.m_Asset->clearAsset();
+                }
+            }
+            for (const auto& asset : m_RenderAssets_MarkedForDestroy)
+            {
+                if (asset.first != nullptr)
+                {
+                    asset.first->clearAsset();
+                }
+            }
+            m_RenderAssets_DestroyTasks.clear();
+            m_RenderAssets_MarkedForDestroy.clear();
+
             clearInternal();
 
             m_Initialized = false;
@@ -171,7 +188,7 @@ namespace JumaRenderEngine
         Shader* shader = allocateShader();
         if (!shader->init(createInfo))
         {
-            destroyShader(shader);
+            deallocateShader(shader);
             return nullptr;
         }
         return shader;
@@ -187,10 +204,16 @@ namespace JumaRenderEngine
 
     Material* RenderEngine::createMaterial(Shader* shader)
     {
+        if (shader == nullptr)
+        {
+            return nullptr;
+        }
         Material* material = allocateMaterial();
+        ++shader->m_ChildMaterialsCount;
         if (!material->init(shader))
         {
-            destroyMaterial(material);
+            --shader->m_ChildMaterialsCount;
+            deallocateMaterial(material);
             return nullptr;
         }
         return material;
@@ -333,25 +356,14 @@ namespace JumaRenderEngine
 
     void RenderEngine::destroyAsset(RenderEngineAsset* asset)
     {
-        if ((asset == nullptr) || (asset->getType() != RenderEngineAssetType::Shader))
+        if (asset == nullptr)
         {
 	        return;
         }
 
-        m_DeletingAssetsMutex.lock();
-        auto& pair = m_DeletingAssets.put(asset, false);
-        m_DeletingAssetsMutex.unlock();
-
-        const jasync_task::id_type taskID = m_AsyncAssetTaskQueue.createTask<jasync_task_default>([&pair]()
-        {
-            pair.first->clearAsset();
-            pair.second = true;
-        });
-        if (taskID == jasync_task::invalidID)
-        {
-            JUTILS_LOG(error, JSTR("Failed to start async clear of asset"));
-	        pair.second = true;
-        }
+        // TODO: Get amount of rendered frames
+        constexpr uint8 framesDelay = 1;
+        m_RenderAssets_MarkedForDestroy.add({ asset, framesDelay });
     }
     
     bool RenderEngine::render()
@@ -361,16 +373,78 @@ namespace JumaRenderEngine
             JUTILS_LOG(error, JSTR("Failed to build render targets queue"));
             return false;
         }
+
         if (!m_RenderPipeline->render())
         {
             JUTILS_LOG(error, JSTR("Render failed"));
             return false;
         }
+        m_WindowController->updateWindows();
         for (const auto& renderTarget : m_RenderTargets)
         {
             renderTarget.value->clearPrimitivesList();
         }
-        m_WindowController->updateWindows();
+
+        processMarkedForDestroyAssets();
+        processFinishedDestroyAssetTasks();
         return true;
+    }
+
+    void RenderEngine::processMarkedForDestroyAssets()
+    {
+        auto iter = m_RenderAssets_MarkedForDestroy.begin();
+        while (iter.isValid())
+        {
+            if (iter->second == 0)
+            {
+                RenderEngineAsset* asset = iter->first;
+                if (asset->isReadyForDestroy())
+                {
+                    m_RenderAssets_DestroyTasksTemp.add(&m_RenderAssets_DestroyTasks.put(asset));
+                    m_RenderAssets_MarkedForDestroy.removeAt(iter);
+                }
+            }
+            else
+            {
+                iter->second--;
+                ++iter;
+            }
+        }
+        if (!m_RenderAssets_DestroyTasksTemp.isEmpty())
+        {
+            m_AsyncAssetTaskQueue.addTasks(m_RenderAssets_DestroyTasksTemp, false);
+            m_RenderAssets_DestroyTasksTemp.clear();
+        }
+    }
+    void RenderEngine::processFinishedDestroyAssetTasks()
+    {
+        m_RenderAssets_DestroyTasks.removeByPredicate([this](const AsyncAssetDestroyTask& task) -> bool
+        {
+            if (!task.m_TaskFinished)
+            {
+                return false;
+            }
+            if (task.m_Asset != nullptr)
+            {
+                switch (task.m_Asset->getType())
+                {
+                case RenderEngineAssetType::Shader:       deallocateShader(dynamic_cast<Shader*>(task.m_Asset)); break;
+                case RenderEngineAssetType::Material:     deallocateMaterial(dynamic_cast<Material*>(task.m_Asset)); break;
+                case RenderEngineAssetType::Texture:      deallocateTexture(dynamic_cast<Texture*>(task.m_Asset)); break;
+                case RenderEngineAssetType::RenderTarget: deallocateRenderTarget(dynamic_cast<RenderTarget*>(task.m_Asset)); break;
+                case RenderEngineAssetType::VertexBuffer: deallocateVertexBuffer(dynamic_cast<VertexBuffer*>(task.m_Asset)); break;
+                default: ;
+                }
+            }
+            return true;
+        });
+    }
+    void RenderEngine::AsyncAssetDestroyTask::run()
+    {
+        if (m_Asset != nullptr)
+        {
+            m_Asset->clearAsset();
+        }
+        m_TaskFinished = true;
     }
 }

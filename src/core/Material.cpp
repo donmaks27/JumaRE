@@ -44,7 +44,11 @@ namespace JumaRenderEngine
     void Material::clearData()
     {
         m_MaterialParams.clear();
-        m_Shader = nullptr;
+        if (m_Shader != nullptr)
+        {
+            --m_Shader->m_ChildMaterialsCount;
+            m_Shader = nullptr;
+        }
     }
 
     bool Material::checkParamType(const jstringID& name, const ShaderUniformType type) const

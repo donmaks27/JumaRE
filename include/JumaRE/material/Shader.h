@@ -14,6 +14,8 @@
 
 namespace JumaRenderEngine
 {
+    class Material;
+
     struct ShaderUniformBufferDescription
     {
         uint32 size = 0;
@@ -22,6 +24,7 @@ namespace JumaRenderEngine
 
     class Shader : public RenderEngineAsset
     {
+        friend Material;
         friend RenderEngine;
 
         using Super = RenderEngineAsset;
@@ -40,6 +43,7 @@ namespace JumaRenderEngine
         bool init(const ShaderCreateInfo& createInfo);
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) = 0;
+        virtual bool isReadyForDestroy() override { return m_ChildMaterialsCount == 0; }
         virtual void onClearAsset() override;
 
     private:
@@ -47,6 +51,8 @@ namespace JumaRenderEngine
         jset<jstringID> m_VertexComponents;
         jmap<jstringID, ShaderUniform> m_ShaderUniforms;
         jmap<uint32, ShaderUniformBufferDescription> m_CachedUniformBufferDescriptions;
+
+        std::atomic<uint32> m_ChildMaterialsCount = 0;
 
 
         void clearData();

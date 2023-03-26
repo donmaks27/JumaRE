@@ -32,6 +32,7 @@ namespace JumaRenderEngine
 
     protected:
 
+        virtual bool isReadyForDestroy() { return true; }
         virtual void onClearAsset() {}
 
     private:
