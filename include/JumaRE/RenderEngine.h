@@ -153,6 +153,7 @@ namespace JumaRenderEngine
             AsyncAssetDestroyTask(RenderEngineAsset* asset) : m_Asset(asset) {}
 
             virtual void run() override;
+            virtual bool shouldDeleteAfterExecution() const override { return false; }
 
         private:
 
