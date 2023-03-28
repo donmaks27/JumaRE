@@ -49,6 +49,22 @@ namespace JumaRenderEngine
 
         OnRenderEngineEvent onDestroying;
 
+        template<typename T>
+        class OnAssetCreatedTask : public jasync_task
+        {
+            friend RenderEngine;
+
+        protected:
+            OnAssetCreatedTask() = default;
+        public:
+
+            T* getAsset() const { return m_Asset; }
+
+        private:
+
+            T* m_Asset = nullptr;
+        };
+
 
         virtual RenderAPI getRenderAPI() const = 0;
 
@@ -72,9 +88,10 @@ namespace JumaRenderEngine
         jasync_task_queue_base& getAsyncAssetTaksQueue() { return m_AsyncAssetTaskQueue; }
         RenderPipeline* getRenderPipeline() const { return m_RenderPipeline; }
 
-        // Create/destroy functions should be called only from main thread
+        // Create functions should be called only from main thread
 
         bool createShaderAsync(const ShaderCreateInfo& createInfo, const std::function<void(Shader*)>& callback);
+        bool createShaderAsync(const ShaderCreateInfo& createInfo, OnAssetCreatedTask<Shader>* onAssetCreated);
         Shader* createShader(const ShaderCreateInfo& createInfo);
         void destroyShader(Shader* shader);
 
@@ -144,6 +161,37 @@ namespace JumaRenderEngine
 
             RenderEngine* m_RenderEngine = nullptr;
         };
+        class AsyncAssetCreateTask : public jasync_task_default
+        {
+        public:
+            AsyncAssetCreateTask() = delete;
+            AsyncAssetCreateTask(const std::function<void()>& func, jasync_task* onFinish)
+                : jasync_task_default(func), m_OnFinishTask(onFinish)
+            {}
+            AsyncAssetCreateTask(std::function<void()>&& func, jasync_task* onFinish) noexcept
+                : jasync_task_default(std::move(func)), m_OnFinishTask(onFinish)
+            {}
+            virtual ~AsyncAssetCreateTask() override
+            {
+                if ((m_OnFinishTask != nullptr) && m_OnFinishTask->shouldDeleteAfterExecution())
+                {
+                    delete m_OnFinishTask;
+                }
+            }
+
+            virtual void run() override
+            {
+                jasync_task_default::run();
+                if (m_OnFinishTask != nullptr)
+                {
+                    m_OnFinishTask->run();
+                }
+            }
+
+        private:
+
+            jasync_task* m_OnFinishTask = nullptr;
+        };
         class AsyncAssetDestroyTask : public jasync_task
         {
             friend RenderEngine;
@@ -162,6 +210,7 @@ namespace JumaRenderEngine
         };
 
         jasync_task_queue<AsyncAssetWorker> m_AsyncAssetTaskQueue;
+        std::mutex m_RenderAssets_MarkedForDestroyMutex;
         jlist<std::pair<RenderEngineAsset*, uint8>> m_RenderAssets_MarkedForDestroy;
         jlist<AsyncAssetDestroyTask> m_RenderAssets_DestroyTasks;
         jarray<jasync_task*> m_RenderAssets_DestroyTasksTemp;

@@ -183,6 +183,38 @@ namespace JumaRenderEngine
         }
         return true;
     }
+    bool RenderEngine::createShaderAsync(const ShaderCreateInfo& createInfo, OnAssetCreatedTask<Shader>* onAssetCreated)
+    {
+        if (onAssetCreated == nullptr)
+        {
+            JUTILS_LOG(warning, JSTR("Empty callback task"));
+            return false;
+        }
+        Shader* shader = allocateShader();
+        if (shader == nullptr)
+        {
+            JUTILS_LOG(error, JSTR("Failed to allocate shader"));
+	        return false;
+        }
+        const jasync_task::id_type taskID = m_AsyncAssetTaskQueue.addTask(new AsyncAssetCreateTask([this, shader, createInfo = createInfo, onAssetCreated]()
+        {
+	        if (!shader->init(createInfo))
+	        {
+                destroyAsset(shader);
+	        }
+            else
+            {
+                onAssetCreated->m_Asset = shader;
+            }
+        }, onAssetCreated));
+        if (taskID == jasync_task::invalidID)
+        {
+            JUTILS_LOG(error, JSTR("Failed to start async shader creation"));
+	        deallocateShader(shader);
+            return false;
+        }
+        return true;
+    }
     Shader* RenderEngine::createShader(const ShaderCreateInfo& createInfo)
     {
         Shader* shader = allocateShader();
@@ -363,7 +395,9 @@ namespace JumaRenderEngine
 
         // TODO: Get amount of rendered frames
         constexpr uint8 framesDelay = 1;
+        m_RenderAssets_MarkedForDestroyMutex.lock();
         m_RenderAssets_MarkedForDestroy.add({ asset, framesDelay });
+        m_RenderAssets_MarkedForDestroyMutex.unlock();
     }
     
     bool RenderEngine::render()
@@ -392,6 +426,7 @@ namespace JumaRenderEngine
 
     void RenderEngine::processMarkedForDestroyAssets()
     {
+        m_RenderAssets_MarkedForDestroyMutex.lock();
         auto iter = m_RenderAssets_MarkedForDestroy.begin();
         while (iter.isValid())
         {
@@ -410,6 +445,7 @@ namespace JumaRenderEngine
                 ++iter;
             }
         }
+        m_RenderAssets_MarkedForDestroyMutex.unlock();
         if (!m_RenderAssets_DestroyTasksTemp.isEmpty())
         {
             m_AsyncAssetTaskQueue.addTasks(m_RenderAssets_DestroyTasksTemp);
