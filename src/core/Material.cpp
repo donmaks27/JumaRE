@@ -25,7 +25,6 @@ namespace JumaRenderEngine
             m_MaterialParams.setDefaultValue(uniform.key, uniform.value.type);
             m_MaterialParamsForUpdate.add(uniform.key);
         }
-        m_TemplateMaterial = false;
 
         if (!initInternal())
         {

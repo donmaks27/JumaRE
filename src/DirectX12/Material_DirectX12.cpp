@@ -20,11 +20,6 @@ namespace JumaRenderEngine
 
     bool Material_DirectX12::initInternal()
     {
-        if (isTemplateMaterial())
-        {
-            return true;
-        }
-
         const Shader_DirectX12* shader = getShader<Shader_DirectX12>();
         const jmap<jstringID, uint32>& descriptorHeapOffsets = shader->getTextureDescriptorHeapOffsets();
 
@@ -105,7 +100,7 @@ namespace JumaRenderEngine
 
     bool Material_DirectX12::bindMaterial(const RenderOptions_DirectX12* renderOptions, VertexBuffer_DirectX12* vertexBuffer)
     {
-        if (isTemplateMaterial() || !updateUniformData())
+        if (!updateUniformData())
         {
             return false;
         }

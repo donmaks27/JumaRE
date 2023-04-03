@@ -21,11 +21,6 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::initInternal()
     {
-        if (isTemplateMaterial())
-        {
-            return true;
-        }
-
         const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = getShader()->getUniformBufferDescriptions();
         if (!uniformBufferDescriptions.isEmpty())
         {
@@ -60,7 +55,7 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::bindMaterial(const RenderOptions* renderOptions)
     {
-        if (isTemplateMaterial() || !getShader<Shader_OpenGL>()->activateShader())
+        if (!getShader<Shader_OpenGL>()->activateShader())
         {
             return false;
         }
@@ -194,21 +189,18 @@ namespace JumaRenderEngine
 
     void Material_OpenGL::unbindMaterial()
     {
-        if (!isTemplateMaterial())
+        for (const auto& uniformBuffer : m_UniformBufferIndices)
         {
-            for (const auto& uniformBuffer : m_UniformBufferIndices)
-            {
-                glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, 0);
-            }
-            for (const auto& uniform : getShader()->getUniforms())
-            {
-                if (uniform.value.type == ShaderUniformType::Texture)
-                {
-                    Texture_OpenGL::unbindTexture(uniform.value.shaderLocation);
-                }
-            }
-            Shader_OpenGL::deactivateAnyShader();
+            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, 0);
         }
+        for (const auto& uniform : getShader()->getUniforms())
+        {
+            if (uniform.value.type == ShaderUniformType::Texture)
+            {
+                Texture_OpenGL::unbindTexture(uniform.value.shaderLocation);
+            }
+        }
+        Shader_OpenGL::deactivateAnyShader();
     }
 }
 

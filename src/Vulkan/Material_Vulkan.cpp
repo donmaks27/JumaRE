@@ -23,7 +23,7 @@ namespace JumaRenderEngine
 
     bool Material_Vulkan::initInternal()
     {
-        if (!isTemplateMaterial() && !createDescriptorSet())
+        if (!createDescriptorSet())
         {
             JUTILS_LOG(error, JSTR("Failed to create vulkan descriptor set"));
             clearVulkan();
@@ -338,11 +338,6 @@ namespace JumaRenderEngine
 
     bool Material_Vulkan::bindMaterial(const RenderOptions* renderOptions, VertexBuffer_Vulkan* vertexBuffer)
     {
-        if (isTemplateMaterial())
-        {
-            return false;
-        }
-
         const RenderOptions_Vulkan* options = reinterpret_cast<const RenderOptions_Vulkan*>(renderOptions);
         MaterialProperties materialProperties = getMaterialProperties();
         materialProperties.depthEnabled &= renderOptions->renderStageProperties.depthEnabled;
