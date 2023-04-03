@@ -21,22 +21,43 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::initInternal()
     {
-        const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = getShader()->getUniformBufferDescriptions();
-        if (!uniformBufferDescriptions.isEmpty())
+        if (getShader()->getUniformBufferDescriptions().isEmpty())
         {
-            jarray<uint32> uniformBuffers(uniformBufferDescriptions.getSize(), 0);
-            glGenBuffers(uniformBuffers.getSize(), uniformBuffers.getData());
-            for (const auto& uniformBufferDescription : uniformBufferDescriptions)
-            {
-                const uint32 bufferIndex = m_UniformBufferIndices[uniformBufferDescription.key] = uniformBuffers.getLast();
-                uniformBuffers.removeLast();
+            m_MaterialCreated = true;
+            return true;
+        }
 
-                glBindBuffer(GL_UNIFORM_BUFFER, bufferIndex);
-                glBufferData(GL_UNIFORM_BUFFER, uniformBufferDescription.value.size, nullptr, GL_DYNAMIC_DRAW);
-            }
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        m_CreateTaskActive = true;
+        jasync_task* task = new CreateMaterialTask(this);
+        if (!getRenderEngine()->getAsyncAssetTaksQueue().addTask(task))
+        {
+            JUTILS_LOG(error, JSTR("Failed to start async uniform buffers creation task"));
+            delete task;
+            return false;
         }
         return true;
+    }
+    void Material_OpenGL::createUniformBuffers()
+    {
+        const Shader* shader = getShader();
+        if (shader == nullptr)
+        {
+            return;
+        }
+
+        const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = shader->getUniformBufferDescriptions();
+        jarray<uint32> uniformBuffers(uniformBufferDescriptions.getSize(), 0);
+        glGenBuffers(uniformBuffers.getSize(), uniformBuffers.getData());
+        for (const auto& uniformBufferDescription : uniformBufferDescriptions)
+        {
+            const uint32 bufferIndex = uniformBuffers.getLast();
+            m_UniformBufferIndices.add(uniformBufferDescription.key, bufferIndex);
+            uniformBuffers.removeLast();
+
+            glBindBuffer(GL_UNIFORM_BUFFER, bufferIndex);
+            glBufferData(GL_UNIFORM_BUFFER, uniformBufferDescription.value.size, nullptr, GL_DYNAMIC_DRAW);
+        }
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
     void Material_OpenGL::onClearAsset()
@@ -55,7 +76,17 @@ namespace JumaRenderEngine
 
     bool Material_OpenGL::bindMaterial(const RenderOptions* renderOptions)
     {
-        if (!getShader<Shader_OpenGL>()->activateShader())
+        const Shader_OpenGL* shader = getShader<Shader_OpenGL>();
+        if (!m_MaterialCreated)
+        {
+            if (m_CreateTaskActive)
+            {
+                return false;
+            }
+            m_MaterialCreated = true;
+        }
+
+        if (!shader->activateShader())
         {
             return false;
         }

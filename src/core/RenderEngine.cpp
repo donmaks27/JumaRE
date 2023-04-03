@@ -164,7 +164,7 @@ namespace JumaRenderEngine
             JUTILS_LOG(error, JSTR("Failed to allocate shader"));
 	        return false;
         }
-        const jasync_task::id_type taskID = m_AsyncAssetTaskQueue.addTask(new jasync_task_default([this, shader, createInfo = createInfo, callback = callback]()
+        const bool taskStarted = m_AsyncAssetTaskQueue.addTask(new jasync_task_default([this, shader, createInfo = createInfo, callback = callback]()
         {
 	        if (!shader->init(createInfo))
 	        {
@@ -175,7 +175,7 @@ namespace JumaRenderEngine
 	            callback(shader);
             }
         }));
-        if (taskID == jasync_task::invalidID)
+        if (!taskStarted)
         {
             JUTILS_LOG(error, JSTR("Failed to start async shader creation"));
 	        deallocateShader(shader);
@@ -196,7 +196,7 @@ namespace JumaRenderEngine
             JUTILS_LOG(error, JSTR("Failed to allocate shader"));
 	        return false;
         }
-        const jasync_task::id_type taskID = m_AsyncAssetTaskQueue.addTask(new AsyncAssetCreateTask([this, shader, createInfo = createInfo, onAssetCreated]()
+        const bool taskStarted = m_AsyncAssetTaskQueue.addTask(new AsyncAssetCreateTask([this, shader, createInfo = createInfo, onAssetCreated]()
         {
 	        if (!shader->init(createInfo))
 	        {
@@ -207,7 +207,7 @@ namespace JumaRenderEngine
                 onAssetCreated->m_Asset = shader;
             }
         }, onAssetCreated));
-        if (taskID == jasync_task::invalidID)
+        if (!taskStarted)
         {
             JUTILS_LOG(error, JSTR("Failed to start async shader creation"));
 	        deallocateShader(shader);
