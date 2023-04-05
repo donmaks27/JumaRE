@@ -1,10 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
-#include "../../../include/JumaRE/RenderEngineContextObject.h"
+#include "JumaRE/RenderEngineContextObject.h"
 
 #include <vma/vk_mem_alloc.h>
 

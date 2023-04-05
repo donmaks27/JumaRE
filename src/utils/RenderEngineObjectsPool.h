@@ -1,11 +1,13 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
-#include "../../include/JumaRE/RenderEngineContextObject.h"
+#include "JumaRE/RenderEngineContextObject.h"
 
 #include <jutils/jarray.h>
 #include <jutils/jlist.h>
+
+#include <mutex>
 
 namespace JumaRenderEngine
 {
@@ -48,5 +50,35 @@ namespace JumaRenderEngine
 
         static void clearObject(RenderEngineContextObject* object) { object->clear(); }
         static void clearObject(RenderEngineContextObjectBase*) {}
+    };
+
+    template<typename ObjectType, typename StoreObjectType = ObjectType, TEMPLATE_ENABLE(is_base_and_not_abstract<RenderEngineContextObjectBase, StoreObjectType> && is_base<ObjectType, StoreObjectType>)>
+    class RenderEngineObjectsPoolAsync : public RenderEngineObjectsPool<ObjectType, StoreObjectType>
+    {
+        using Super = RenderEngineObjectsPool<ObjectType, StoreObjectType>;
+
+    public:
+        RenderEngineObjectsPoolAsync() = default;
+        ~RenderEngineObjectsPoolAsync() { clear(); }
+
+        ObjectType* getObject(RenderEngine* engine)
+        {
+            std::lock_guard lock(m_Mutex);
+            return Super::getObject(engine);
+        }
+        void returnObject(ObjectType* object)
+        {
+            std::lock_guard lock(m_Mutex);
+            return Super::returnObject(object);
+        }
+        void clear()
+        {
+            std::lock_guard lock(m_Mutex);
+            Super::clear();
+        }
+
+    private:
+
+        std::mutex m_Mutex;
     };
 }

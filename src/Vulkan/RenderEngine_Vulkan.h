@@ -96,6 +96,15 @@ namespace JumaRenderEngine
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
+        RenderEngineObjectsPoolAsync<VulkanBuffer> m_VulkanBuffersPool;
+        RenderEngineObjectsPoolAsync<VulkanImage> m_VulkanImagesPool;
+        
+        RenderEngineObjectsPool<RenderTarget, RenderTarget_Vulkan> m_RenderTargetsPool;
+        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_Vulkan> m_VertexBuffersPool;
+        RenderEngineObjectsPool<Shader, Shader_Vulkan> m_ShadersPool;
+        RenderEngineObjectsPool<Material, Material_Vulkan> m_MaterialsPool;
+        RenderEngineObjectsPool<Texture, Texture_Vulkan> m_TexturesPool;
+
         VkInstance m_VulkanInstance = nullptr;
 #ifdef JDEBUG
         VkDebugUtilsMessengerEXT m_DebugMessenger = nullptr;
@@ -110,15 +119,6 @@ namespace JumaRenderEngine
         jmap<VulkanQueueType, int32> m_QueueIndices;
         jarray<VulkanQueueDescription> m_Queues;
         jmap<VulkanQueueType, VulkanCommandPool*> m_CommandPools;
-        
-        RenderEngineObjectsPool<RenderTarget, RenderTarget_Vulkan> m_RenderTargetsPool;
-        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_Vulkan> m_VertexBuffersPool;
-        RenderEngineObjectsPool<Shader, Shader_Vulkan> m_ShadersPool;
-        RenderEngineObjectsPool<Material, Material_Vulkan> m_MaterialsPool;
-        RenderEngineObjectsPool<Texture, Texture_Vulkan> m_TexturesPool;
-
-        RenderEngineObjectsPool<VulkanBuffer> m_VulkanBuffersPool;
-        RenderEngineObjectsPool<VulkanImage> m_VulkanImagesPool;
         
         juid<render_pass_type_id> m_RenderPassTypeIDs;
         jmap<VulkanRenderPassDescription, render_pass_type_id, VulkanRenderPassDescription::compatible_predicate> m_RenderPassTypes;
