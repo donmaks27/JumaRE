@@ -12,9 +12,12 @@
 
 namespace JumaRenderEngine
 {
+    RenderEngine* RenderEngineContextObjectBase::s_RenderEngine = nullptr;
+
     RenderEngine::~RenderEngine()
     {
         clearData();
+        RenderEngineContextObjectBase::s_RenderEngine = nullptr;
     }
 
     bool RenderEngine::init(const RenderEngineCreateInfo& createInfo)
@@ -25,11 +28,14 @@ namespace JumaRenderEngine
             return false;
         }
 
+        RenderEngineContextObjectBase::s_RenderEngine = this;
+
         WindowController* windowController = createWindowController();
         if (!windowController->initWindowController())
         {
             JUTILS_LOG(error, JSTR("Failed to initialize window controller"));
             delete windowController;
+            RenderEngineContextObjectBase::s_RenderEngine = nullptr;
             return false;
         }
         m_WindowController = windowController;
@@ -37,6 +43,7 @@ namespace JumaRenderEngine
         {
             JUTILS_LOG(error, JSTR("Failed to initialize render engine"));
             clearInternal();
+            RenderEngineContextObjectBase::s_RenderEngine = nullptr;
             return false;
         }
         m_Initialized = true;
@@ -128,6 +135,7 @@ namespace JumaRenderEngine
             clearInternal();
 
             m_Initialized = false;
+            RenderEngineContextObjectBase::s_RenderEngine = nullptr;
         }
     }
     void RenderEngine::clearData()
@@ -142,15 +150,7 @@ namespace JumaRenderEngine
         m_RegisteredVerticesData.clear();
         m_VertexIDGenerator.reset();
     }
-
-    void RenderEngine::registerObjectInternal(RenderEngineContextObjectBase* object)
-    {
-        if (object != nullptr)
-        {
-            object->m_RenderEngine = this;
-        }
-    }
-
+    
     RenderPipeline* RenderEngine::createRenderPipelineInternal()
     {
         return createObject<RenderPipeline>();

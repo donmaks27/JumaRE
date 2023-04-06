@@ -55,7 +55,7 @@ namespace JumaRenderEngine
 
     WindowController* RenderEngine_OpenGL::createWindowController()
     {
-        return registerObject(CreateWindowController_OpenGL());
+        return CreateWindowController_OpenGL();
     }
 
     uint32 RenderEngine_OpenGL::getTextureSamplerIndex(const TextureSamplerType sampler)

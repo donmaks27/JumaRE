@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_DX12)
 
@@ -186,17 +186,17 @@ namespace JumaRenderEngine
     }
     bool RenderEngine_DirectX12::createCommandQueues()
     {
-        if (!registerObject(&m_CommandQueues.add(D3D12_COMMAND_LIST_TYPE_DIRECT))->init(D3D12_COMMAND_LIST_TYPE_DIRECT))
+        if (!(&m_CommandQueues.add(D3D12_COMMAND_LIST_TYPE_DIRECT))->init(D3D12_COMMAND_LIST_TYPE_DIRECT))
         {
             JUTILS_LOG(error, JSTR("Failed to create DirectX12 direct command queue"));
             return false;
         }
-        if (!registerObject(&m_CommandQueues.add(D3D12_COMMAND_LIST_TYPE_COMPUTE))->init(D3D12_COMMAND_LIST_TYPE_COMPUTE))
+        if (!(&m_CommandQueues.add(D3D12_COMMAND_LIST_TYPE_COMPUTE))->init(D3D12_COMMAND_LIST_TYPE_COMPUTE))
         {
             JUTILS_LOG(error, JSTR("Failed to create DirectX12 compute command queue"));
             return false;
         }
-        if (!registerObject(&m_CommandQueues.add(D3D12_COMMAND_LIST_TYPE_COPY))->init(D3D12_COMMAND_LIST_TYPE_COPY))
+        if (!(&m_CommandQueues.add(D3D12_COMMAND_LIST_TYPE_COPY))->init(D3D12_COMMAND_LIST_TYPE_COPY))
         {
             JUTILS_LOG(error, JSTR("Failed to create DirectX12 copy command queue"));
             return false;
@@ -366,7 +366,7 @@ namespace JumaRenderEngine
 
     WindowController* RenderEngine_DirectX12::createWindowController()
     {
-        return registerObject(CreateWindowController_DirectX12());
+        return CreateWindowController_DirectX12();
     }
     RenderPipeline* RenderEngine_DirectX12::createRenderPipelineInternal()
     {

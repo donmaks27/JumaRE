@@ -1,8 +1,10 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #include "core.h"
+
+#include <jutils/jpool_simple.h>
 
 namespace JumaRenderEngine
 {
@@ -16,16 +18,16 @@ namespace JumaRenderEngine
         RenderEngineContextObjectBase() = default;
         virtual ~RenderEngineContextObjectBase() = default;
 
-        RenderEngine* getRenderEngine() const { return m_RenderEngine; }
+        RenderEngine* getRenderEngine() const { return s_RenderEngine; }
         template<typename T, TEMPLATE_ENABLE(is_base<RenderEngine, T>)>
         T* getRenderEngine() const { return dynamic_cast<T*>(getRenderEngine()); }
 
     private:
 
-        RenderEngine* m_RenderEngine = nullptr;
+        static RenderEngine* s_RenderEngine;
     };
 
-    class RenderEngineContextObject : public RenderEngineContextObjectBase
+    class RenderEngineContextObject : public RenderEngineContextObjectBase, public jpool_simple_object
     {
         friend RenderEngine;
 
@@ -48,6 +50,8 @@ namespace JumaRenderEngine
         void markAsInitialized() { m_Initialized = true; }
 
         virtual void clearInternal() {}
+
+        virtual void clearPoolObject() override { clear(); }
 
     private:
 

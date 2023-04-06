@@ -111,7 +111,7 @@ namespace JumaRenderEngine
                 JUTILS_ERROR_LOG(result, JSTR("Failed to get DirectX12 swapchain buffer"));
                 return false;
             }
-            renderEngine->registerObject(&m_SwapchainBuffers.addDefault())->init(swapchainBuffer, D3D12_RESOURCE_STATE_PRESENT);
+            (&m_SwapchainBuffers.addDefault())->init(swapchainBuffer, D3D12_RESOURCE_STATE_PRESENT);
         }
 
         m_CurrentBufferIndex = static_cast<uint8>(m_Swapchain->GetCurrentBackBufferIndex());

@@ -40,7 +40,7 @@ namespace JumaRenderEngine
 
     WindowController* RenderEngine_Vulkan::createWindowController()
     {
-        return registerObject(CreateWindowController_Vulkan());
+        return CreateWindowController_Vulkan();
     }
     RenderPipeline* RenderEngine_Vulkan::createRenderPipelineInternal()
     {
@@ -521,7 +521,7 @@ namespace JumaRenderEngine
         VulkanRenderPass* renderPass = m_RenderPasses.find(description);
         if (renderPass == nullptr)
         {
-            renderPass = registerObject(&m_RenderPasses[description]);
+            renderPass = &m_RenderPasses[description];
             if (!renderPass->init(description, *renderPassID))
             {
                 JUTILS_LOG(error, JSTR("Failed to create new vulkan render pass"));

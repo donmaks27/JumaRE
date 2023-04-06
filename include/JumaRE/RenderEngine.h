@@ -77,13 +77,7 @@ namespace JumaRenderEngine
         T* getWindowController() const { return dynamic_cast<T*>(this->getWindowController()); }
 
         template<typename T, TEMPLATE_ENABLE(is_base_and_not_abstract<RenderEngineContextObjectBase, T>)>
-        T* createObject() { return this->registerObject(new T()); }
-        template<typename T, TEMPLATE_ENABLE(is_base<RenderEngineContextObjectBase, T>)>
-        T* registerObject(T* object)
-        {
-            this->registerObjectInternal(object);
-            return object;
-        }
+        T* createObject() { return new T(); }
 
         jasync_task_queue_base& getAsyncAssetTaksQueue() { return m_AsyncAssetTaskQueue; }
         RenderPipeline* getRenderPipeline() const { return m_RenderPipeline; }
@@ -231,9 +225,7 @@ namespace JumaRenderEngine
 
 
         bool createRenderAssets();
-
-        void registerObjectInternal(RenderEngineContextObjectBase* object);
-
+        
         RenderTarget* createWindowRenderTarget(window_id windowID, TextureSamples samples);
         
         vertex_id registerVertex(const VertexDescription& description);
