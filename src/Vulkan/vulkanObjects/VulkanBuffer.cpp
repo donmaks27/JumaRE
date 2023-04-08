@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -18,12 +18,10 @@ namespace JumaRenderEngine
     {
         if (isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer already initialized"));
             return false;
         }
         if (size == 0)
         {
-            JUTILS_LOG(error, JSTR("Size param is zero"));
             return false;
         }
 
@@ -41,7 +39,6 @@ namespace JumaRenderEngine
         const VkResult result = vmaCreateBuffer(getRenderEngine<RenderEngine_Vulkan>()->getAllocator(), &bufferInfo, &allocationInfo, &m_Buffer, &m_Allocation, nullptr);
         if (result != VK_SUCCESS)
         {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create staging vulkan buffer"));
             return false;
         }
 
@@ -55,18 +52,18 @@ namespace JumaRenderEngine
     {
         if (isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer already initialized"));
             return false;
         }
         if (size == 0)
         {
-            JUTILS_LOG(error, JSTR("Size param is zero"));
             return false;
         }
 
         RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
 
-        jarray<uint32> accessedQueueFamilies = { renderEngine->getQueue(VulkanQueueType::Transfer)->familyIndex };
+        jarray<uint32> accessedQueueFamilies;
+        accessedQueueFamilies.reserve(accessedQueues.size() + 1);
+        accessedQueueFamilies.add(renderEngine->getQueue(VulkanQueueType::Transfer)->familyIndex);
         for (const auto& queue : accessedQueues)
         {
             accessedQueueFamilies.addUnique(renderEngine->getQueue(queue)->familyIndex);
@@ -94,7 +91,6 @@ namespace JumaRenderEngine
         const VkResult result = vmaCreateBuffer(renderEngine->getAllocator(), &bufferInfo, &allocationInfo, &m_Buffer, &m_Allocation, nullptr);
         if (result != VK_SUCCESS)
         {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create GPU vulkan buffer"));
             return false;
         }
 
@@ -104,7 +100,6 @@ namespace JumaRenderEngine
         VulkanBuffer* stagingBuffer = renderEngine->getVulkanBuffer();
         if (!stagingBuffer->initStaging(size) || !stagingBuffer->setData(data, size, 0, true) || !stagingBuffer->copyData(this, true))
         {
-            JUTILS_LOG(error, JSTR("Failed to copy data to GPU vulkan buffer"));
             renderEngine->returnVulkanBuffer(stagingBuffer);
             clearVulkan();
             return false;
@@ -118,12 +113,10 @@ namespace JumaRenderEngine
     {
         if (isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer already initialized"));
             return false;
         }
         if (size == 0)
         {
-            JUTILS_LOG(error, JSTR("Size param is zero"));
             return false;
         }
 
@@ -158,7 +151,6 @@ namespace JumaRenderEngine
         const VkResult result = vmaCreateBuffer(renderEngine->getAllocator(), &bufferInfo, &allocationInfo, &m_Buffer, &m_Allocation, nullptr);
         if (result != VK_SUCCESS)
         {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create accessed GPU vulkan buffer"));
             return false;
         }
 
@@ -169,7 +161,6 @@ namespace JumaRenderEngine
             VulkanBuffer* stagingBuffer = renderEngine->getVulkanBuffer();
             if (!stagingBuffer->initStaging(size))
             {
-                JUTILS_LOG(error, JSTR("Failed to create staging buffer for GPU vulkan buffer"));
                 renderEngine->returnVulkanBuffer(stagingBuffer);
                 clearVulkan();
                 return false;
@@ -211,7 +202,6 @@ namespace JumaRenderEngine
     {
         if (!isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer not initialized"));
             return false;
         }
 
@@ -219,14 +209,12 @@ namespace JumaRenderEngine
         {
             if (!m_StagingBuffer->initMappedData())
             {
-                JUTILS_LOG(error, JSTR("Failed to map data for staging buffer"));
                 return false;
             }
             return true;
         }
         if (!m_Mapable)
         {
-            JUTILS_LOG(warning, JSTR("Unable to update buffer data"));
             return false;
         }
 
@@ -236,7 +224,6 @@ namespace JumaRenderEngine
             const VkResult result = vmaMapMemory(getRenderEngine<RenderEngine_Vulkan>()->getAllocator(), m_Allocation, &data);
             if (result != VK_SUCCESS)
             {
-                JUTILS_ERROR_LOG(result, JSTR("Failed to map vulkan buffer memory"));
                 return false;
             }
             m_MappedData = data;
@@ -247,12 +234,10 @@ namespace JumaRenderEngine
     {
         if (!isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer not initialized"));
             return false;
         }
         if ((data == nullptr) || (size == 0) || ((offset + size) > m_BufferSize))
         {
-            JUTILS_LOG(error, JSTR("Invalid input params"));
             return false;
         }
 
@@ -260,7 +245,6 @@ namespace JumaRenderEngine
         {
             if (!m_StagingBuffer->setMappedData(data, size, offset))
             {
-                JUTILS_LOG(error, JSTR("Failed to update mapped data of staging vulkan buffer"));
                 return false;
             }
             return true;
@@ -268,7 +252,6 @@ namespace JumaRenderEngine
 
         if (m_MappedData == nullptr)
         {
-            JUTILS_LOG(warning, JSTR("Vulkan buffer data not mapped"));
             return false;
         }
         std::memcpy(static_cast<uint8*>(m_MappedData) + offset, data, size);
@@ -278,19 +261,13 @@ namespace JumaRenderEngine
     {
         if (!isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer not initialized"));
             return false;
         }
 
         if (m_StagingBuffer != nullptr)
         {
-            if (!m_StagingBuffer->flushMappedData(false) || !m_StagingBuffer->copyData(this, waitForFinish))
-            {
-                return false;
-            }
-            return true;
+            return m_StagingBuffer->flushMappedData(false) && m_StagingBuffer->copyData(this, waitForFinish);
         }
-
         if (m_MappedData == nullptr)
         {
             return false;
@@ -304,22 +281,15 @@ namespace JumaRenderEngine
     {
         if (!isValid())
         {
-            JUTILS_LOG(error, JSTR("Vulkan buffer not initialized"));
             return false;
         }
         if ((data == nullptr) || (size == 0) || ((offset + size) > m_BufferSize))
         {
-            JUTILS_LOG(error, JSTR("Invalid input params"));
             return false;
         }
         if (m_StagingBuffer != nullptr)
         {
-            if (!m_StagingBuffer->setDataInternal(data, size, offset) || !m_StagingBuffer->copyData(this, waitForFinish))
-            {
-                JUTILS_LOG(error, JSTR("Failed to copy data from staging buffer"));
-                return false;
-            }
-            return true;
+            return m_StagingBuffer->setDataInternal(data, size, offset) && m_StagingBuffer->copyData(this, waitForFinish);
         }
         return setDataInternal(data, size, offset);
     }
@@ -327,7 +297,6 @@ namespace JumaRenderEngine
     {
         if (!m_Mapable)
         {
-            JUTILS_LOG(warning, JSTR("Unable to update buffer data"));
             return false;
         }
         
@@ -335,7 +304,6 @@ namespace JumaRenderEngine
         void* mappedData;
         if (vmaMapMemory(allocator, m_Allocation, &mappedData) != VK_SUCCESS)
         {
-            JUTILS_LOG(error, JSTR("Failed to map buffer memory"));
             return false;
         }
         std::memcpy(static_cast<uint8*>(mappedData) + offset, data, size);
@@ -349,7 +317,6 @@ namespace JumaRenderEngine
         VulkanCommandBuffer* commandBuffer = commandPool != nullptr ? commandPool->getCommandBuffer() : nullptr;
         if (commandBuffer == nullptr)
         {
-            JUTILS_LOG(error, JSTR("Failed to get transfer command buffer"));
             return false;
         }
 
@@ -370,7 +337,6 @@ namespace JumaRenderEngine
         commandBuffer->returnToCommandPool();
         if (!success)
         {
-            JUTILS_LOG(error, JSTR("Failed to submit copy command buffer"));
             return false;
         }
         return true;

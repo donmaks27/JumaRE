@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -10,6 +10,8 @@
 
 namespace JumaRenderEngine
 {
+    class RenderEngine_OpenGL;
+
     struct WindowData_OpenGL : WindowData
     {
     };
@@ -17,6 +19,8 @@ namespace JumaRenderEngine
     class WindowController_OpenGL : public WindowController
     {
         using Super = WindowController;
+
+        friend RenderEngine_OpenGL;
 
     public:
         WindowController_OpenGL() = default;
@@ -36,6 +40,11 @@ namespace JumaRenderEngine
         bool initOpenGL();
 
         virtual bool setActiveWindowInternal(window_id windowID) = 0;
+
+        virtual bool createContextForAsyncAssetTaskQueueWorker(int32 workerIndex) = 0;
+        virtual bool initAsyncAssetTaskQueueWorkerThread(int32 workerIndex) = 0;
+        virtual void clearAsyncAssetTaskQueueWorkerThread(int32 workerIndex) = 0;
+        virtual void destroyContextForAsyncAssetTaskQueueWorker(int32 workerIndex) = 0;
 
     private:
 

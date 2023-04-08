@@ -6,6 +6,7 @@
 
 #include "JumaRE/RenderEngine.h"
 
+#include <jutils/jpool_simple.h>
 #include <vma/vk_mem_alloc.h>
 
 #include "Material_Vulkan.h"
@@ -16,7 +17,6 @@
 #include "vulkanObjects/VulkanBuffer.h"
 #include "vulkanObjects/VulkanImage.h"
 #include "vulkanObjects/VulkanRenderPass.h"
-#include "../utils/RenderEngineObjectsPool.h"
 
 namespace JumaRenderEngine
 {
@@ -56,10 +56,10 @@ namespace JumaRenderEngine
         const VulkanQueueDescription* getQueue(const VulkanQueueType type) const { return !m_QueueIndices.isEmpty() ? &m_Queues[m_QueueIndices[type]] : nullptr; }
         VulkanCommandPool* getCommandPool(const VulkanQueueType type) const { return !m_CommandPools.isEmpty() ? m_CommandPools[type] : nullptr; }
 
-        VulkanBuffer* getVulkanBuffer() { return m_VulkanBuffersPool.getObject(this); }
-        VulkanImage* getVulkanImage() { return m_VulkanImagesPool.getObject(this); }
-        void returnVulkanBuffer(VulkanBuffer* buffer) { m_VulkanBuffersPool.returnObject(buffer); }
-        void returnVulkanImage(VulkanImage* image) { m_VulkanImagesPool.returnObject(image); }
+        VulkanBuffer* getVulkanBuffer() { return m_VulkanBuffersPool.getPoolObject(); }
+        VulkanImage* getVulkanImage() { return m_VulkanImagesPool.getPoolObject(); }
+        void returnVulkanBuffer(VulkanBuffer* buffer) { m_VulkanBuffersPool.returnPoolObject(buffer); }
+        void returnVulkanImage(VulkanImage* image) { m_VulkanImagesPool.returnPoolObject(image); }
 
         VulkanRenderPass* getRenderPass(const VulkanRenderPassDescription& description);
         const VulkanRenderPassDescription* findRenderPassDescription(render_pass_type_id renderPassID) const;
@@ -75,17 +75,17 @@ namespace JumaRenderEngine
 
         virtual WindowController* createWindowController() override;
         virtual RenderPipeline* createRenderPipelineInternal() override;
-        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getObject(this); }
-        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getObject(this); }
-        virtual Shader* allocateShader() override { return m_ShadersPool.getObject(this); }
-        virtual Material* allocateMaterial() override { return m_MaterialsPool.getObject(this); }
-        virtual Texture* allocateTexture() override { return m_TexturesPool.getObject(this); }
+        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getPoolObject(); }
+        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getPoolObject(); }
+        virtual Shader* allocateShader() override { return m_ShadersPool.getPoolObject(); }
+        virtual Material* allocateMaterial() override { return m_MaterialsPool.getPoolObject(); }
+        virtual Texture* allocateTexture() override { return m_TexturesPool.getPoolObject(); }
 
-        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnObject(renderTarget); }
-        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnObject(vertexBuffer); }
-        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnObject(shader); }
-        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnObject(material); }
-        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnObject(texture); }
+        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnPoolObject(dynamic_cast<RenderTarget_Vulkan*>(renderTarget)); }
+        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnPoolObject(dynamic_cast<VertexBuffer_Vulkan*>(vertexBuffer)); }
+        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnPoolObject(dynamic_cast<Shader_Vulkan*>(shader)); }
+        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnPoolObject(dynamic_cast<Material_Vulkan*>(material)); }
+        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnPoolObject(dynamic_cast<Texture_Vulkan*>(texture)); }
 
         virtual void onRegisteredVertex(vertex_id vertexID, const RegisteredVertexDescription& data) override;
 
@@ -95,6 +95,15 @@ namespace JumaRenderEngine
         static constexpr const char* m_RequiredExtensions[m_RequiredExtensionCount] = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
+
+        jpool_simple_async<VulkanBuffer> m_VulkanBuffersPool;
+        jpool_simple_async<VulkanImage> m_VulkanImagesPool;
+        
+        jpool_simple<RenderTarget_Vulkan> m_RenderTargetsPool;
+        jpool_simple<VertexBuffer_Vulkan> m_VertexBuffersPool;
+        jpool_simple<Shader_Vulkan> m_ShadersPool;
+        jpool_simple<Material_Vulkan> m_MaterialsPool;
+        jpool_simple<Texture_Vulkan> m_TexturesPool;
 
         VkInstance m_VulkanInstance = nullptr;
 #ifdef JDEBUG
@@ -110,15 +119,6 @@ namespace JumaRenderEngine
         jmap<VulkanQueueType, int32> m_QueueIndices;
         jarray<VulkanQueueDescription> m_Queues;
         jmap<VulkanQueueType, VulkanCommandPool*> m_CommandPools;
-        
-        RenderEngineObjectsPool<RenderTarget, RenderTarget_Vulkan> m_RenderTargetsPool;
-        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_Vulkan> m_VertexBuffersPool;
-        RenderEngineObjectsPool<Shader, Shader_Vulkan> m_ShadersPool;
-        RenderEngineObjectsPool<Material, Material_Vulkan> m_MaterialsPool;
-        RenderEngineObjectsPool<Texture, Texture_Vulkan> m_TexturesPool;
-
-        RenderEngineObjectsPool<VulkanBuffer> m_VulkanBuffersPool;
-        RenderEngineObjectsPool<VulkanImage> m_VulkanImagesPool;
         
         juid<render_pass_type_id> m_RenderPassTypeIDs;
         jmap<VulkanRenderPassDescription, render_pass_type_id, VulkanRenderPassDescription::compatible_predicate> m_RenderPassTypes;

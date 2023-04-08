@@ -6,12 +6,13 @@
 
 #include "JumaRE/RenderEngine.h"
 
+#include <jutils/jpool_simple.h>
+
 #include "Material_DirectX11.h"
 #include "RenderTarget_DirectX11.h"
 #include "Shader_DirectX11.h"
 #include "Texture_DirectX11.h"
 #include "VertexBuffer_DirectX11.h"
-#include "../utils/RenderEngineObjectsPool.h"
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -74,28 +75,28 @@ namespace JumaRenderEngine
         virtual void clearInternal() override;
         
         virtual WindowController* createWindowController() override;
-        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getObject(this); }
-        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getObject(this); }
-        virtual Shader* allocateShader() override { return m_ShadersPool.getObject(this); }
-        virtual Material* allocateMaterial() override { return m_MaterialsPool.getObject(this); }
-        virtual Texture* allocateTexture() override { return m_TexturesPool.getObject(this); }
+        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getPoolObject(); }
+        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getPoolObject(); }
+        virtual Shader* allocateShader() override { return m_ShadersPool.getPoolObject(); }
+        virtual Material* allocateMaterial() override { return m_MaterialsPool.getPoolObject(); }
+        virtual Texture* allocateTexture() override { return m_TexturesPool.getPoolObject(); }
 
-        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnObject(renderTarget); }
-        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnObject(vertexBuffer); }
-        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnObject(shader); }
-        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnObject(material); }
-        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnObject(texture); }
+        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnPoolObject(dynamic_cast<RenderTarget_DirectX11*>(renderTarget)); }
+        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnPoolObject(dynamic_cast<VertexBuffer_DirectX11*>(vertexBuffer)); }
+        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnPoolObject(dynamic_cast<Shader_DirectX11*>(shader)); }
+        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnPoolObject(dynamic_cast<Material_DirectX11*>(material)); }
+        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnPoolObject(dynamic_cast<Texture_DirectX11*>(texture)); }
 
     private:
 
         ID3D11Device* m_Device = nullptr;
         ID3D11DeviceContext* m_DeviceContext = nullptr;
         
-        RenderEngineObjectsPool<RenderTarget, RenderTarget_DirectX11> m_RenderTargetsPool;
-        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_DirectX11> m_VertexBuffersPool;
-        RenderEngineObjectsPool<Shader, Shader_DirectX11> m_ShadersPool;
-        RenderEngineObjectsPool<Material, Material_DirectX11> m_MaterialsPool;
-        RenderEngineObjectsPool<Texture, Texture_DirectX11> m_TexturesPool;
+        jpool_simple<RenderTarget_DirectX11> m_RenderTargetsPool;
+        jpool_simple<VertexBuffer_DirectX11> m_VertexBuffersPool;
+        jpool_simple<Shader_DirectX11> m_ShadersPool;
+        jpool_simple<Material_DirectX11> m_MaterialsPool;
+        jpool_simple<Texture_DirectX11> m_TexturesPool;
 
         jmap<DepthStencilState, ID3D11DepthStencilState*> m_DepthStencilStates;
         jmap<RasterizationState, ID3D11RasterizerState*> m_RasterizerStates;

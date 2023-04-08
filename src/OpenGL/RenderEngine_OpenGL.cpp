@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_OPENGL)
 
@@ -13,6 +13,23 @@ namespace JumaRenderEngine
     RenderEngine_OpenGL::~RenderEngine_OpenGL()
     {
         clearOpenGL();
+    }
+
+    bool RenderEngine_OpenGL::initAsyncAssetTaskQueueWorker(const int32 workerIndex)
+    {
+        return getWindowController<WindowController_OpenGL>()->createContextForAsyncAssetTaskQueueWorker(workerIndex);
+    }
+    bool RenderEngine_OpenGL::initAsyncAssetTaskQueueWorkerThread(const int32 workerIndex)
+    {
+        return getWindowController<WindowController_OpenGL>()->initAsyncAssetTaskQueueWorkerThread(workerIndex);
+    }
+    void RenderEngine_OpenGL::clearAsyncAssetTaskQueueWorkerThread(const int32 workerIndex)
+    {
+        getWindowController<WindowController_OpenGL>()->clearAsyncAssetTaskQueueWorkerThread(workerIndex);
+    }
+    void RenderEngine_OpenGL::clearAsyncAssetTaskQueueWorker(const int32 workerIndex)
+    {
+        getWindowController<WindowController_OpenGL>()->destroyContextForAsyncAssetTaskQueueWorker(workerIndex);
     }
 
     void RenderEngine_OpenGL::clearInternal()
@@ -38,7 +55,7 @@ namespace JumaRenderEngine
 
     WindowController* RenderEngine_OpenGL::createWindowController()
     {
-        return registerObject(CreateWindowController_OpenGL());
+        return CreateWindowController_OpenGL();
     }
 
     uint32 RenderEngine_OpenGL::getTextureSamplerIndex(const TextureSamplerType sampler)

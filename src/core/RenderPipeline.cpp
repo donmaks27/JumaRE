@@ -205,7 +205,7 @@ namespace JumaRenderEngine
                         renderOptions->renderStageProperties = renderStage->properties;
 	                    for (const auto& renderPrimitive : renderStage->primitivesList)
 	                    {
-		                    if ((renderPrimitive.material != nullptr) && !renderPrimitive.material->isTemplateMaterial())
+		                    if (renderPrimitive.material != nullptr)
 		                    {
 		                        renderPrimitive.vertexBuffer->render(renderOptions, renderPrimitive.material);
 		                    }

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -7,6 +7,8 @@
 #include "WindowController_OpenGL.h"
 #include "../../GLFW/WindowController_GLFW.h"
 
+#include <mutex>
+#include <thread>
 #include <jutils/jmap.h>
 
 namespace JumaRenderEngine
@@ -37,10 +39,17 @@ namespace JumaRenderEngine
 
         virtual bool setActiveWindowInternal(window_id windowID) override;
 
+        virtual bool createContextForAsyncAssetTaskQueueWorker(int32 workerIndex) override;
+        virtual bool initAsyncAssetTaskQueueWorkerThread(int32 workerIndex) override;
+        virtual void clearAsyncAssetTaskQueueWorkerThread(int32 workerIndex) override;
+        virtual void destroyContextForAsyncAssetTaskQueueWorker(int32 workerIndex) override;
+
     private:
 
         GLFWwindow* m_DefaultWindow = nullptr;
         jmap<window_id, WindowData_OpenGL_GLFW> m_Windows;
+
+        jarray<GLFWwindow*> m_AsyncAssetTaskQueueWorkerContexts;
 
 
         void clearData_OpenGL_GLFW();

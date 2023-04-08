@@ -9,10 +9,13 @@
 #include <jutils/jset.h>
 #include <jutils/jstringID.h>
 
+#include "ShaderCreateInfo.h"
 #include "ShaderUniform.h"
 
 namespace JumaRenderEngine
 {
+    class Material;
+
     struct ShaderUniformBufferDescription
     {
         uint32 size = 0;
@@ -21,12 +24,13 @@ namespace JumaRenderEngine
 
     class Shader : public RenderEngineAsset
     {
+        friend Material;
         friend RenderEngine;
 
         using Super = RenderEngineAsset;
 
     public:
-        Shader() = default;
+        Shader() : Super(RenderEngineAssetType::Shader) {}
         virtual ~Shader() override;
 
         const jset<jstringID>& getRequiredVertexComponents() const { return m_VertexComponents; }
@@ -36,9 +40,10 @@ namespace JumaRenderEngine
 
     protected:
 
-        bool init(const jmap<ShaderStageFlags, jstring>& fileNames, jset<jstringID> vertexComponents, jmap<jstringID, ShaderUniform> uniforms = {});
+        bool init(const ShaderCreateInfo& createInfo);
 
         virtual bool initInternal(const jmap<ShaderStageFlags, jstring>& fileNames) = 0;
+        virtual bool isReadyForDestroy() override { return m_ChildMaterialsCount == 0; }
         virtual void onClearAsset() override;
 
     private:
@@ -46,6 +51,8 @@ namespace JumaRenderEngine
         jset<jstringID> m_VertexComponents;
         jmap<jstringID, ShaderUniform> m_ShaderUniforms;
         jmap<uint32, ShaderUniformBufferDescription> m_CachedUniformBufferDescriptions;
+
+        std::atomic<uint32> m_ChildMaterialsCount = 0;
 
 
         void clearData();

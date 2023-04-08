@@ -116,7 +116,7 @@ namespace JumaRenderEngine
 
     WindowController* RenderEngine_DirectX11::createWindowController()
     {
-        return registerObject(CreateWindowController_DirectX11());
+        return CreateWindowController_DirectX11();
     }
 
     ID3D11DepthStencilState* RenderEngine_DirectX11::getDepthStencilState(const DepthStencilState& description)

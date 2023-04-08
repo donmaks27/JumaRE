@@ -25,7 +25,7 @@ namespace JumaRenderEngine
         using Super = TextureBase;
 
     public:
-        RenderTarget() = default;
+        RenderTarget() : Super(RenderEngineAssetType::RenderTarget) {}
         virtual ~RenderTarget() override;
 
         render_target_id getID() const { return m_RenderTargetID; }

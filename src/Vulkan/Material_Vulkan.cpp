@@ -23,9 +23,18 @@ namespace JumaRenderEngine
 
     bool Material_Vulkan::initInternal()
     {
-        if (!isTemplateMaterial() && !createDescriptorSet())
+        if (getShader()->getUniforms().isEmpty())
         {
-            JUTILS_LOG(error, JSTR("Failed to create vulkan descriptor set"));
+            m_MaterialCreated = true;
+            return true;
+        }
+
+        m_CreateTaskActive = true;
+        jasync_task* task = new MaterialCreateTask(this);
+        if (!getRenderEngine()->getAsyncAssetTaksQueue().addTask(task))
+        {
+            JUTILS_LOG(error, JSTR("Failed to start async material creation"));
+            delete task;
             clearVulkan();
             return false;
         }
@@ -35,11 +44,6 @@ namespace JumaRenderEngine
     {
         const Shader_Vulkan* shader = getShader<Shader_Vulkan>();
         const jmap<jstringID, ShaderUniform>& uniforms = shader->getUniforms();
-        if (uniforms.isEmpty())
-        {
-            return true;
-        }
-
         const uint32 bufferUniformCount = shader->getUniformBufferDescriptions().getSize();
         uint32 imageUniformCount = 0;
         for (const auto& uniform : uniforms)
@@ -72,16 +76,17 @@ namespace JumaRenderEngine
             return true;
         }
 
+        VkDevice device = getRenderEngine<RenderEngine_Vulkan>()->getDevice();
+
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.poolSizeCount = poolSizeCount;
         poolInfo.pPoolSizes = poolSizes;
         poolInfo.maxSets = 1;
         poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        VkResult result = vkCreateDescriptorPool(getRenderEngine<RenderEngine_Vulkan>()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool);
+        VkResult result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &m_DescriptorPool);
         if (result != VK_SUCCESS)
         {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to create vulkan descriptor pool"));
             return false;
         }
 
@@ -91,13 +96,21 @@ namespace JumaRenderEngine
         allocateInfo.descriptorPool = m_DescriptorPool;
         allocateInfo.descriptorSetCount = 1;
         allocateInfo.pSetLayouts = &descriptorSetLayout;
-        result = vkAllocateDescriptorSets(getRenderEngine<RenderEngine_Vulkan>()->getDevice(), &allocateInfo, &m_DescriptorSet);
+        result = vkAllocateDescriptorSets(device, &allocateInfo, &m_DescriptorSet);
         if (result != VK_SUCCESS)
         {
-            JUTILS_ERROR_LOG(result, JSTR("Failed to allocate descriptor set"));
+            vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
+            m_DescriptorPool = nullptr;
             return false;
         }
-        return initDescriptorSetData();
+        if (!initDescriptorSetData())
+        {
+            vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
+            m_DescriptorSet = nullptr;
+            m_DescriptorPool = nullptr;
+            return false;
+        }
+        return true;
     }
     bool Material_Vulkan::initDescriptorSetData()
     {
@@ -108,19 +121,21 @@ namespace JumaRenderEngine
 
         RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
         const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = getShader()->getUniformBufferDescriptions();
+        const jmap<jstringID, ShaderUniform>& uniforms = getShader()->getUniforms();
+
+        jarray<VkDescriptorBufferInfo> bufferInfos;
+        jarray<VkDescriptorImageInfo> imageInfos;
+        jarray<VkWriteDescriptorSet> descriptorWrites;
+        descriptorWrites.reserve(uniforms.getSize());
         if (!uniformBufferDescriptions.isEmpty())
         {
-            jarray<VkDescriptorBufferInfo> bufferInfos;
-            jarray<VkWriteDescriptorSet> descriptorWrites;
             m_UniformBuffers.reserve(uniformBufferDescriptions.getSize());
             bufferInfos.reserve(uniformBufferDescriptions.getSize());
-            descriptorWrites.reserve(uniformBufferDescriptions.getSize());
             for (const auto& uniformBufferDescription : uniformBufferDescriptions)
             {
                 VulkanBuffer* buffer = renderEngine->getVulkanBuffer();
                 if (!buffer->initAccessedGPU(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, { VulkanQueueType::Graphics }, uniformBufferDescription.value.size))
                 {
-                    JUTILS_LOG(error, JSTR("Failed to initialize one of the vulkan uniform buffers"));
                     renderEngine->returnVulkanBuffer(buffer);
                     return false;
                 }
@@ -139,16 +154,43 @@ namespace JumaRenderEngine
                 descriptorWrite.dstBinding = uniformBufferDescription.key;
                 descriptorWrite.dstArrayElement = 0;
             }
-            if (!descriptorWrites.isEmpty())
+        }
+        if (!uniforms.isEmpty())
+        {
+            const Texture_Vulkan* defaultTexture = dynamic_cast<const Texture_Vulkan*>(renderEngine->getDefaultTexture());
+            VkImageView defaultImageView = defaultTexture->getVulkanImage()->getImageView();
+            imageInfos.reserve(uniforms.getSize());
+            for (const auto& uniform : uniforms)
             {
-                vkUpdateDescriptorSets(renderEngine->getDevice(), 
-                   static_cast<uint32>(descriptorWrites.getSize()), descriptorWrites.getData(),
-                   0, nullptr
-                );
+                if (uniform.value.type != ShaderUniformType::Texture)
+                {
+                    continue;
+                }
+
+                VkDescriptorImageInfo& imageInfo = imageInfos.addDefault();
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfo.imageView = defaultImageView;
+                imageInfo.sampler = renderEngine->getTextureSampler(defaultTexture->getSamplerType());
+                VkWriteDescriptorSet& descriptorWrite = descriptorWrites.addDefault();
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = m_DescriptorSet;
+                descriptorWrite.dstBinding = uniform.value.shaderLocation;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pImageInfo = &imageInfo;
             }
         }
-        return updateDescriptorSetData();
+        if (!descriptorWrites.isEmpty())
+        {
+            vkUpdateDescriptorSets(renderEngine->getDevice(), 
+                static_cast<uint32>(descriptorWrites.getSize()), descriptorWrites.getData(),
+                0, nullptr
+            );
+        }
+        return true;
     }
+
     bool Material_Vulkan::updateDescriptorSetData()
     {
         if (m_DescriptorSet == nullptr)
@@ -338,7 +380,17 @@ namespace JumaRenderEngine
 
     bool Material_Vulkan::bindMaterial(const RenderOptions* renderOptions, VertexBuffer_Vulkan* vertexBuffer)
     {
-        if (isTemplateMaterial())
+        Shader_Vulkan* shader = getShader<Shader_Vulkan>();
+        if (!m_MaterialCreated)
+        {
+            if (m_CreateTaskActive)
+            {
+                return false;
+            }
+            m_MaterialValid = shader->getUniforms().isEmpty() || (m_DescriptorSet != nullptr);
+            m_MaterialCreated = true;
+        }
+        if (!m_MaterialValid)
         {
             return false;
         }
@@ -348,7 +400,7 @@ namespace JumaRenderEngine
         materialProperties.depthEnabled &= renderOptions->renderStageProperties.depthEnabled;
 
         VkCommandBuffer commandBuffer = options->commandBuffer->get();
-        return getShader<Shader_Vulkan>()->bindRenderPipeline(commandBuffer, vertexBuffer->getVertexID(), options->renderPass, materialProperties)
+        return shader->bindRenderPipeline(commandBuffer, vertexBuffer->getVertexID(), options->renderPass, materialProperties)
             && bindDescriptorSet(commandBuffer);
     }
 

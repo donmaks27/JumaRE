@@ -6,6 +6,8 @@
 
 #include "JumaRE/RenderEngine.h"
 
+#include <jutils/jpool_simple.h>
+
 #include "D3D12MemAlloc.h"
 
 #include "Material_DirectX12.h"
@@ -16,7 +18,6 @@
 #include "DirectX12Objects/DirectX12Buffer.h"
 #include "DirectX12Objects/DirectX12CommandQueue.h"
 #include "DirectX12Objects/DirectX12Texture.h"
-#include "../utils/RenderEngineObjectsPool.h"
 
 namespace JumaRenderEngine
 {
@@ -52,10 +53,10 @@ namespace JumaRenderEngine
 
         DirectX12MipGenerator* getMipGenerator() const { return m_TextureMipGenerator; }
 
-        DirectX12Buffer* getBuffer() { return m_BuffersPool.getObject(this); }
-        DirectX12Texture* getDirectXTexture() { return m_DirectXTexturesPool.getObject(this); }
-        void returnBuffer(DirectX12Buffer* buffer) { m_BuffersPool.returnObject(buffer); }
-        void returnDirectXTexture(DirectX12Texture* texture) { m_DirectXTexturesPool.returnObject(texture); }
+        DirectX12Buffer* getBuffer() { return m_BuffersPool.getPoolObject(); }
+        DirectX12Texture* getDirectXTexture() { return m_DirectXTexturesPool.getPoolObject(); }
+        void returnBuffer(DirectX12Buffer* buffer) { m_BuffersPool.returnPoolObject(buffer); }
+        void returnDirectXTexture(DirectX12Texture* texture) { m_DirectXTexturesPool.returnPoolObject(texture); }
 
     protected:
 
@@ -64,41 +65,41 @@ namespace JumaRenderEngine
 
         virtual WindowController* createWindowController() override;
         virtual RenderPipeline* createRenderPipelineInternal() override;
-        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getObject(this); }
-        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getObject(this); }
-        virtual Shader* allocateShader() override { return m_ShadersPool.getObject(this); }
-        virtual Material* allocateMaterial() override { return m_MaterialsPool.getObject(this); }
-        virtual Texture* allocateTexture() override { return m_TexturesPool.getObject(this); }
+        virtual RenderTarget* allocateRenderTarget() override { return m_RenderTargetsPool.getPoolObject(); }
+        virtual VertexBuffer* allocateVertexBuffer() override { return m_VertexBuffersPool.getPoolObject(); }
+        virtual Shader* allocateShader() override { return m_ShadersPool.getPoolObject(); }
+        virtual Material* allocateMaterial() override { return m_MaterialsPool.getPoolObject(); }
+        virtual Texture* allocateTexture() override { return m_TexturesPool.getPoolObject(); }
 
-        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnObject(renderTarget); }
-        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnObject(vertexBuffer); }
-        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnObject(shader); }
-        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnObject(material); }
-        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnObject(texture); }
+        virtual void deallocateRenderTarget(RenderTarget* renderTarget) override { m_RenderTargetsPool.returnPoolObject(dynamic_cast<RenderTarget_DirectX12*>(renderTarget)); }
+        virtual void deallocateVertexBuffer(VertexBuffer* vertexBuffer) override { m_VertexBuffersPool.returnPoolObject(dynamic_cast<VertexBuffer_DirectX12*>(vertexBuffer)); }
+        virtual void deallocateShader(Shader* shader) override { m_ShadersPool.returnPoolObject(dynamic_cast<Shader_DirectX12*>(shader)); }
+        virtual void deallocateMaterial(Material* material) override { m_MaterialsPool.returnPoolObject(dynamic_cast<Material_DirectX12*>(material)); }
+        virtual void deallocateTexture(Texture* texture) override { m_TexturesPool.returnPoolObject(dynamic_cast<Texture_DirectX12*>(texture)); }
 
     private:
+
+        jpool_simple_async<DirectX12Buffer> m_BuffersPool;
+        jpool_simple_async<DirectX12Texture> m_DirectXTexturesPool;
+
+        jpool_simple<RenderTarget_DirectX12> m_RenderTargetsPool;
+        jpool_simple<VertexBuffer_DirectX12> m_VertexBuffersPool;
+        jpool_simple<Shader_DirectX12> m_ShadersPool;
+        jpool_simple<Material_DirectX12> m_MaterialsPool;
+        jpool_simple<Texture_DirectX12> m_TexturesPool;
 
         ID3D12Device2* m_Device = nullptr;
         D3D12MA::Allocator* m_ResourceAllocator = nullptr;
         mutable jmap<D3D12_COMMAND_LIST_TYPE, DirectX12CommandQueue> m_CommandQueues;
 
-        uint8 m_CachedDescriptorSize_RTV = 0;
-        uint8 m_CachedDescriptorSize_DSV = 0;
-        uint8 m_CachedDescriptorSize_SRV = 0;
-        uint8 m_CachedDescriptorSize_Sampler = 0;
-
         ID3D12DescriptorHeap* m_SamplersDescriptorHeap = nullptr;
 
         DirectX12MipGenerator* m_TextureMipGenerator = nullptr;
 
-        RenderEngineObjectsPool<RenderTarget, RenderTarget_DirectX12> m_RenderTargetsPool;
-        RenderEngineObjectsPool<VertexBuffer, VertexBuffer_DirectX12> m_VertexBuffersPool;
-        RenderEngineObjectsPool<Shader, Shader_DirectX12> m_ShadersPool;
-        RenderEngineObjectsPool<Material, Material_DirectX12> m_MaterialsPool;
-        RenderEngineObjectsPool<Texture, Texture_DirectX12> m_TexturesPool;
-
-        RenderEngineObjectsPool<DirectX12Buffer> m_BuffersPool;
-        RenderEngineObjectsPool<DirectX12Texture> m_DirectXTexturesPool;
+        uint8 m_CachedDescriptorSize_RTV = 0;
+        uint8 m_CachedDescriptorSize_DSV = 0;
+        uint8 m_CachedDescriptorSize_SRV = 0;
+        uint8 m_CachedDescriptorSize_Sampler = 0;
 
 
         bool createDirectXDevice();

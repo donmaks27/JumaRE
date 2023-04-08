@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
@@ -46,6 +46,7 @@ namespace JumaRenderEngine
         template<ShaderUniformType Type>
         using material_params_map = jmap<jstringID, typename ShaderUniformInfo<Type>::value_type>;
 
+        // TODO: Replace with global objects pool in render engine, it took too much memory for each material
         material_params_map<ShaderUniformType::Float> m_MaterialParams_Float;
         material_params_map<ShaderUniformType::Vec2> m_MaterialParams_Vec2;
         material_params_map<ShaderUniformType::Vec4> m_MaterialParams_Vec4;

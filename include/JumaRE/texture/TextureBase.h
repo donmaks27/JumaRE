@@ -18,8 +18,12 @@ namespace JumaRenderEngine
 
     class TextureBase : public RenderEngineAsset
     {
-    public:
+        using Super = RenderEngineAsset;
+
+    protected:
         TextureBase() = default;
+        TextureBase(const RenderEngineAssetType type) : Super(type) {}
+    public:
         virtual ~TextureBase() override = default;
         
         math::uvector2 getSize() const { return m_TextureSize; }

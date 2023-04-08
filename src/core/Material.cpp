@@ -11,7 +11,7 @@ namespace JumaRenderEngine
         clearData();
     }
 
-    bool Material::init(Shader* shader, const bool templateMaterial)
+    bool Material::init(Shader* shader)
     {
         if (shader == nullptr)
         {
@@ -25,7 +25,6 @@ namespace JumaRenderEngine
             m_MaterialParams.setDefaultValue(uniform.key, uniform.value.type);
             m_MaterialParamsForUpdate.add(uniform.key);
         }
-        m_TemplateMaterial = templateMaterial;
 
         if (!initInternal())
         {
@@ -44,7 +43,11 @@ namespace JumaRenderEngine
     void Material::clearData()
     {
         m_MaterialParams.clear();
-        m_Shader = nullptr;
+        if (m_Shader != nullptr)
+        {
+            --m_Shader->m_ChildMaterialsCount;
+            m_Shader = nullptr;
+        }
     }
 
     bool Material::checkParamType(const jstringID& name, const ShaderUniformType type) const
