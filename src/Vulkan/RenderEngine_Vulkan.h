@@ -6,7 +6,7 @@
 
 #include "JumaRE/RenderEngine.h"
 
-#include <jutils/jpool_simple_async.h>
+#include <jutils/jpool_simple.h>
 #include <vma/vk_mem_alloc.h>
 
 #include "Material_Vulkan.h"

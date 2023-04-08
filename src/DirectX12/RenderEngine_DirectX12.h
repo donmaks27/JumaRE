@@ -6,7 +6,7 @@
 
 #include "JumaRE/RenderEngine.h"
 
-#include <jutils/jpool_simple_async.h>
+#include <jutils/jpool_simple.h>
 
 #include "D3D12MemAlloc.h"
 
