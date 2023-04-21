@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <jutils/jlog.h>
+#include <jutils/log.h>
 
 namespace JumaRenderEngine
 {

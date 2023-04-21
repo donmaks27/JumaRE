@@ -62,7 +62,7 @@ namespace JumaRenderEngine
         RenderEngine_Vulkan* renderEngine = getRenderEngine<RenderEngine_Vulkan>();
 
         jarray<uint32> accessedQueueFamilies;
-        accessedQueueFamilies.reserve(accessedQueues.size() + 1);
+        accessedQueueFamilies.reserve(static_cast<int32>(accessedQueues.size()) + 1);
         accessedQueueFamilies.add(renderEngine->getQueue(VulkanQueueType::Transfer)->familyIndex);
         for (const auto& queue : accessedQueues)
         {
