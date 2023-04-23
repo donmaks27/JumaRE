@@ -96,7 +96,7 @@ namespace JumaRenderEngine
         {
             m_AxisStates.add(key, { { value, 0.0f }, mods });
         }
-        else if (!math::isEqual(value, 0.0f) || !math::isEqual(data->value.x, 0.0f))
+        else if (!math::isNearlyZero(value) || !math::isNearlyZero(data->value.x))
         {
             *data = { { value, 0.0f }, mods };
         }
@@ -115,8 +115,8 @@ namespace JumaRenderEngine
         {
             m_AxisStates.add(key, { value, mods });
         }
-        else if (!math::isEqual(value.x, 0.0f) || !math::isEqual(value.y, 0.0f) || 
-            !math::isEqual(data->value.x, 0.0f) || !math::isEqual(data->value.y, 0.0f))
+        else if (!math::isNearlyZero(value.x) || !math::isNearlyZero(value.y) || 
+                 !math::isNearlyZero(data->value.x) || !math::isNearlyZero(data->value.y))
         {
             *data = { value, mods };
         }

@@ -81,7 +81,7 @@ namespace JumaRenderEngine
                 m_MaterialParams_Vec2.add(name, value);
                 return true;
             }
-            if (!math::isVectorsEqual(value, *valuePtr))
+            if (value != *valuePtr)
             {
                 *valuePtr = value;
                 return true;
@@ -97,7 +97,7 @@ namespace JumaRenderEngine
                 m_MaterialParams_Vec4.add(name, value);
                 return true;
             }
-            if (!math::isVectorsEqual(value, *valuePtr))
+            if (value != *valuePtr)
             {
                 *valuePtr = value;
                 return true;
@@ -113,7 +113,7 @@ namespace JumaRenderEngine
                 m_MaterialParams_Mat4.add(name, value);
                 return true;
             }
-            if (!math::isMatricesEqual(value, *valuePtr))
+            if (value != *valuePtr)
             {
                 *valuePtr = value;
                 return true;

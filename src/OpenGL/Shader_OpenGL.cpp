@@ -49,7 +49,7 @@ namespace JumaRenderEngine
         {
             const jstring& line = shaderText[lineIndex];
             shaderLines[lineIndex] = *line;
-            shaderLineLength[lineIndex] = line.getSize();
+            shaderLineLength[lineIndex] = static_cast<GLint>(line.getSize());
         }
 
         const uint32 shaderIndex = glCreateShader(shaderStage);

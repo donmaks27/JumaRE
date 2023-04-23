@@ -40,7 +40,7 @@ namespace JumaRenderEngine
     {
         std::wstring fileNameWide;
         fileNameWide.resize(fileName.getSize() + 1);
-        const int32 fileNameWideSize = MultiByteToWideChar(CP_UTF8, 0, *fileName, fileName.getSize(), &fileNameWide[0], static_cast<int>(fileNameWide.size()));
+        const int32 fileNameWideSize = MultiByteToWideChar(CP_UTF8, 0, *fileName, static_cast<int>(fileName.getSize()), fileNameWide.data(), static_cast<int>(fileNameWide.size()));
         if (fileNameWideSize <= 0)
         {
             if (!optional)
