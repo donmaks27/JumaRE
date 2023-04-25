@@ -44,11 +44,11 @@ namespace JumaRenderEngine
     {
         const Shader_Vulkan* shader = getShader<Shader_Vulkan>();
         const jmap<jstringID, ShaderUniform>& uniforms = shader->getUniforms();
-        const uint32 bufferUniformCount = shader->getUniformBufferDescriptions().getSize();
+        const uint32 bufferUniformCount = static_cast<uint32>(shader->getUniformBufferDescriptions().getSize());
         uint32 imageUniformCount = 0;
-        for (const auto& uniform : uniforms)
+        for (const auto& uniform : uniforms.values())
         {
-            switch (uniform.value.type)
+            switch (uniform.type)
             {
             case ShaderUniformType::Texture: 
                 imageUniformCount++;
@@ -126,20 +126,19 @@ namespace JumaRenderEngine
         jarray<VkDescriptorBufferInfo> bufferInfos;
         jarray<VkDescriptorImageInfo> imageInfos;
         jarray<VkWriteDescriptorSet> descriptorWrites;
-        descriptorWrites.reserve(uniforms.getSize());
+        descriptorWrites.reserve(static_cast<int32>(uniforms.getSize()));
         if (!uniformBufferDescriptions.isEmpty())
         {
-            m_UniformBuffers.reserve(uniformBufferDescriptions.getSize());
-            bufferInfos.reserve(uniformBufferDescriptions.getSize());
-            for (const auto& uniformBufferDescription : uniformBufferDescriptions)
+            bufferInfos.reserve(static_cast<int32>(uniformBufferDescriptions.getSize()));
+            for (const auto& [uniformLocation, bufferDescription] : uniformBufferDescriptions)
             {
                 VulkanBuffer* buffer = renderEngine->getVulkanBuffer();
-                if (!buffer->initAccessedGPU(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, { VulkanQueueType::Graphics }, uniformBufferDescription.value.size))
+                if (!buffer->initAccessedGPU(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, { VulkanQueueType::Graphics }, bufferDescription.size))
                 {
                     renderEngine->returnVulkanBuffer(buffer);
                     return false;
                 }
-                m_UniformBuffers.add(uniformBufferDescription.key, buffer);
+                m_UniformBuffers.add(uniformLocation, buffer);
 
                 VkDescriptorBufferInfo& bufferInfo = bufferInfos.addDefault();
                 bufferInfo.buffer = buffer->get();
@@ -151,7 +150,7 @@ namespace JumaRenderEngine
                 descriptorWrite.pBufferInfo = &bufferInfo;
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrite.dstSet = m_DescriptorSet;
-                descriptorWrite.dstBinding = uniformBufferDescription.key;
+                descriptorWrite.dstBinding = uniformLocation;
                 descriptorWrite.dstArrayElement = 0;
             }
         }
@@ -159,10 +158,10 @@ namespace JumaRenderEngine
         {
             const Texture_Vulkan* defaultTexture = dynamic_cast<const Texture_Vulkan*>(renderEngine->getDefaultTexture());
             VkImageView defaultImageView = defaultTexture->getVulkanImage()->getImageView();
-            imageInfos.reserve(uniforms.getSize());
-            for (const auto& uniform : uniforms)
+            imageInfos.reserve(static_cast<int32>(uniforms.getSize()));
+            for (const auto& uniform : uniforms.values())
             {
-                if (uniform.value.type != ShaderUniformType::Texture)
+                if (uniform.type != ShaderUniformType::Texture)
                 {
                     continue;
                 }
@@ -174,7 +173,7 @@ namespace JumaRenderEngine
                 VkWriteDescriptorSet& descriptorWrite = descriptorWrites.addDefault();
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrite.dstSet = m_DescriptorSet;
-                descriptorWrite.dstBinding = uniform.value.shaderLocation;
+                descriptorWrite.dstBinding = uniform.shaderLocation;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 descriptorWrite.descriptorCount = 1;
@@ -211,8 +210,8 @@ namespace JumaRenderEngine
 
         jarray<VkDescriptorImageInfo> imageInfos;
         jarray<VkWriteDescriptorSet> descriptorWrites;
-        imageInfos.reserve(uniforms.getSize());
-        descriptorWrites.reserve(uniforms.getSize());
+        imageInfos.reserve(static_cast<int32>(uniforms.getSize()));
+        descriptorWrites.reserve(static_cast<int32>(uniforms.getSize()));
         for (const auto& paramName : notUpdatedParams)
         {
             const ShaderUniform* uniformPtr = uniforms.find(paramName);
@@ -340,9 +339,9 @@ namespace JumaRenderEngine
         {
             // TODO: Put it into one command buffer
             bool needToWait = false;
-            for (const auto& buffer : m_UniformBuffers)
+            for (const auto& buffer : m_UniformBuffers.values())
             {
-                needToWait |= buffer.value->flushMappedData(false);
+                needToWait |= buffer->flushMappedData(false);
             }
             if (needToWait)
             {
@@ -370,9 +369,9 @@ namespace JumaRenderEngine
 
         if (!m_UniformBuffers.isEmpty())
         {
-            for (const auto& buffer : m_UniformBuffers)
+            for (const auto& buffer : m_UniformBuffers.values())
             {
-                renderEngine->returnVulkanBuffer(buffer.value);
+                renderEngine->returnVulkanBuffer(buffer);
             }
             m_UniformBuffers.clear();
         }

@@ -26,11 +26,10 @@ namespace JumaRenderEngine
         const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = getShader()->getUniformBufferDescriptions();
         if (!uniformBufferDescriptions.isEmpty())
         {
-            m_UniformBuffers.reserve(uniformBufferDescriptions.getSize());
-            for (const auto& uniformBufferDescription : uniformBufferDescriptions)
+            for (const auto& [bufferID, bufferDescription] : uniformBufferDescriptions)
             {
                 static constexpr uint32 mask = 15;
-                const uint32 size = (uniformBufferDescription.value.size + mask) & ~mask;
+                const uint32 size = (bufferDescription.size + mask) & ~mask;
                 D3D11_BUFFER_DESC description{};
                 description.ByteWidth = size;
                 description.Usage = D3D11_USAGE_DYNAMIC;
@@ -46,7 +45,7 @@ namespace JumaRenderEngine
                     continue;
                 }
 
-                m_UniformBuffers.add(uniformBufferDescription.key, { uniformBuffer, uniformBufferDescription.value.shaderStages });
+                m_UniformBuffers.add(bufferID, { uniformBuffer, bufferDescription.shaderStages });
             }
         }
         return true;
@@ -59,9 +58,9 @@ namespace JumaRenderEngine
     }
     void Material_DirectX11::clearDirectX()
     {
-        for (const auto& uniformBuffer : m_UniformBuffers)
+        for (const auto& uniformBuffer : m_UniformBuffers.values())
         {
-            uniformBuffer.value.buffer->Release();
+            uniformBuffer.buffer->Release();
         }
         m_UniformBuffers.clear();
     }
@@ -102,31 +101,31 @@ namespace JumaRenderEngine
     {
         ID3D11DeviceContext* deviceContext = getRenderEngine<RenderEngine_DirectX11>()->getDeviceContext();
         ID3D11ShaderResourceView* emptyTextureView = nullptr;
-        for (const auto& uniform : getShader()->getUniforms())
+        for (const auto& uniform : getShader()->getUniforms().values())
         {
-            if (uniform.value.type != ShaderUniformType::Texture)
+            if (uniform.type != ShaderUniformType::Texture)
             {
                 continue;
             }
-            if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
+            if (uniform.shaderStages & SHADER_STAGE_VERTEX)
             {
-                deviceContext->VSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+                deviceContext->VSSetShaderResources(uniform.shaderLocation, 1, &emptyTextureView);
             }
-            if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            if (uniform.shaderStages & SHADER_STAGE_FRAGMENT)
             {
-                deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &emptyTextureView);
+                deviceContext->PSSetShaderResources(uniform.shaderLocation, 1, &emptyTextureView);
             }
         }
         ID3D11Buffer* emptyBuffer = nullptr;
-        for (const auto& uniformBuffer : m_UniformBuffers)
+        for (const auto& [bufferID, uniformBuffer] : m_UniformBuffers)
         {
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
+            if (uniformBuffer.shaderStages & SHADER_STAGE_VERTEX)
             {
-                deviceContext->VSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
+                deviceContext->VSSetConstantBuffers(bufferID, 1, &emptyBuffer);
             }
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            if (uniformBuffer.shaderStages & SHADER_STAGE_FRAGMENT)
             {
-                deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &emptyBuffer);
+                deviceContext->PSSetConstantBuffers(bufferID, 1, &emptyBuffer);
             }
         }
 
@@ -137,29 +136,29 @@ namespace JumaRenderEngine
     {
         updateUniformBuffersData(deviceContext);
 
-        for (const auto& uniformBuffer : m_UniformBuffers)
+        for (const auto& [bufferID, uniformBuffer] : m_UniformBuffers)
         {
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_VERTEX)
+            if (uniformBuffer.shaderStages & SHADER_STAGE_VERTEX)
             {
-                deviceContext->VSSetConstantBuffers(uniformBuffer.key, 1, &uniformBuffer.value.buffer);
+                deviceContext->VSSetConstantBuffers(bufferID, 1, &uniformBuffer.buffer);
             }
-            if (uniformBuffer.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            if (uniformBuffer.shaderStages & SHADER_STAGE_FRAGMENT)
             {
-                deviceContext->PSSetConstantBuffers(uniformBuffer.key, 1, &uniformBuffer.value.buffer);
+                deviceContext->PSSetConstantBuffers(bufferID, 1, &uniformBuffer.buffer);
             }
         }
         
         RenderEngine_DirectX11* renderEngine = getRenderEngine<RenderEngine_DirectX11>();
         const Texture_DirectX11* defaultTexture = dynamic_cast<const Texture_DirectX11*>(renderEngine->getDefaultTexture());
         const MaterialParamsStorage& materialParams = getMaterialParams();
-        for (const auto& uniform : getShader()->getUniforms())
+        for (const auto& [uniformID, uniform] : getShader()->getUniforms())
         {
-            if (uniform.value.type != ShaderUniformType::Texture)
+            if (uniform.type != ShaderUniformType::Texture)
             {
                 continue;
             }
             ShaderUniformInfo<ShaderUniformType::Texture>::value_type value;
-            if (!materialParams.getValue<ShaderUniformType::Texture>(uniform.key, value))
+            if (!materialParams.getValue<ShaderUniformType::Texture>(uniformID, value))
             {
                 continue;
             }
@@ -197,15 +196,15 @@ namespace JumaRenderEngine
                 continue;
             }
 
-            if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
+            if (uniform.shaderStages & SHADER_STAGE_VERTEX)
             {
-                deviceContext->VSSetSamplers(uniform.value.shaderLocation, 1, &sampler);
-                deviceContext->VSSetShaderResources(uniform.value.shaderLocation, 1, &textureView);
+                deviceContext->VSSetSamplers(uniform.shaderLocation, 1, &sampler);
+                deviceContext->VSSetShaderResources(uniform.shaderLocation, 1, &textureView);
             }
-            if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            if (uniform.shaderStages & SHADER_STAGE_FRAGMENT)
             {
-                deviceContext->PSSetSamplers(uniform.value.shaderLocation, 1, &sampler);
-                deviceContext->PSSetShaderResources(uniform.value.shaderLocation, 1, &textureView);
+                deviceContext->PSSetSamplers(uniform.shaderLocation, 1, &sampler);
+                deviceContext->PSSetShaderResources(uniform.shaderLocation, 1, &textureView);
             }
         }
     }
@@ -239,9 +238,8 @@ namespace JumaRenderEngine
         }
 
         const MaterialParamsStorage& materialParams = getMaterialParams();
-        for (const auto& shaderUniform : uniforms)
+        for (const auto& [uniformID, uniform] : uniforms)
         {
-            const ShaderUniform& uniform = shaderUniform.value;
             const D3D11_MAPPED_SUBRESOURCE* mappedData = uniformBuffersData.find(uniform.shaderLocation);
             if (mappedData == nullptr)
             {
@@ -253,7 +251,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Float:
                 {
                     ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Float>(shaderUniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Float>(uniformID, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value, sizeof(value));
                     }
@@ -262,7 +260,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Vec2:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec2>(shaderUniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Vec2>(uniformID, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0], sizeof(value));
                     }
@@ -271,7 +269,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Vec4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Vec4>(shaderUniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Vec4>(uniformID, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0], sizeof(value));
                     }
@@ -280,7 +278,7 @@ namespace JumaRenderEngine
             case ShaderUniformType::Mat4:
                 {
                     ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                    if (materialParams.getValue<ShaderUniformType::Mat4>(shaderUniform.key, value))
+                    if (materialParams.getValue<ShaderUniformType::Mat4>(uniformID, value))
                     {
                         std::memcpy(static_cast<uint8*>(mappedData->pData) + uniform.shaderBlockOffset, &value[0][0], sizeof(value));
                     }
@@ -289,9 +287,9 @@ namespace JumaRenderEngine
             default: ;
             }
         }
-        for (const auto& mappedData : uniformBuffersData)
+        for (const auto& bufferLocation : uniformBuffersData.keys())
         {
-            deviceContext->Unmap(m_UniformBuffers[mappedData.key].buffer, 0);
+            deviceContext->Unmap(m_UniformBuffers[bufferLocation].buffer, 0);
         }
 
         clearParamsForUpdate();

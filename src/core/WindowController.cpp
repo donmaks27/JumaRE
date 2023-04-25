@@ -291,14 +291,13 @@ namespace JumaRenderEngine
     {
         if (!m_ChangedWindowSizes.isEmpty())
         {
-            for (const auto& changedWindowSize : m_ChangedWindowSizes)
+            for (const auto& [windowID, changedSize] : m_ChangedWindowSizes)
             {
-                const window_id windowID = changedWindowSize.key;
                 WindowData* windowData = getWindowData(windowID);
                 if (windowData != nullptr)
                 {
-                    JUTILS_LOG(info, JSTR("Window {} size changed - {}"), windowID, changedWindowSize.value);
-                    windowData->size = changedWindowSize.value;
+                    JUTILS_LOG(info, JSTR("Window {} size changed - {}"), windowID, changedSize);
+                    windowData->size = changedSize;
                     if ((windowID == getMainWindowID()) && (getMainWindowMode() != WindowMode::WindowedFullscreen))
                     {
                         windowData->desiredSize = windowData->size;
@@ -312,15 +311,15 @@ namespace JumaRenderEngine
 
         if (!m_ReceivedButtonInput.isEmpty())
         {
-            for (const auto& input : m_ReceivedButtonInput)
+            for (const auto& [buttonInput, action] : m_ReceivedButtonInput)
             {
-                const WindowData* windowData = findWindowData(input.key.windowID);
+                const WindowData* windowData = findWindowData(buttonInput.windowID);
                 if (windowData != nullptr)
                 {
                     InputActionData inputData{};
-                    inputData.device = input.key.device;
-                    inputData.button = input.key.button;
-                    inputData.buttonAction = input.value;
+                    inputData.device = buttonInput.device;
+                    inputData.button = buttonInput.button;
+                    inputData.buttonAction = action;
                     onWindowInput.call(this, windowData, inputData);
                 }
             }
@@ -328,15 +327,15 @@ namespace JumaRenderEngine
         }
         if (!m_ReceivedAxisInput.isEmpty())
         {
-            for (const auto& input : m_ReceivedAxisInput)
+            for (const auto& [axisInput, value] : m_ReceivedAxisInput)
             {
-                const WindowData* windowData = findWindowData(input.key.windowID);
+                const WindowData* windowData = findWindowData(axisInput.windowID);
                 if (windowData != nullptr)
                 {
                     InputActionData inputData{};
-                    inputData.device = input.key.device;
-                    inputData.axis = input.key.axis;
-                    inputData.axisValue = input.value;
+                    inputData.device = axisInput.device;
+                    inputData.axis = axisInput.axis;
+                    inputData.axisValue = value;
                     onWindowInput.call(this, windowData, inputData);
                 }
             }

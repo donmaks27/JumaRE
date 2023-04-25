@@ -19,7 +19,7 @@ namespace JumaRenderEngine
         virtual ~RenderEngineContextObjectBase() = default;
 
         RenderEngine* getRenderEngine() const { return s_RenderEngine; }
-        template<typename T, TEMPLATE_ENABLE(is_base<RenderEngine, T>)>
+        template<typename T> requires is_base_class<RenderEngine, T>
         T* getRenderEngine() const { return dynamic_cast<T*>(getRenderEngine()); }
 
     private:

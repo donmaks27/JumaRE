@@ -28,13 +28,17 @@ namespace JumaRenderEngine
         ID3D12DescriptorHeap* samplerDescriptorHeap = nullptr;
         if (!descriptorHeapOffsets.isEmpty())
         {
-            textureDescriptorHeap = renderEngine->createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, descriptorHeapOffsets.getSize(), true);
+            textureDescriptorHeap = renderEngine->createDescriptorHeap(
+                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, static_cast<uint32>(descriptorHeapOffsets.getSize()), true
+            );
             if (textureDescriptorHeap == nullptr)
             {
                 JUTILS_LOG(error, JSTR("Failed to create descriptor heap for material textures"));
                 return false;
             }
-            samplerDescriptorHeap = renderEngine->createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, descriptorHeapOffsets.getSize(), true);
+            samplerDescriptorHeap = renderEngine->createDescriptorHeap(
+                D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, static_cast<uint32>(descriptorHeapOffsets.getSize()), true
+            );
             if (samplerDescriptorHeap == nullptr)
             {
                 JUTILS_LOG(error, JSTR("Failed to create descriptor heap for material samplers"));
@@ -44,15 +48,15 @@ namespace JumaRenderEngine
         }
 
         jmap<uint32, DirectX12Buffer*> buffers;
-        for (const auto& bufferDescription : shader->getUniformBufferDescriptions())
+        for (const auto& [bufferID, bufferDescription] : shader->getUniformBufferDescriptions())
         {
-            DirectX12Buffer* newBuffer = buffers.add(bufferDescription.key, renderEngine->getBuffer());
-            if ((newBuffer == nullptr) || !newBuffer->initAccessedGPU(bufferDescription.value.size, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER))
+            DirectX12Buffer* newBuffer = buffers.add(bufferID, renderEngine->getBuffer());
+            if ((newBuffer == nullptr) || !newBuffer->initAccessedGPU(bufferDescription.size, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER))
             {
                 JUTILS_LOG(error, JSTR("Failed to create uniform buffer"));
-                for (const auto& buffer : buffers)
+                for (const auto& buffer : buffers.values())
                 {
-                    renderEngine->returnBuffer(buffer.value);
+                    renderEngine->returnBuffer(buffer);
                 }
                 if (textureDescriptorHeap != nullptr)
                 {
@@ -79,9 +83,9 @@ namespace JumaRenderEngine
         if (!m_UniformBuffers.isEmpty())
         {
             RenderEngine_DirectX12* renderEngine = getRenderEngine<RenderEngine_DirectX12>();
-            for (const auto& buffer : m_UniformBuffers)
+            for (const auto& buffer : m_UniformBuffers.values())
             {
-                renderEngine->returnBuffer(buffer.value);
+                renderEngine->returnBuffer(buffer);
             }
             m_UniformBuffers.clear();
         }
@@ -115,14 +119,14 @@ namespace JumaRenderEngine
         }
 
         ID3D12GraphicsCommandList2* commandList = renderOptions->renderCommandList->get();
-        for (const auto& bufferParam : shader->getUniformBufferParamIndices())
+        for (const auto& [bufferIndex, bufferLocation] : shader->getUniformBufferParamIndices())
         {
-            commandList->SetGraphicsRootConstantBufferView(bufferParam.key, m_UniformBuffers[bufferParam.value]->get()->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(bufferIndex, m_UniformBuffers[bufferLocation]->get()->GetGPUVirtualAddress());
         }
 
         if (m_TextureDescriptorHeap != nullptr)
         {
-            const uint32 paramIndex = m_UniformBuffers.getSize();
+            const uint32 paramIndex = static_cast<uint32>(m_UniformBuffers.getSize());
 
             ID3D12DescriptorHeap* const descriptorHeaps[2] = { m_TextureDescriptorHeap, m_SamplerDescriptorHeap };
             commandList->SetDescriptorHeaps(2, descriptorHeaps);
@@ -264,9 +268,9 @@ namespace JumaRenderEngine
 
         DirectX12CommandQueue* commandQueue = renderEngine->getCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
         DirectX12CommandList* commandList = commandQueue->getCommandList();
-        for (const auto& buffer : m_UniformBuffers)
+        for (const auto& buffer : m_UniformBuffers.values())
         {
-            buffer.value->flushMappedData(commandList, false);
+            buffer->flushMappedData(commandList, false);
         }
         commandList->execute();
         commandList->waitForFinish();

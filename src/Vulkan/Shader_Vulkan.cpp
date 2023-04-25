@@ -110,14 +110,14 @@ namespace JumaRenderEngine
         }
         m_ShaderModules = { { SHADER_STAGE_VERTEX, modules[0] }, { SHADER_STAGE_FRAGMENT, modules[1] } };
 
-        m_CachedPipelineStageInfos.reserve(m_ShaderModules.getSize());
-        for (const auto& shaderModule : m_ShaderModules)
+        m_CachedPipelineStageInfos.reserve(static_cast<int32>(m_ShaderModules.getSize()));
+        for (const auto& [stageFlags, shaderModule] : m_ShaderModules)
         {
             VkPipelineShaderStageCreateInfo& stageInfo = m_CachedPipelineStageInfos.addDefault();
             stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            stageInfo.module = shaderModule.value;
+            stageInfo.module = shaderModule;
             stageInfo.pName = "main";
-            switch (shaderModule.key)
+            switch (stageFlags)
             {
             case SHADER_STAGE_VERTEX: stageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT; break;
             case SHADER_STAGE_FRAGMENT: stageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT; break;
@@ -137,15 +137,15 @@ namespace JumaRenderEngine
 
         jarray<VkDescriptorSetLayoutBinding> layoutBindings;
         jmap<uint32, int32> layoutBindingsMap;
-        for (const auto& uniform : uniforms)
+        for (const auto& uniform : uniforms.values())
         {
             int32 index;
-            const int32* indexPtr = layoutBindingsMap.find(uniform.value.shaderLocation);
+            const int32* indexPtr = layoutBindingsMap.find(uniform.shaderLocation);
             if (indexPtr == nullptr)
             {
                 index = layoutBindings.getSize();
                 layoutBindings.addDefault().stageFlags = 0;
-                layoutBindingsMap.add(uniform.value.shaderLocation, index);
+                layoutBindingsMap.add(uniform.shaderLocation, index);
             }
             else
             {
@@ -153,17 +153,17 @@ namespace JumaRenderEngine
             }
 
             VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings[index];
-            layoutBinding.binding = uniform.value.shaderLocation;
+            layoutBinding.binding = uniform.shaderLocation;
             layoutBinding.pImmutableSamplers = nullptr;
-            if (uniform.value.shaderStages & SHADER_STAGE_VERTEX)
+            if (uniform.shaderStages & SHADER_STAGE_VERTEX)
             {
                 layoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
             }
-            if (uniform.value.shaderStages & SHADER_STAGE_FRAGMENT)
+            if (uniform.shaderStages & SHADER_STAGE_FRAGMENT)
             {
                 layoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
             }
-            layoutBinding.descriptorType = IsShaderUniformScalar(uniform.value.type) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            layoutBinding.descriptorType = IsShaderUniformScalar(uniform.type) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             layoutBinding.descriptorCount = 1;
         }
 
@@ -214,9 +214,9 @@ namespace JumaRenderEngine
 
         m_CachedPipelineStageInfos.clear();
 
-        for (const auto& pipeline : m_RenderPipelines)
+        for (const auto& pipeline : m_RenderPipelines.values())
         {
-            vkDestroyPipeline(device, pipeline.value, nullptr);
+            vkDestroyPipeline(device, pipeline, nullptr);
         }
         m_RenderPipelines.clear();
         if (m_PipelineLayout != nullptr)
@@ -229,11 +229,11 @@ namespace JumaRenderEngine
             vkDestroyDescriptorSetLayout(device, m_DescriptorSetLayout, nullptr);
             m_DescriptorSetLayout = nullptr;
         }
-        for (const auto& shaderModule : m_ShaderModules)
+        for (const auto& shaderModule : m_ShaderModules.values())
         {
-            if (shaderModule.value != nullptr)
+            if (shaderModule != nullptr)
             {
-                vkDestroyShaderModule(device, shaderModule.value, nullptr);
+                vkDestroyShaderModule(device, shaderModule, nullptr);
             }
         }
         m_ShaderModules.clear();

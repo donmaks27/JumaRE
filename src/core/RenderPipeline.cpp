@@ -53,9 +53,9 @@ namespace JumaRenderEngine
 
         const render_target_id renderTargetID = renderTarget->getID();
         m_RenderTargetsDependecies.remove(renderTargetID);
-        for (auto& renderTargetDependecies : m_RenderTargetsDependecies)
+        for (auto& renderTargetDependecies : m_RenderTargetsDependecies.values())
         {
-            renderTargetDependecies.value.remove(renderTargetID);
+            renderTargetDependecies.remove(renderTargetID);
         }
     }
 
@@ -120,20 +120,20 @@ namespace JumaRenderEngine
         while (!cachedDependencies.isEmpty())
         {
             // Get stages without synced dependencies
-            for (const auto& stage : cachedDependencies)
+            for (const auto& [stage, dependencies] : cachedDependencies)
             {
-                if (stage.value.isEmpty())
+                if (dependencies.isEmpty())
                 {
-                    handledStages.add(stage.key);
+                    handledStages.add(stage);
                 }
             }
             if (handledStages.isEmpty())
             {
                 JUTILS_LOG(warning, JSTR("Failed validate render targets queue"));
                 //return false;
-                for (const auto& stage : cachedDependencies)
+                for (const auto& stage : cachedDependencies.keys())
                 {
-                    handledStages.add(stage.key);
+                    handledStages.add(stage);
                 }
             }
 
@@ -153,11 +153,11 @@ namespace JumaRenderEngine
             }
 
             // Remove them from dependencies and mark as needed to sync
-            for (auto& stage : cachedDependencies)
+            for (auto& dependencies : cachedDependencies.values())
             {
                 for (const auto& handledStage : handledStages)
                 {
-                    stage.value.remove(handledStage);
+                    dependencies.remove(handledStage);
                 }
             }
             stagesForSync = handledStages;

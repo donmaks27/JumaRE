@@ -350,13 +350,13 @@ namespace JumaRenderEngine
 
         const jarray<float> queuePriorities(maxQueueCount, 1.0f);
         jarray<VkDeviceQueueCreateInfo> queueInfos;
-        queueInfos.reserve(uniqueQueueFamilies.getSize());
-        for (const auto& queueFamilyIndex : uniqueQueueFamilies)
+        queueInfos.reserve(static_cast<int32>(uniqueQueueFamilies.getSize()));
+        for (const auto& [familyIndex, count] : uniqueQueueFamilies)
         {
             VkDeviceQueueCreateInfo queueInfo{};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		    queueInfo.queueFamilyIndex = queueFamilyIndex.key;
-		    queueInfo.queueCount = queueFamilyIndex.value;
+		    queueInfo.queueFamilyIndex = familyIndex;
+		    queueInfo.queueCount = count;
 		    queueInfo.pQueuePriorities = queuePriorities.getData();
             queueInfos.add(queueInfo);
         }
@@ -451,9 +451,9 @@ namespace JumaRenderEngine
             }
         }
 
-        for (const auto& sampler : m_TextureSamplers)
+        for (const auto& sampler : m_TextureSamplers.values())
         {
-            vkDestroySampler(m_Device, sampler.value, nullptr);
+            vkDestroySampler(m_Device, sampler, nullptr);
         }
         m_TextureSamplers.clear();
 
@@ -466,9 +466,9 @@ namespace JumaRenderEngine
         m_VulkanImagesPool.clear();
         m_VulkanBuffersPool.clear();
 
-        for (const auto& commandPool : m_CommandPools)
+        for (const auto& commandPool : m_CommandPools.values())
         {
-            delete commandPool.value;
+            delete commandPool;
         }
         m_CommandPools.clear();
         m_Queues.clear();
@@ -533,11 +533,11 @@ namespace JumaRenderEngine
     }
     const VulkanRenderPassDescription* RenderEngine_Vulkan::findRenderPassDescription(const render_pass_type_id renderPassID) const
     {
-        for (const auto& renderPassType : m_RenderPassTypes)
+        for (const auto& [description, id] : m_RenderPassTypes)
         {
-            if (renderPassType.value == renderPassID)
+            if (id == renderPassID)
             {
-                return &renderPassType.key;
+                return &description;
             }
         }
         return nullptr;

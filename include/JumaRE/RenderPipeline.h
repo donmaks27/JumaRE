@@ -38,7 +38,7 @@ namespace JumaRenderEngine
         virtual bool initInternal();
 
         virtual void renderInternal();
-        template<typename T, TEMPLATE_ENABLE(is_base<RenderOptions, T>)>
+        template<typename T> requires is_base_class<RenderOptions, T>
         void callRender()
         {
             T renderOptions;

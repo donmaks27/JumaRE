@@ -1,15 +1,15 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #pragma once
 
 #if defined(JUMARE_ENABLE_DX12)
 
-#include "../../../include/JumaRE/RenderEngineContextObject.h"
+#include "JumaRE/RenderEngineContextObject.h"
 
 #include <jutils/jarray.h>
 
 #include "DirectX12Texture.h"
-#include "../../../include/JumaRE/window/window_id.h"
+#include "JumaRE/window/window_id.h"
 
 struct IDXGISwapChain4;
 
@@ -32,7 +32,7 @@ namespace JumaRenderEngine
 
         IDXGISwapChain4* get() const { return m_Swapchain; }
 
-        DirectX12Texture* getBuffer(const uint8 bufferIndex) const { return m_SwapchainBuffers.findByIndex(bufferIndex); }
+        DirectX12Texture* getBuffer(const uint8 bufferIndex) const { return m_SwapchainBuffers.isValidIndex(bufferIndex) ? &m_SwapchainBuffers[bufferIndex] : nullptr; }
         uint8 getBuffersCount() const { return static_cast<uint8>(m_SwapchainBuffers.getSize()); }
         uint8 getCurrentBufferIndex() const { return m_CurrentBufferIndex; }
 

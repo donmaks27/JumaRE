@@ -50,7 +50,7 @@ namespace JumaRenderEngine
         virtual bool initInternal() = 0;
         virtual void onClearAsset() override;
 
-        template<typename T, TEMPLATE_ENABLE(is_base<Shader, T>)>
+        template<typename T> requires is_base_class<Shader, T>
         T* getShader() const { return dynamic_cast<T*>(getShader()); }
         
         const jset<jstringID>& getNotUpdatedParams() const { return m_MaterialParamsForUpdate; }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <jutils/log.h>
+#include <jutils/type_traits.h>
 
 namespace JumaRenderEngine
 {

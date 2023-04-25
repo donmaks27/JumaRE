@@ -12,7 +12,7 @@
 
 namespace JumaRenderEngine
 {
-    template<typename BaseWindowData, TEMPLATE_ENABLE(is_base_and_not_same<WindowData, BaseWindowData>)>
+    template<typename BaseWindowData> requires is_derived_from_class<WindowData, BaseWindowData>
     struct WindowData_GLFW : BaseWindowData
     {
         GLFWwindow* windowGLFW = nullptr;
@@ -24,7 +24,7 @@ namespace JumaRenderEngine
         math::ivector2 cachedCursorPosition = { 0, 0 };
     };
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE(is_base_and_not_same<WindowController, BaseWindowController>)>
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
     class WindowController_GLFW : public BaseWindowController
     {
         using Super = BaseWindowController;
@@ -77,8 +77,8 @@ namespace JumaRenderEngine
         void gatherGamepadsInput();
     };
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    bool WindowController_GLFW<BaseWindowController, Condition>::initWindowController()
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    bool WindowController_GLFW<BaseWindowController>::initWindowController()
     {
         if (!Super::initWindowController())
         {
@@ -112,23 +112,23 @@ namespace JumaRenderEngine
         }
         return true;
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::clearData_GLFW()
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::clearData_GLFW()
     {
         GlobalWindowController = nullptr;
         glfwTerminate();
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_MonitorCallback(GLFWmonitor* monitor, const int eventCode)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_MonitorCallback(GLFWmonitor* monitor, const int eventCode)
     {
         if (eventCode == GLFW_DISCONNECTED)
         {
             GlobalWindowController->onMonitorDisconnected(monitor);
         }
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::onMonitorDisconnected(GLFWmonitor* monitor)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::onMonitorDisconnected(GLFWmonitor* monitor)
     {
         const WindowData* windowData = static_cast<WindowData*>(glfwGetMonitorUserPointer(monitor));
         if ((windowData != nullptr) && (windowData->windowID == this->getMainWindowID()))
@@ -137,8 +137,8 @@ namespace JumaRenderEngine
         }
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    bool WindowController_GLFW<BaseWindowController, Condition>::createWindowGLFW(const window_id windowID, WindowDataType* windowData, 
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    bool WindowController_GLFW<BaseWindowController>::createWindowGLFW(const window_id windowID, WindowDataType* windowData, 
         const math::uvector2& size, const jstring& title, GLFWwindow* sharedWindow)
     {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -175,8 +175,8 @@ namespace JumaRenderEngine
         glfwSetCharCallback(window, WindowController_GLFW::GLFW_TextInputCallback);
         return true;
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::markWindowShouldClose(WindowData* windowData)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::markWindowShouldClose(WindowData* windowData)
     {
         WindowDataType* windowDataGLFW = reinterpret_cast<WindowDataType*>(windowData);
         if (windowDataGLFW->windowGLFW != nullptr)
@@ -184,8 +184,8 @@ namespace JumaRenderEngine
             glfwSetWindowShouldClose(windowDataGLFW->windowGLFW, GLFW_TRUE);
         }
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::clearWindowDataInternal(WindowData* windowData)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::clearWindowDataInternal(WindowData* windowData)
     {
         Super::clearWindowDataInternal(windowData);
 
@@ -197,8 +197,8 @@ namespace JumaRenderEngine
         }
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, const int width, 
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_FramebufferResizeCallback(GLFWwindow* windowGLFW, const int width, 
         const int height)
     {
         const WindowData* windowData = static_cast<WindowData*>(glfwGetWindowUserPointer(windowGLFW));
@@ -207,8 +207,8 @@ namespace JumaRenderEngine
             GlobalWindowController->updateWindowSize(windowData->windowID, math::uvector2(static_cast<uint32>(width), static_cast<uint32>(height)));
         }
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, const int minimized)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_WindowMinimizationCallback(GLFWwindow* windowGLFW, const int minimized)
     {
         const WindowData* windowData = static_cast<WindowData*>(glfwGetWindowUserPointer(windowGLFW));
         if (windowData != nullptr)
@@ -216,8 +216,8 @@ namespace JumaRenderEngine
             GlobalWindowController->updateWindowMinimization(windowData->windowID, minimized == GLFW_TRUE);
         }
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_WindowFocusCallback(GLFWwindow* window, const int focused)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_WindowFocusCallback(GLFWwindow* window, const int focused)
     {
         const WindowData* windowData = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
         if (windowData != nullptr)
@@ -225,8 +225,8 @@ namespace JumaRenderEngine
             GlobalWindowController->updateWindowFocused(windowData->windowID, focused == GLFW_TRUE);
         }
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_JoystickCallback(const int joystickID, const int eventCode)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_JoystickCallback(const int joystickID, const int eventCode)
     {
         if (eventCode == GLFW_CONNECTED)
         {
@@ -241,15 +241,15 @@ namespace JumaRenderEngine
         }
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    bool WindowController_GLFW<BaseWindowController, Condition>::shouldCloseWindow(const window_id windowID) const
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    bool WindowController_GLFW<BaseWindowController>::shouldCloseWindow(const window_id windowID) const
     {
         const WindowDataType* windowData = this->template findWindowData<WindowDataType>(windowID);
         return (windowData != nullptr) && (glfwWindowShouldClose(windowData->windowGLFW) == GLFW_TRUE);
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    bool WindowController_GLFW<BaseWindowController, Condition>::setMainWindowModeInternal(const WindowMode windowMode)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    bool WindowController_GLFW<BaseWindowController>::setMainWindowModeInternal(const WindowMode windowMode)
     {
         WindowDataType* windowData = this->template getWindowData<WindowDataType>(this->getMainWindowID());
         if (windowData == nullptr)
@@ -301,8 +301,8 @@ namespace JumaRenderEngine
         return true;
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::onWindowCursorModeChanged(WindowData* windowData)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::onWindowCursorModeChanged(WindowData* windowData)
     {
         int cursorMode = 0;
         switch (windowData->cursorMode)
@@ -325,8 +325,8 @@ namespace JumaRenderEngine
         }
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::updateWindows()
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::updateWindows()
     {
         glfwPollEvents();
 
@@ -375,8 +375,8 @@ namespace JumaRenderEngine
         }
         return inputMods;
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_KeyboarbCallback(GLFWwindow* window, const int key, const int scancode, 
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_KeyboarbCallback(GLFWwindow* window, const int key, const int scancode, 
         const int action, const int mods)
     {
         const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
@@ -498,8 +498,8 @@ namespace JumaRenderEngine
 
         GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDevice::Keyboard, button, buttonAction, inputMods);
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_MouseButtonCallback(GLFWwindow* window, const int buttonCode, 
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_MouseButtonCallback(GLFWwindow* window, const int buttonCode, 
         const int action, const int mods)
     {
         const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
@@ -526,8 +526,8 @@ namespace JumaRenderEngine
 
         GlobalWindowController->updateWindowInputButtonState(windowData->windowID, InputDevice::Mouse, button, buttonAction, inputMods);
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_ScrollCallback(GLFWwindow* window, const double xoffset, const double yoffset)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_ScrollCallback(GLFWwindow* window, const double xoffset, const double yoffset)
     {
         const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
         if (windowData == nullptr)
@@ -541,8 +541,8 @@ namespace JumaRenderEngine
 
         GlobalWindowController->updateWindowInputAxisState(windowData->windowID, InputDevice::Mouse, InputAxis::MouseWheel, { offset, 0.0f }, 0);
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_CursorPositionCallback(GLFWwindow* window, const double xpos, 
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_CursorPositionCallback(GLFWwindow* window, const double xpos, 
         const double ypos)
     {
         WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
@@ -570,8 +570,8 @@ namespace JumaRenderEngine
         default: break;
         }
     }
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::GLFW_TextInputCallback(GLFWwindow* window, const unsigned int codepoint)
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::GLFW_TextInputCallback(GLFWwindow* window, const unsigned int codepoint)
     {
         const WindowDataType* windowData = static_cast<WindowDataType*>(glfwGetWindowUserPointer(window));
         if (windowData == nullptr)
@@ -613,8 +613,8 @@ namespace JumaRenderEngine
         // TODO: Text input
     }
 
-    template<typename BaseWindowController, TEMPLATE_ENABLE_IMPL(is_base_and_not_same<WindowController, BaseWindowController>) Condition>
-    void WindowController_GLFW<BaseWindowController, Condition>::gatherGamepadsInput()
+    template<typename BaseWindowController> requires is_derived_from_class<WindowController, BaseWindowController>
+    void WindowController_GLFW<BaseWindowController>::gatherGamepadsInput()
     {
         const window_id focusedWindowID = GlobalWindowController->getFocusedWindowID();
         for (const auto& gamepadIndex : GlobalWindowController->getConnectedGamepads())

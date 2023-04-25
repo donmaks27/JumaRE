@@ -414,9 +414,9 @@ namespace JumaRenderEngine
             return false;
         }
         m_WindowController->updateWindows();
-        for (const auto& renderTarget : m_RenderTargets)
+        for (const auto& renderTarget : m_RenderTargets.values())
         {
-            renderTarget.value->clearPrimitivesList();
+            renderTarget->clearPrimitivesList();
         }
 
         processMarkedForDestroyAssets();

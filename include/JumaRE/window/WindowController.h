@@ -71,7 +71,7 @@ namespace JumaRenderEngine
         const jarray<window_id>& getWindowIDs() const { return m_CreatedWindowIDs; }
         window_id getMainWindowID() const { return m_MainWindowID; }
         virtual const WindowData* findWindowData(window_id windowID) const = 0;
-        template<typename T, TEMPLATE_ENABLE(is_base<WindowData, T>)>
+        template<typename T> requires is_base_class<WindowData, T>
         const T* findWindowData(const window_id windowID) const { return reinterpret_cast<const T*>(findWindowData(windowID)); }
 
         virtual bool shouldCloseWindow(window_id windowID) const = 0;
@@ -106,7 +106,7 @@ namespace JumaRenderEngine
         virtual void clearWindowDataInternal(WindowData* windowData);
 
         virtual WindowData* getWindowData(window_id windowID) = 0;
-        template<typename T, TEMPLATE_ENABLE(is_base<WindowData, T>)>
+        template<typename T> requires is_base_class<WindowData, T>
         T* getWindowData(const window_id windowID) { return reinterpret_cast<T*>(getWindowData(windowID)); }
 
         void updateWindowSize(window_id windowID, const math::uvector2& size);

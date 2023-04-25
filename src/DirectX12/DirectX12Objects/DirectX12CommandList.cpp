@@ -81,13 +81,13 @@ namespace JumaRenderEngine
         }
 
         m_Executed = true;
-        for (auto& textureStates : m_TextureStates)
+        for (auto& [texture, textureStates] : m_TextureStates)
         {
-            textureStates.key->setMipLevelsState(std::move(textureStates.value));
+            texture->setMipLevelsState(std::move(textureStates));
         }
-        for (const auto& bufferState : m_BufferStates)
+        for (const auto& [buffer, bufferState] : m_BufferStates)
         {
-            bufferState.key->setState(bufferState.value);
+            buffer->setState(bufferState);
         }
         m_TextureStates.clear();
         m_BufferStates.clear();

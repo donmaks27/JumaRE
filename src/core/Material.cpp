@@ -20,10 +20,10 @@ namespace JumaRenderEngine
         }
 
         m_Shader = shader;
-        for (const auto& uniform : m_Shader->getUniforms())
+        for (const auto& [uniformID, uniform] : m_Shader->getUniforms())
         {
-            m_MaterialParams.setDefaultValue(uniform.key, uniform.value.type);
-            m_MaterialParamsForUpdate.add(uniform.key);
+            m_MaterialParams.setDefaultValue(uniformID, uniform.type);
+            m_MaterialParamsForUpdate.add(uniformID);
         }
 
         if (!initInternal())

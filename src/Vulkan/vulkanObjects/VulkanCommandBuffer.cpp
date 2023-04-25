@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Leonov Maksim. All Rights Reserved.
+﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
 #if defined(JUMARE_ENABLE_VULKAN)
 
@@ -82,9 +82,9 @@ namespace JumaRenderEngine
             return false;
         }
 
-        for (const auto& imageLayout : m_LastImageLayouts)
+        for (const auto& [image, imageLayout] : m_LastImageLayouts)
         {
-            imageLayout.key->setLayout(imageLayout.value);
+            image->setLayout(imageLayout);
         }
         m_LastImageLayouts.clear();
 

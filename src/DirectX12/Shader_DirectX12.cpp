@@ -11,7 +11,7 @@
 #include "RenderOptions_DirectX12.h"
 #include "DirectX12Objects/DirectX12PipelineStateStreamObjects.h"
 #include "../DirectX/TextureFormat_DirectX.h"
-#include "../../include/JumaRE/RenderTarget.h"
+#include "JumaRE/RenderTarget.h"
 
 namespace JumaRenderEngine
 {
@@ -96,14 +96,14 @@ namespace JumaRenderEngine
         if (SupportedRootSignature_1_1)
         {
             jarray<D3D12_ROOT_PARAMETER1> rootSignatureParams;
-            for (const auto& bufferDescription : uniformBuffers)
+            for (const auto& [bufferID, bufferDescription] : uniformBuffers)
             {
-                outBufferParamIndices.add(rootSignatureParams.getSize(), bufferDescription.key);
+                outBufferParamIndices.add(rootSignatureParams.getSize(), bufferID);
 
                 D3D12_ROOT_PARAMETER1& parameter = rootSignatureParams.addDefault();
                 parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-                parameter.ShaderVisibility = GetDirectX12ShaderParamVisibility(bufferDescription.value.shaderStages);
-                parameter.Descriptor.ShaderRegister = bufferDescription.key;
+                parameter.ShaderVisibility = GetDirectX12ShaderParamVisibility(bufferDescription.shaderStages);
+                parameter.Descriptor.ShaderRegister = bufferID;
                 parameter.Descriptor.RegisterSpace = 0;
                 parameter.Descriptor.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE;
             }
@@ -111,26 +111,26 @@ namespace JumaRenderEngine
             jarray<D3D12_DESCRIPTOR_RANGE1> textureDescriptorRanges;
             jarray<D3D12_DESCRIPTOR_RANGE1> samplerDescriptorRanges;
             uint8 shaderStages = 0;
-            for (const auto& uniform : uniforms)
+            for (const auto& [uniformID, uniform] : uniforms)
             {
-                if (uniform.value.type != ShaderUniformType::Texture)
+                if (uniform.type != ShaderUniformType::Texture)
                 {
                     continue;
                 }
-                shaderStages |= uniform.value.shaderStages;
+                shaderStages |= uniform.shaderStages;
 
-                const uint32 offset = outDescriptorHeapOffsets.add(uniform.key, textureDescriptorRanges.getSize());
+                const uint32 offset = outDescriptorHeapOffsets.add(uniformID, textureDescriptorRanges.getSize());
                 D3D12_DESCRIPTOR_RANGE1& textureDescriptorRange = textureDescriptorRanges.addDefault();
                 textureDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
                 textureDescriptorRange.NumDescriptors = 1;
-                textureDescriptorRange.BaseShaderRegister = uniform.value.shaderLocation;
+                textureDescriptorRange.BaseShaderRegister = uniform.shaderLocation;
                 textureDescriptorRange.RegisterSpace = 0;
                 textureDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
                 textureDescriptorRange.OffsetInDescriptorsFromTableStart = offset;
                 D3D12_DESCRIPTOR_RANGE1& samplerDescriptorRange = samplerDescriptorRanges.addDefault();
                 samplerDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
                 samplerDescriptorRange.NumDescriptors = 1;
-                samplerDescriptorRange.BaseShaderRegister = uniform.value.shaderLocation;
+                samplerDescriptorRange.BaseShaderRegister = uniform.shaderLocation;
                 samplerDescriptorRange.RegisterSpace = 0;
                 samplerDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
                 samplerDescriptorRange.OffsetInDescriptorsFromTableStart = offset;
@@ -167,12 +167,12 @@ namespace JumaRenderEngine
             jarray<D3D12_ROOT_PARAMETER> rootSignatureParams;
             for (const auto& bufferDescription : uniformBuffers)
             {
-                outBufferParamIndices.add(rootSignatureParams.getSize(), bufferDescription.key);
+                outBufferParamIndices.add(rootSignatureParams.getSize(), bufferDescription.first);
 
                 D3D12_ROOT_PARAMETER& parameter = rootSignatureParams.addDefault();
                 parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-                parameter.ShaderVisibility = GetDirectX12ShaderParamVisibility(bufferDescription.value.shaderStages);
-                parameter.Descriptor.ShaderRegister = bufferDescription.key;
+                parameter.ShaderVisibility = GetDirectX12ShaderParamVisibility(bufferDescription.second.shaderStages);
+                parameter.Descriptor.ShaderRegister = bufferDescription.first;
                 parameter.Descriptor.RegisterSpace = 0;
             }
 
@@ -181,23 +181,23 @@ namespace JumaRenderEngine
             uint8 shaderStages = 0;
             for (const auto& uniform : uniforms)
             {
-                if (uniform.value.type != ShaderUniformType::Texture)
+                if (uniform.second.type != ShaderUniformType::Texture)
                 {
                     continue;
                 }
-                shaderStages |= uniform.value.shaderStages;
+                shaderStages |= uniform.second.shaderStages;
 
-                const uint32 offset = outDescriptorHeapOffsets.add(uniform.key, textureDescriptorRanges.getSize());
+                const uint32 offset = outDescriptorHeapOffsets.add(uniform.first, textureDescriptorRanges.getSize());
                 D3D12_DESCRIPTOR_RANGE& textureDescriptorRange = textureDescriptorRanges.addDefault();
                 textureDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
                 textureDescriptorRange.NumDescriptors = 1;
-                textureDescriptorRange.BaseShaderRegister = uniform.value.shaderLocation;
+                textureDescriptorRange.BaseShaderRegister = uniform.second.shaderLocation;
                 textureDescriptorRange.RegisterSpace = 0;
                 textureDescriptorRange.OffsetInDescriptorsFromTableStart = offset;
                 D3D12_DESCRIPTOR_RANGE& samplerDescriptorRange = samplerDescriptorRanges.addDefault();
                 samplerDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
                 samplerDescriptorRange.NumDescriptors = 1;
-                samplerDescriptorRange.BaseShaderRegister = uniform.value.shaderLocation;
+                samplerDescriptorRange.BaseShaderRegister = uniform.second.shaderLocation;
                 samplerDescriptorRange.RegisterSpace = 0;
                 samplerDescriptorRange.OffsetInDescriptorsFromTableStart = offset;
             }
@@ -306,18 +306,18 @@ namespace JumaRenderEngine
     }
     void Shader_DirectX12::clearDirectX()
     {
-        for (const auto& pipelineState : m_PipelineStates)
+        for (const auto& pipelineState : m_PipelineStates.values())
         {
-            pipelineState.value->Release();
+            pipelineState->Release();
         }
         m_PipelineStates.clear();
 
         m_TextureDescriptorHeapOffsets.clear();
         m_UniformBufferParamIndices.clear();
 
-        for (const auto& bytecode : m_ShaderBytecodes)
+        for (const auto& bytecode : m_ShaderBytecodes.values())
         {
-            bytecode.value->Release();
+            bytecode->Release();
         }
         m_ShaderBytecodes.clear();
 

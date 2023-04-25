@@ -44,7 +44,7 @@ namespace JumaRenderEngine
 
         int32 getRenderStagesCount() const { return m_RenderStages.getSize(); }
         bool isRenderStageIndexValid(const int32 renderStageIndex) const { return m_RenderStages.isValidIndex(renderStageIndex); }
-        const RenderStage* getRenderStage(const int32 index) const { return m_RenderStages.findByIndex(index); }
+        const RenderStage* getRenderStage(const int32 index) const { return m_RenderStages.isValidIndex(index) ? &m_RenderStages[index] : nullptr; }
 
         void setupRenderStages(const jarray<RenderStageProperties>& stages);
         bool addPrimitiveToRenderStage(int32 renderStageIndex, const RenderPrimitive& primitive);

@@ -1,8 +1,8 @@
 ﻿// Copyright © 2022-2023 Leonov Maksim. All Rights Reserved.
 
-#include "../../include/JumaRE/material/Shader.h"
+#include "JumaRE/material/Shader.h"
 
-#include "../../include/JumaRE/material/ShaderUniformInfo.h"
+#include "JumaRE/material/ShaderUniformInfo.h"
 
 namespace JumaRenderEngine
 {
@@ -16,17 +16,17 @@ namespace JumaRenderEngine
         m_VertexComponents = createInfo.vertexComponents;
 
         m_ShaderUniforms = createInfo.uniforms;
-        for (const auto& uniform : m_ShaderUniforms)
+        for (const auto& uniform : m_ShaderUniforms.values())
         {
-            const uint32 size = GetShaderUniformValueSize(uniform.value.type);
+            const uint32 size = GetShaderUniformValueSize(uniform.type);
             if (size == 0)
             {
                 continue;
             }
 
-            ShaderUniformBufferDescription& uniformBuffer = m_CachedUniformBufferDescriptions[uniform.value.shaderLocation];
-            uniformBuffer.size = math::max(uniformBuffer.size, uniform.value.shaderBlockOffset + size);
-            uniformBuffer.shaderStages |= uniform.value.shaderStages;
+            ShaderUniformBufferDescription& uniformBuffer = m_CachedUniformBufferDescriptions[uniform.shaderLocation];
+            uniformBuffer.size = math::max(uniformBuffer.size, uniform.shaderBlockOffset + size);
+            uniformBuffer.shaderStages |= uniform.shaderStages;
         }
 
         if (!initInternal(createInfo.fileNames))

@@ -296,9 +296,9 @@ namespace JumaRenderEngine
     }
     void RenderEngine_DirectX12::clearDirectX()
     {
-        for (auto& commandQueue : m_CommandQueues)
+        for (auto& commandQueue : m_CommandQueues.values())
         {
-            commandQueue.value.waitForFinish();
+            commandQueue.waitForFinish();
         }
 
         clearAssets();

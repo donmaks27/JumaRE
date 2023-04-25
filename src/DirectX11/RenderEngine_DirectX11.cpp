@@ -81,21 +81,21 @@ namespace JumaRenderEngine
             }
         }
 
-        for (const auto& textureSampler : m_TextureSamplers)
+        for (const auto& samplerState : m_TextureSamplers.values())
         {
-            textureSampler.value->Release();
+            samplerState->Release();
         }
-        for (const auto& blendState : m_BlendStates)
+        for (const auto& blendState : m_BlendStates.values())
         {
-            blendState.value->Release();
+            blendState->Release();
         }
-        for (const auto& rasterizerState : m_RasterizerStates)
+        for (const auto& rasterizerState : m_RasterizerStates.values())
         {
-            rasterizerState.value->Release();
+            rasterizerState->Release();
         }
-        for (const auto& depthStencilState : m_DepthStencilStates)
+        for (const auto& depthStencilState : m_DepthStencilStates.values())
         {
-            depthStencilState.value->Release();
+            depthStencilState->Release();
         }
         m_TextureSamplers.clear();
         m_BlendStates.clear();
