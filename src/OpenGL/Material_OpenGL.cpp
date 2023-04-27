@@ -46,16 +46,16 @@ namespace JumaRenderEngine
         }
 
         const jmap<uint32, ShaderUniformBufferDescription>& uniformBufferDescriptions = shader->getUniformBufferDescriptions();
-        jarray<uint32> uniformBuffers(uniformBufferDescriptions.getSize(), 0);
+        jarray<uint32> uniformBuffers(static_cast<int32>(uniformBufferDescriptions.getSize()), 0);
         glGenBuffers(uniformBuffers.getSize(), uniformBuffers.getData());
-        for (const auto& uniformBufferDescription : uniformBufferDescriptions)
+        for (const auto& [bufferID, bufferDescription] : uniformBufferDescriptions)
         {
             const uint32 bufferIndex = uniformBuffers.getLast();
-            m_UniformBufferIndices.add(uniformBufferDescription.key, bufferIndex);
+            m_UniformBufferIndices.add(bufferID, bufferIndex);
             uniformBuffers.removeLast();
 
             glBindBuffer(GL_UNIFORM_BUFFER, bufferIndex);
-            glBufferData(GL_UNIFORM_BUFFER, uniformBufferDescription.value.size, nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, bufferDescription.size, nullptr, GL_DYNAMIC_DRAW);
         }
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
@@ -67,9 +67,9 @@ namespace JumaRenderEngine
     }
     void Material_OpenGL::clearOpenGL()
     {
-        for (const auto& buffer : m_UniformBufferIndices)
+        for (const auto& buffer : m_UniformBufferIndices.values())
         {
-            glDeleteBuffers(1, &buffer.value);
+            glDeleteBuffers(1, &buffer);
         }
         m_UniformBufferIndices.clear();
     }
@@ -92,9 +92,9 @@ namespace JumaRenderEngine
         }
 
         updateUniformData();
-        for (const auto& uniformBuffer : m_UniformBufferIndices)
+        for (const auto& [bufferID, bufferIndex] : m_UniformBufferIndices)
         {
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, uniformBuffer.value);
+            glBindBufferBase(GL_UNIFORM_BUFFER, bufferID, bufferIndex);
         }
 
         MaterialProperties properties = getMaterialProperties();
@@ -136,28 +136,28 @@ namespace JumaRenderEngine
         const Texture_OpenGL* defaultTexture = dynamic_cast<const Texture_OpenGL*>(getRenderEngine()->getDefaultTexture());
         const jset<jstringID>& notUpdatedParams = getNotUpdatedParams();
         const MaterialParamsStorage& materialParams = getMaterialParams();
-        for (const auto& uniform : getShader()->getUniforms())
+        for (const auto& [uniformID, uniform] : getShader()->getUniforms())
         {
-            if (uniform.value.type == ShaderUniformType::Texture)
+            if (uniform.type == ShaderUniformType::Texture)
             {
                 ShaderUniformInfo<ShaderUniformType::Texture>::value_type value = nullptr;
-                materialParams.getValue<ShaderUniformType::Texture>(uniform.key, value);
+                materialParams.getValue<ShaderUniformType::Texture>(uniformID, value);
 
                 const Texture_OpenGL* texture = dynamic_cast<Texture_OpenGL*>(value);
                 if (texture != nullptr)
                 {
-                    texture->bindToShader(uniform.value.shaderLocation);
+                    texture->bindToShader(uniform.shaderLocation);
                 }
                 else
                 {
                     const RenderTarget_OpenGL* renderTarget = dynamic_cast<RenderTarget_OpenGL*>(value);
                     if (renderTarget != nullptr)
                     {
-                        renderTarget->bindToShader(uniform.value.shaderLocation);
+                        renderTarget->bindToShader(uniform.shaderLocation);
                     }
                     else if (defaultTexture != nullptr)
                     {
-                        defaultTexture->bindToShader(uniform.value.shaderLocation);
+                        defaultTexture->bindToShader(uniform.shaderLocation);
                     }
                     else
                     {
@@ -165,47 +165,47 @@ namespace JumaRenderEngine
                     }
                 }
             }
-            else if (notUpdatedParams.contains(uniform.key))
+            else if (notUpdatedParams.contains(uniformID))
             {
-                switch (uniform.value.type)
+                switch (uniform.type)
                 {
                 case ShaderUniformType::Float:
                     {
                         ShaderUniformInfo<ShaderUniformType::Float>::value_type value;
-                        if (materialParams.getValue<ShaderUniformType::Float>(uniform.key, value))
+                        if (materialParams.getValue<ShaderUniformType::Float>(uniformID, value))
                         {
-                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value);
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.shaderBlockOffset, sizeof(value), &value);
                         }
                     }
                     break;
                 case ShaderUniformType::Vec2:
                     {
                         ShaderUniformInfo<ShaderUniformType::Vec2>::value_type value;
-                        if (materialParams.getValue<ShaderUniformType::Vec2>(uniform.key, value))
+                        if (materialParams.getValue<ShaderUniformType::Vec2>(uniformID, value))
                         {
-                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0]);
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.shaderBlockOffset, sizeof(value), &value[0]);
                         }
                     }
                     break;
                 case ShaderUniformType::Vec4:
                     {
                         ShaderUniformInfo<ShaderUniformType::Vec4>::value_type value;
-                        if (materialParams.getValue<ShaderUniformType::Vec4>(uniform.key, value))
+                        if (materialParams.getValue<ShaderUniformType::Vec4>(uniformID, value))
                         {
-                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0]);
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.shaderBlockOffset, sizeof(value), &value[0]);
                         }
                     }
                     break;
                 case ShaderUniformType::Mat4:
                     {
                         ShaderUniformInfo<ShaderUniformType::Mat4>::value_type value;
-                        if (materialParams.getValue<ShaderUniformType::Mat4>(uniform.key, value))
+                        if (materialParams.getValue<ShaderUniformType::Mat4>(uniformID, value))
                         {
-                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.value.shaderLocation]);
-                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.value.shaderBlockOffset, sizeof(value), &value[0][0]);
+                            glBindBuffer(GL_UNIFORM_BUFFER, m_UniformBufferIndices[uniform.shaderLocation]);
+                            glBufferSubData(GL_UNIFORM_BUFFER, uniform.shaderBlockOffset, sizeof(value), &value[0][0]);
                         }
                     }
                     break;
@@ -220,15 +220,15 @@ namespace JumaRenderEngine
 
     void Material_OpenGL::unbindMaterial()
     {
-        for (const auto& uniformBuffer : m_UniformBufferIndices)
+        for (const auto& uniformBuffer : m_UniformBufferIndices.keys())
         {
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.key, 0);
+            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer, 0);
         }
-        for (const auto& uniform : getShader()->getUniforms())
+        for (const auto& uniform : getShader()->getUniforms().values())
         {
-            if (uniform.value.type == ShaderUniformType::Texture)
+            if (uniform.type == ShaderUniformType::Texture)
             {
-                Texture_OpenGL::unbindTexture(uniform.value.shaderLocation);
+                Texture_OpenGL::unbindTexture(uniform.shaderLocation);
             }
         }
         Shader_OpenGL::deactivateAnyShader();

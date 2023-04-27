@@ -60,12 +60,12 @@ namespace JumaRenderEngine
         {
             WindowController_OpenGL* windowController = getRenderEngine()->getWindowController<WindowController_OpenGL>();
             const window_id prevWindowID = windowController->getActiveWindowID();
-            for (const auto& VAO : m_VertexArrayIndices)
+            for (const auto& [windowID, VAO] : m_VertexArrayIndices)
             {
-                if (VAO.value != 0)
+                if (VAO != 0)
                 {
-                    windowController->setActiveWindowID(VAO.key);
-                    glDeleteVertexArrays(1, &VAO.value);
+                    windowController->setActiveWindowID(windowID);
+                    glDeleteVertexArrays(1, &VAO);
                 }
             }
             windowController->setActiveWindowID(prevWindowID);

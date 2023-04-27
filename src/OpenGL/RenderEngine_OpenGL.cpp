@@ -46,9 +46,9 @@ namespace JumaRenderEngine
         m_VertexBuffersPool.clear();
         m_RenderTargetsPool.clear();
 
-        for (const auto& sampler : m_SamplerObjectIndices)
+        for (const auto& sampler : m_SamplerObjectIndices.values())
         {
-            glDeleteSamplers(1, &sampler.value);
+            glDeleteSamplers(1, &sampler);
         }
         m_SamplerObjectIndices.clear();
     }

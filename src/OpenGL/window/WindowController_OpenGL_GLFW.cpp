@@ -15,9 +15,9 @@ namespace JumaRenderEngine
     {
         if (!m_Windows.isEmpty())
         {
-            for (auto& window : m_Windows)
+            for (auto& window : m_Windows.values())
             {
-                clearWindowDataInternal(&window.value);
+                clearWindowDataInternal(&window);
             }
             m_Windows.clear();
         }
