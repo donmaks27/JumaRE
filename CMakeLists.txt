@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(JumaRE)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -157,11 +157,15 @@ list(APPEND JUMARE_CORE_SOURCE_FILES
     src/core/Texture.cpp
     src/core/VertexBuffer.cpp
     src/core/WindowController.cpp
+
+    src/OpenGL/RenderEngineImpl_OpenGL.cpp
+    src/Vulkan/RenderEngineImpl_Vulkan.cpp
+    src/DirectX11/RenderEngineImpl_DirectX11.cpp
+    src/DirectX12/RenderEngineImpl_DirectX12.cpp
 )
 list(APPEND JUMARE_OPENGL_SOURCE_FILES
     src/OpenGL/Material_OpenGL.cpp
     src/OpenGL/RenderEngine_OpenGL.cpp
-    src/OpenGL/RenderEngineImpl_OpenGL.cpp
     src/OpenGL/RenderTarget_OpenGL.cpp
     src/OpenGL/Shader_OpenGL.cpp
     src/OpenGL/Texture_OpenGL.cpp
@@ -174,7 +178,6 @@ list(APPEND JUMARE_OPENGL_SOURCE_FILES
 list(APPEND JUMARE_VULKAN_SOURCE_FILES
     src/Vulkan/Material_Vulkan.cpp
     src/Vulkan/RenderEngine_Vulkan.cpp
-    src/Vulkan/RenderEngineImpl_Vulkan.cpp
     src/Vulkan/RenderPipeline_Vulkan.cpp
     src/Vulkan/RenderTarget_Vulkan.cpp
     src/Vulkan/Shader_Vulkan.cpp
@@ -198,7 +201,6 @@ list(APPEND JUMARE_DIRECTX_SOURCE_FILES
 list(APPEND JUMARE_DIRECTX11_SOURCE_FILES
     src/DirectX11/Material_DirectX11.cpp
     src/DirectX11/RenderEngine_DirectX11.cpp
-    src/DirectX11/RenderEngineImpl_DirectX11.cpp
     src/DirectX11/RenderTarget_DirectX11.cpp
     src/DirectX11/Shader_DirectX11.cpp
     src/DirectX11/Texture_DirectX11.cpp
@@ -212,7 +214,6 @@ list(APPEND JUMARE_DIRECTX12_SOURCE_FILES
     src/DirectX12/D3D12MemAlloc.cpp
     src/DirectX12/Material_DirectX12.cpp
     src/DirectX12/RenderEngine_DirectX12.cpp
-    src/DirectX12/RenderEngineImpl_DirectX12.cpp
     src/DirectX12/RenderPipeline_DirectX12.cpp
     src/DirectX12/RenderTarget_DirectX12.cpp
     src/DirectX12/Shader_DirectX12.cpp
@@ -245,7 +246,8 @@ if(JUMARE_BUILD_OPENGL)
     list(APPEND JUMARE_SOURCE_FILES ${JUMARE_OPENGL_SOURCE_FILES})
     list(APPEND JUMARE_MACRO_DEFINITIONS JUMARE_ENABLE_OPENGL)
     if(UNIX)
-        list(APPEND JUMARE_LIBS gl glew)
+        find_package(OpenGL REQUIRED)
+        list(APPEND JUMARE_LIBS OpenGL::GL GLEW::GLEW)
     else()
         list(APPEND JUMARE_LIBS glew32s)
     endif()

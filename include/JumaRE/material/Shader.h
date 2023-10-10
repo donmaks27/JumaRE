@@ -5,6 +5,8 @@
 #include "../core.h"
 #include "../RenderEngineAsset.h"
 
+#include <atomic>
+
 #include <jutils/jmap.h>
 #include <jutils/jset.h>
 #include <jutils/jstringID.h>
