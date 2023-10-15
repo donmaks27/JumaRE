@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(jutils)
+add_subdirectory(JumaSC)
 
 option(JUMARE_USE_GLFW "Use GLFW lib for windows" ON)
 
