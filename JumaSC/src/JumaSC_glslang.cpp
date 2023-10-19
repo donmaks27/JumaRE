@@ -90,6 +90,7 @@ namespace JumaSC
         if (!result)
         {
             JUTILS_LOG(error, "failed to preprocess GLSL shader:\n{}\n{}", shader->getInfoLog(), shader->getInfoDebugLog());
+            printShaderText(shaderText);
             return {};
         }
         const char* preprocessedShaderTextStr = preprocessedShaderText.c_str();
@@ -102,6 +103,7 @@ namespace JumaSC
         if (!result)
         {
             JUTILS_LOG(error, "failed to parse GLSL shader:\n{}\n{}", shader->getInfoLog(), shader->getInfoDebugLog());
+            printShaderText(shaderText);
             return {};
         }
 
@@ -112,6 +114,7 @@ namespace JumaSC
         if (!result)
         {
             JUTILS_LOG(error, "failed to link GLSL shader:\n{}\n{}", program->getInfoLog(), program->getInfoDebugLog());
+            printShaderText(shaderText);
             return {};
         }
 

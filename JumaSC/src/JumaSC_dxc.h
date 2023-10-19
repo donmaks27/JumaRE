@@ -23,26 +23,24 @@ namespace JumaSC
             std::wstring result;
             switch (type)
             {
-                case type::vertex:   result += L"vs"; break;
-                case type::fragment: result += L"ps"; break;
-                case type::geometry: result += L"gs"; break;
-                case type::hull:     result += L"hs"; break;
-                case type::domain:   result += L"ds"; break;
-                case type::compute:  result += L"cs"; break;
-                default: return {};
+            case type::vertex:   result += L"vs"; break;
+            case type::fragment: result += L"ps"; break;
+            case type::geometry: result += L"gs"; break;
+            case type::hull:     result += L"hs"; break;
+            case type::domain:   result += L"ds"; break;
+            case type::compute:  result += L"cs"; break;
+            default: return {};
             }
             switch (model)
             {
-                case model::_5_0: result += L"_5_0"; break;
-                case model::_5_1: result += L"_5_1"; break;
-                case model::_6_0: result += L"_6_0"; break;
-                case model::_6_1: result += L"_6_1"; break;
-                case model::_6_2: result += L"_6_2"; break;
-                case model::_6_3: result += L"_6_3"; break;
-                case model::_6_4: result += L"_6_4"; break;
-                case model::_6_5: result += L"_6_5"; break;
-                case model::_6_6: result += L"_6_6"; break;
-                default: return {};
+            case model::_6_0: result += L"_6_0"; break;
+            case model::_6_1: result += L"_6_1"; break;
+            case model::_6_2: result += L"_6_2"; break;
+            case model::_6_3: result += L"_6_3"; break;
+            case model::_6_4: result += L"_6_4"; break;
+            case model::_6_5: result += L"_6_5"; break;
+            case model::_6_6: result += L"_6_6"; break;
+            default: return {};
             }
             return result;
         }

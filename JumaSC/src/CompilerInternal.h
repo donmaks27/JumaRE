@@ -17,6 +17,7 @@ namespace JumaSC
         virtual ~CompilerInternal() override = default;
 
         virtual jarray<uint32> glslToSPV(const jarray<jstring>& shaderText, GLSL::type shaderType, Vulkan::version vulkanVersion) override;
+        virtual jstring hlslFromSPV(const jarray<uint32>& shaderData, HLSL::model shaderModel) override;
         virtual jarray<uint8> hlslCompile(const jarray<jstring> &shaderText, HLSL::type shaderType, HLSL::model shaderModel) override;
 
     private:

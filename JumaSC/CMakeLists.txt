@@ -21,29 +21,38 @@ endif()
 
 # glslang --------------------------------
 
-#find_package(spirv_cross_core REQUIRED)
-#find_package(spirv_cross_glsl REQUIRED)
-#find_package(spirv_cross_cpp REQUIRED)
+# SPIRV-Cross ----------------------------
+
+if(JUMASC_ENABLE_COMPILE_FROM_SPV)
+    find_package(spirv_cross_core REQUIRED)
+    find_package(spirv_cross_glsl REQUIRED)
+    find_package(spirv_cross_cpp REQUIRED)
+
+    list(APPEND JUMASC_DEFINITIONS JUMASC_ENABLE_SPIRV_CROSS)
+    list(APPEND JUMASC_LIBS spirv-cross-cpp spirv-cross-hlsl)
+endif()
+
+# SPIRV-Cross ----------------------------
 
 ## DXC ------------------------------------
 
-if(JUMASC_ENABLE_COMPILE_HLSL)
-    find_path(dxc_INCLUDE_DIR NAMES dxc/dxcapi.h REQUIRED)
-
-    find_package(Vulkan COMPONENTS dxc)
-    if(Vulkan_dxc_lib_FOUND)
-        set(dxc_LIBRARY ${Vulkan_dxc_LIBRARY} CACHE FILEPATH "")
-    else()
-        find_library(dxc_LIBRARY NAMES dxcompiler REQUIRED)
-    endif()
-
-    list(APPEND JUMASC_DEFINITIONS JUMASC_ENABLE_DXC)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        list(APPEND JUMASC_COMPILE_OPTIONS -fms-extensions)
-    endif()
-    list(APPEND JUMASC_INCULE_DIRS ${dxc_INCLUDE_DIR})
-    list(APPEND JUMASC_LIBS ${dxc_LIBRARY})
-endif()
+#if(JUMASC_ENABLE_COMPILE_HLSL)
+#    find_path(dxc_INCLUDE_DIR NAMES dxc/dxcapi.h REQUIRED)
+#
+#    find_package(Vulkan COMPONENTS dxc)
+#    if(Vulkan_dxc_lib_FOUND)
+#        set(dxc_LIBRARY ${Vulkan_dxc_LIBRARY} CACHE FILEPATH "")
+#    else()
+#        find_library(dxc_LIBRARY NAMES dxcompiler REQUIRED)
+#    endif()
+#
+#    list(APPEND JUMASC_DEFINITIONS JUMASC_ENABLE_DXC)
+#    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#        list(APPEND JUMASC_COMPILE_OPTIONS -fms-extensions)
+#    endif()
+#    list(APPEND JUMASC_INCULE_DIRS ${dxc_INCLUDE_DIR})
+#    list(APPEND JUMASC_LIBS ${dxc_LIBRARY})
+#endif()
 
 ## DXC ------------------------------------
 
@@ -61,6 +70,7 @@ list(APPEND JUMASC_SOURCE_FILES
     src/CompilerInternal.cpp
     src/JumaSC_dxc.cpp
     src/JumaSC_glslang.cpp
+    src/JumaSC_spirv_cross.cpp
 )
 
 add_library(JumaSC STATIC ${JUMASC_SOURCE_FILES})
