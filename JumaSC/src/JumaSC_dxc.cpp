@@ -1,72 +1,46 @@
 // Copyright © 2023 Leonov Maksim. All rights reserved.
 
-#include "JumaSC/JumaSC.h"
+#include "CompilerInternal.h"
 
-#include <dxc/dxcapi.h>
-
-#include <jutils/log.h>
-#include <jutils/jdefer.h>
-using namespace jutils;
+#ifdef JUMASC_ENABLE_DXC
 
 namespace JumaSC
 {
-    constexpr std::wstring GetHLSLTargetProfile(const HLSL::type type, const HLSL::model model)
+    bool CreateDXCInstances(CompilerPart_dxc& outData)
     {
-        std::wstring result;
-        switch (type)
+        if (outData.compiler == nullptr)
         {
-        case HLSL::type::vertex:   result += L"vs"; break;
-        case HLSL::type::fragment: result += L"ps"; break;
-        case HLSL::type::geometry: result += L"gs"; break;
-        case HLSL::type::hull:     result += L"hs"; break;
-        case HLSL::type::domain:   result += L"ds"; break;
-        case HLSL::type::compute:  result += L"cs"; break;
-        default: return {};
+            const HRESULT result = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&outData.compiler));
+            if (FAILED(result) || (outData.compiler == nullptr))
+            {
+                JUTILS_ERROR_LOG(result, "failed to create DXC compiler");
+                return false;
+            }
         }
-        switch (model)
+        if (outData.utils == nullptr)
         {
-        case HLSL::model::_5_0: result += L"_5_0"; break;
-        case HLSL::model::_5_1: result += L"_5_1"; break;
-        case HLSL::model::_6_0: result += L"_6_0"; break;
-        case HLSL::model::_6_1: result += L"_6_1"; break;
-        case HLSL::model::_6_2: result += L"_6_2"; break;
-        case HLSL::model::_6_3: result += L"_6_3"; break;
-        case HLSL::model::_6_4: result += L"_6_4"; break;
-        case HLSL::model::_6_5: result += L"_6_5"; break;
-        case HLSL::model::_6_6: result += L"_6_6"; break;
-        default: return {};
+            const HRESULT result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&outData.utils));
+            if (FAILED(result) || (outData.utils == nullptr))
+            {
+                outData.compiler.Release();
+                JUTILS_ERROR_LOG(result, "failed to create DXC instance");
+                return false;
+            }
         }
-        return result;
+        return true;
     }
 
-    void printShaderText(const jarray<jstring>& shaderText)
+    jarray<uint8> CompilerInternal::hlslCompile(const jarray<jstring> &shaderText, HLSL::type shaderType, HLSL::model shaderModel)
     {
-        for (int32 index = 0; index < shaderText.getSize(); index++)
+        if (!CreateDXCInstances(dxcPart))
         {
-            log::print(JSTR_FORMAT("{} {:>3}: {}\n", log::verbosityLevel::warning, index + 1, shaderText[index]));
-        }
-    }
-
-    jarray<uint8> HLSL::compile(const jutils::jarray<jutils::jstring>& shaderText, type shaderType, model shaderModel)
-    {
-        CComPtr<IDxcCompiler3> dxcCompiler = nullptr;
-        CComPtr<IDxcUtils> dxcUtils = nullptr;
-        HRESULT result = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-        if (FAILED(result))
-        {
-            JUTILS_ERROR_LOG(result, "failed to create DXC compiler");
-            return {};
-        }
-        result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-        if (FAILED(result))
-        {
-            JUTILS_ERROR_LOG(result, "failed to create DXC instance");
+            JUTILS_LOG(error, "failed to create DXC instances");
             return {};
         }
 
         const jstring fullShaderText = string::join(shaderText, '\n');
         CComPtr<IDxcBlobEncoding> dxcSourceBlob = nullptr;
-        result = dxcUtils->CreateBlob(fullShaderText.getData(), fullShaderText.getSize(), CP_UTF8, &dxcSourceBlob);
+        HRESULT result = dxcPart.utils->CreateBlob(fullShaderText.getData(), fullShaderText.getSize(), CP_UTF8, &dxcSourceBlob);
         if (FAILED(result))
         {
             JUTILS_ERROR_LOG(result, "failed to create DXC shader source blob");
@@ -88,7 +62,7 @@ namespace JumaSC
 #endif
         };
         CComPtr<IDxcResult> dxcCompileResult;
-        result = dxcCompiler->Compile(
+        result = dxcPart.compiler->Compile(
             &dxcSourceBuffer,
             dxcCompilerArgs.getData(), dxcCompilerArgs.getSize(), nullptr,
             IID_PPV_ARGS(&dxcCompileResult)
@@ -124,3 +98,16 @@ namespace JumaSC
         return compiledData;
     }
 }
+
+#else
+
+namespace JumaSC
+{
+    jarray<uint8> CompilerInternal::hlslCompile(const jarray<jstring> &shaderText, HLSL::type shaderType, HLSL::model shaderModel)
+    {
+        JUTILS_LOG(warning, "compiling HLSL shaders is disabled");
+        return {};
+    }
+}
+
+#endif
