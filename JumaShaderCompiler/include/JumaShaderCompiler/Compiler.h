@@ -4,7 +4,7 @@
 
 #include <jutils/jstring.h>
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     namespace GLSL
     {
@@ -29,6 +29,10 @@ namespace JumaSC
 
         static Compiler* Create();
 
+        virtual bool isGlslCompileEnabled() const { return false; }
+        virtual bool isSpvToHlslEnabled() const { return false; }
+        virtual bool isHlslCompileEnabled() const { return false; }
+
         jutils::jarray<jutils::uint32> glslToSPV(const jutils::jarray<jutils::jstring>& shaderText, GLSL::type shaderType)
         {
             return glslToSPV(shaderText, shaderType, Vulkan::version::_1_3);
@@ -40,3 +44,5 @@ namespace JumaSC
             HLSL::type shaderType, HLSL::model shaderModel) = 0;
     };
 }
+
+namespace JumaSC = JumaShaderCompiler;

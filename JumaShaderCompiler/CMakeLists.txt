@@ -1,6 +1,8 @@
+# Shader compiler for Juma Render Engine
+
 cmake_minimum_required(VERSION 3.12)
 
-project(JumaSC)
+project(JumaShaderCompiler)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(JUMASC_ENABLE_COMPILE_TO_SPV "Build with glslang" OFF)
 option(JUMASC_ENABLE_COMPILE_FROM_SPV "Build with SPIRV-Cross" OFF)
-option(JUMASC_ENABLE_COMPILE_HLSL "Build with DXC compiler" OFF)
+#option(JUMASC_ENABLE_COMPILE_HLSL "Build with DXC compiler" OFF)
 
 # glslang --------------------------------
 
@@ -26,6 +28,7 @@ endif()
 if(JUMASC_ENABLE_COMPILE_FROM_SPV)
     find_package(spirv_cross_core REQUIRED)
     find_package(spirv_cross_glsl REQUIRED)
+    find_package(spirv_cross_hlsl REQUIRED)
     find_package(spirv_cross_cpp REQUIRED)
 
     list(APPEND JUMASC_DEFINITIONS JUMASC_ENABLE_SPIRV_CROSS)
@@ -34,17 +37,11 @@ endif()
 
 # SPIRV-Cross ----------------------------
 
-## DXC ------------------------------------
+## DXC -----------------------------------
 
 #if(JUMASC_ENABLE_COMPILE_HLSL)
 #    find_path(dxc_INCLUDE_DIR NAMES dxc/dxcapi.h REQUIRED)
-#
-#    find_package(Vulkan COMPONENTS dxc)
-#    if(Vulkan_dxc_lib_FOUND)
-#        set(dxc_LIBRARY ${Vulkan_dxc_LIBRARY} CACHE FILEPATH "")
-#    else()
-#        find_library(dxc_LIBRARY NAMES dxcompiler REQUIRED)
-#    endif()
+#    find_library(dxc_LIBRARY NAMES dxcompiler REQUIRED)
 #
 #    list(APPEND JUMASC_DEFINITIONS JUMASC_ENABLE_DXC)
 #    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -54,14 +51,16 @@ endif()
 #    list(APPEND JUMASC_LIBS ${dxc_LIBRARY})
 #endif()
 
-## DXC ------------------------------------
+## DXC -----------------------------------
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     list(APPEND JUMASC_DEFINITIONS JUMASC_DEBUG)
 endif()
 
-list(APPEND JUMASC_HEADER_FILES
-    include/JumaSC/JumaSC.h
+list(APPEND JUMASC_PUBLIC_HEADER_FILES
+    include/JumaShaderCompiler/Compiler.h
+)
+list(APPEND JUMASC_PRIVATE_HEADER_FILES
     src/CompilerInternal.h
     src/JumaSC_dxc.h
     src/JumaSC_glslang.h
@@ -73,20 +72,20 @@ list(APPEND JUMASC_SOURCE_FILES
     src/JumaSC_spirv_cross.cpp
 )
 
-add_library(JumaSC STATIC ${JUMASC_SOURCE_FILES})
+add_library(JumaShaderCompiler STATIC ${JUMASC_SOURCE_FILES})
 if(JUMASC_COMPILE_OPTIONS)
-    target_compile_options(JumaSC PRIVATE ${JUMASC_COMPILE_OPTIONS})
+    target_compile_options(JumaShaderCompiler PRIVATE ${JUMASC_COMPILE_OPTIONS})
 endif()
 if(JUMASC_DEFINITIONS)
-    target_compile_definitions(JumaSC PRIVATE ${JUMASC_DEFINITIONS})
+    target_compile_definitions(JumaShaderCompiler PRIVATE ${JUMASC_DEFINITIONS})
 endif()
 
-target_include_directories(JumaSC PUBLIC include)
+target_include_directories(JumaShaderCompiler PUBLIC include)
 if(JUMASC_INCULE_DIRS)
-    target_include_directories(JumaSC PRIVATE ${JUMASC_INCULE_DIRS})
+    target_include_directories(JumaShaderCompiler PRIVATE ${JUMASC_INCULE_DIRS})
 endif()
 
-target_link_libraries(JumaSC PUBLIC jutils)
-if(JUMASC_COMPILE_OPTIONS)
-    target_link_libraries(JumaSC PRIVATE ${JUMASC_LIBS})
+target_link_libraries(JumaShaderCompiler PUBLIC jutils)
+if(JUMASC_LIBS)
+    target_link_libraries(JumaShaderCompiler PRIVATE ${JUMASC_LIBS})
 endif()

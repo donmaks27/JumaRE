@@ -2,7 +2,7 @@
 
 #include "CompilerInternal.h"
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     Compiler* Compiler::Create()
     {

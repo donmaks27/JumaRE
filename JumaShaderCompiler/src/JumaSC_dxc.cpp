@@ -4,7 +4,7 @@
 
 #ifdef JUMASC_ENABLE_DXC
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     bool CreateDXCInstances(CompilerPart_dxc& outData)
     {
@@ -101,7 +101,7 @@ namespace JumaSC
 
 #else
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     jarray<uint8> CompilerInternal::hlslCompile(const jarray<jstring> &shaderText, HLSL::type shaderType, HLSL::model shaderModel)
     {

@@ -6,7 +6,7 @@
 
 #include <spirv_cross/spirv_hlsl.hpp>
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     jstring CompilerInternal::hlslFromSPV(const jarray<uint32>& shaderData, const HLSL::model shaderModel)
     {
@@ -32,7 +32,7 @@ namespace JumaSC
 
 #else
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     jstring CompilerInternal::hlslFromSPV(const jarray<uint32>&, HLSL::model)
     {

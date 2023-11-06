@@ -10,7 +10,7 @@
 
 #include <jutils/jdefer.h>
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     bool InitializeGlslang(CompilerPart_glslang& outData)
     {
@@ -70,7 +70,7 @@ namespace JumaSC
         glslang::TShader* shader = new glslang::TShader(glslangShaderType);
         jdefer deleteShader([shader](){ delete shader; });
         shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-        shader->setEnvClient(glslang::EShClient::EShClientVulkan, glslangClientVersion);
+        shader->setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetVulkan_1_3);
 
         jarray<const char*> glslangShaderText;
         glslangShaderText.reserve(shaderText.getSize());
@@ -144,7 +144,7 @@ namespace JumaSC
 
 #else
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     jarray<uint32> CompilerInternal::glslToSPV(const jarray<jstring>&, GLSL::type, Vulkan::version)
     {

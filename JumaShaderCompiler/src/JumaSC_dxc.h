@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "JumaSC/JumaSC.h"
+#include "JumaShaderCompiler/Compiler.h"
 
 #ifdef JUMASC_ENABLE_DXC
 
 #include <dxc/dxcapi.h>
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     struct CompilerPart_dxc
     {
@@ -49,7 +49,7 @@ namespace JumaSC
 
 #else
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     struct CompilerPart_dxc {};
 }

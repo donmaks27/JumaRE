@@ -8,13 +8,23 @@
 #include <jutils/log.h>
 using namespace jutils;
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     class CompilerInternal : public Compiler
     {
     public:
         CompilerInternal() = default;
         virtual ~CompilerInternal() override = default;
+
+#ifdef JUMASC_ENABLE_GLSLANG
+        virtual bool isGlslCompileEnabled() const override { return true; }
+#endif
+#ifdef JUMASC_ENABLE_SPIRV_CROSS
+        virtual bool isSpvToHlslEnabled() const override { return true; }
+#endif
+#ifdef JUMASC_ENABLE_DXC
+        virtual bool isHlslCompileEnabled() const override { return true; }
+#endif
 
         virtual jarray<uint32> glslToSPV(const jarray<jstring>& shaderText, GLSL::type shaderType, Vulkan::version vulkanVersion) override;
         virtual jstring hlslFromSPV(const jarray<uint32>& shaderData, HLSL::model shaderModel) override;

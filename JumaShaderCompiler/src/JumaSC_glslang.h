@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "JumaSC/JumaSC.h"
+#include "JumaShaderCompiler/Compiler.h"
 
 #ifdef JUMASC_ENABLE_GLSLANG
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     struct CompilerPart_glslang
     {
@@ -18,7 +18,7 @@ namespace JumaSC
 
 #else
 
-namespace JumaSC
+namespace JumaShaderCompiler
 {
     struct CompilerPart_glslang {};
 }
